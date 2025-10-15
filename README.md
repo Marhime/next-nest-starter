@@ -1,13 +1,12 @@
 # Turborepo starter
 
-This is a community-maintained example. If you experience a problem, please submit a pull request with a fix. GitHub Issues will be closed.
-
 ## Using this example
 
 Run the following command:
 
 ```bash
-npx create-turbo@latest -e with-nestjs
+npm install
+npm run dev
 ```
 
 ## What's inside?
