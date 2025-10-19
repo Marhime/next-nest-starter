@@ -15,15 +15,22 @@ datasource db {
 }
 
 model User {
-  id            String    @id
+  id            String        @id
   name          String
+  firstName     String?
+  lastName      String?
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean       @default(false)
+  phone         String?
+  phoneVerified Boolean       @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @default(now()) @updatedAt
   sessions      Session[]
   accounts      Account[]
+  Property      Property[]
+  Reservation   Reservation[]
+  Favorite      Favorite[]
 
   @@unique([email])
   @@map("user")
@@ -72,4 +79,158 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@map("verification")
+}
+
+model Property {
+  id     Int    @id @default(autoincrement())
+  userId String
+
+  propertyType PropertyType @map("property_type")
+  listingType  ListingType  @map("listing_type")
+
+  title        String
+  description  String?
+  monthlyPrice Decimal? @map("monthly_price") @db.Decimal(10, 2)
+  nightlyPrice Decimal? @map("nightly_price") @db.Decimal(10, 2)
+  salePrice    Decimal? @map("sale_price") @db.Decimal(12, 2)
+  currency     Currency @default(MXN)
+
+  address    String?
+  city       String?
+  state      String?
+  postalCode String?  @map("postal_code")
+  latitude   Decimal? @db.Decimal(10, 8)
+  longitude  Decimal? @db.Decimal(11, 8)
+
+  area      Decimal? @db.Decimal(8, 2)
+  bedrooms  Int?
+  bathrooms Int?
+  capacity  Int? // for hotels/hostels
+  floor     Int?
+
+  amenities Json?
+
+  status        PropertyStatus @default(ACTIVE)
+  availableFrom DateTime?      @map("available_from")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photos         Photo[]
+  availabilities Availability[]
+  reservations   Reservation[]
+  favorites      Favorite[]
+
+  @@index([propertyType])
+  @@index([listingType])
+  @@index([city])
+  @@index([monthlyPrice, nightlyPrice])
+  @@map("properties")
+}
+
+model Photo {
+  id         Int      @id @default(autoincrement())
+  propertyId Int      @map("property_id")
+  url        String
+  order      Int      @default(0)
+  isPrimary  Boolean  @default(false) @map("is_primary")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@map("photos")
+}
+
+model Availability {
+  id           Int                @id @default(autoincrement())
+  propertyId   Int                @map("property_id")
+  startDate    DateTime           @map("start_date")
+  endDate      DateTime           @map("end_date")
+  specialPrice Decimal?           @map("special_price") @db.Decimal(10, 2)
+  status       AvailabilityStatus @default(AVAILABLE)
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, startDate, endDate])
+  @@map("availabilities")
+}
+
+model Reservation {
+  id         Int               @id @default(autoincrement())
+  propertyId Int               @map("property_id")
+  userId     String
+  startDate  DateTime          @map("start_date")
+  endDate    DateTime          @map("end_date")
+  totalPrice Decimal           @map("total_price") @db.Decimal(10, 2)
+  status     ReservationStatus @default(PENDING)
+  guests     Int?
+  notes      String?
+  createdAt  DateTime          @default(now()) @map("created_at")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([startDate, endDate])
+  @@map("reservations")
+}
+
+model Favorite {
+  userId     String
+  propertyId Int      @map("property_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@id([userId, propertyId])
+  @@map("favorites")
+}
+
+enum AccountType {
+  OWNER
+  AGENCY
+  INDIVIDUAL
+}
+
+enum PropertyType {
+  HOTEL
+  HOSTEL
+  GUESTHOUSE
+  HOUSE
+  APARTMENT
+  LAND
+  ROOM
+}
+
+enum ListingType {
+  SHORT_TERM
+  LONG_TERM
+  SALE
+}
+
+enum Currency {
+  MXN
+  USD
+}
+
+enum PropertyStatus {
+  ACTIVE
+  RENTED
+  SOLD
+  INACTIVE
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  RESERVED
+  BLOCKED
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
 }
