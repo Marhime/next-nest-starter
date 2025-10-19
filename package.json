@@ -28,6 +28,7 @@
     "packages/*"
   ],
   "dependencies": {
+    "@thallesp/nestjs-better-auth": "^2.1.0",
     "jose": "^6.1.0",
     "zod": "^4.1.12"
   }

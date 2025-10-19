@@ -14,15 +14,24 @@ import {
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import SubmitButton from '@/components/submitButton';
-import { signUp } from '@/lib/auth';
-import { useActionState } from 'react';
+import SubmitButton from '@/components/SubmitButton';
+import { register } from '@/lib/auth';
+import { useActionState, useEffect, useState } from 'react';
+import PasswordCheck from '@/components/PasswordCheck';
+import { redirect } from 'next/navigation';
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
-  const [state, action] = useActionState(signUp, undefined);
+  const [state, action] = useActionState(register, undefined);
+  const [passwordChecked, setPasswordChecked] = useState(false);
+
+  useEffect(() => {
+    if (state?.success) {
+      redirect('/dashboard');
+    }
+  }, [state?.success]);
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
@@ -38,7 +47,14 @@ export function SignupForm({
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="name">Full Name</FieldLabel>
-                <Input id="name" type="text" placeholder="John Doe" required />
+                <Input
+                  name="name"
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  defaultValue={state?.name}
+                  required
+                />
               </Field>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -46,27 +62,20 @@ export function SignupForm({
                   id="email"
                   type="email"
                   name="email"
+                  defaultValue={state?.email}
                   placeholder="m@example.com"
                   required
                 />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="password">Password</FieldLabel>
-                <Input id="password" type="password" name="password" required />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="confirm-password">
-                  Confirm Password
-                </FieldLabel>
-                <Input id="confirm-password" type="password" required />
-                <FieldDescription>
-                  Must be at least 8 characters long.
+                <FieldDescription className="text-destructive text-xs">
+                  {state?.error?.email}
                 </FieldDescription>
               </Field>
+              <PasswordCheck setPasswordChecked={setPasswordChecked} />
               <Field>
                 <SubmitButton>Create an account</SubmitButton>
                 <FieldDescription className="text-center">
-                  Already have an account? <a href="#">Sign in</a>
+                  Already have an account?{' '}
+                  <a href="/auth/login">Connect here</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>

@@ -1,15 +1,7 @@
-import Image, { type ImageProps } from 'next/image';
-import { Button } from '@repo/ui/button';
+import Image from 'next/image';
 import styles from './page.module.css';
-import { redirect } from 'next/navigation';
-
-type Props = Omit<ImageProps, 'src'> & {
-  srcLight: string;
-  srcDark: string;
-};
 
 export default function Home() {
-  redirect('/auth/signup');
   return (
     <div className={styles.page}>
       <main className={styles.main}></main>

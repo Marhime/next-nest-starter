@@ -4,10 +4,13 @@ import { useFormStatus } from 'react-dom';
 import { Button } from './ui/button';
 import { Spinner } from './ui/spinner';
 
+interface Props {
+  disabled?: boolean;
+}
+
 function SubmitButton({ children }: PropsWithChildren) {
   const { pending } = useFormStatus();
 
-  console.log(pending);
   return (
     <Button type="submit" aria-disabled={pending}>
       {pending ? <Spinner /> : children}
