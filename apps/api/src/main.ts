@@ -9,9 +9,10 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: 'http://localhost:3001', // your Next.js frontend URL
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, // if you use cookies / authentication
+    origin: ['http://localhost:3001', 'http://localhost:3000'], // Frontend et API
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
   const config = new DocumentBuilder()
