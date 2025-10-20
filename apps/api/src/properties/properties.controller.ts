@@ -11,15 +11,18 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { PropertiesService } from './properties.service';
 import { CreatePropertyDto } from '@/src/properties/dto/create-property.dto';
 import { UpdatePropertyDto } from '@/src/properties/dto/update-property.dto';
 import { QueryPropertyDto } from '@/src/properties/dto/query-property.dto';
+import { AllowAnonymous, AuthGuard } from '@thallesp/nestjs-better-auth';
 
 @ApiTags('properties')
 @Controller('properties')
+@UseGuards(AuthGuard)
 export class PropertiesController {
   constructor(private readonly propertiesService: PropertiesService) {}
 
@@ -32,6 +35,7 @@ export class PropertiesController {
   }
 
   @Get()
+  @AllowAnonymous()
   @ApiOperation({ summary: 'Get all properties with filters' })
   @ApiResponse({
     status: 200,
@@ -42,6 +46,7 @@ export class PropertiesController {
   }
 
   @Get('nearby')
+  @AllowAnonymous()
   @ApiOperation({ summary: 'Search properties nearby a location' })
   @ApiQuery({ name: 'latitude', type: Number })
   @ApiQuery({ name: 'longitude', type: Number })
@@ -70,6 +75,7 @@ export class PropertiesController {
   }
 
   @Get(':id')
+  @AllowAnonymous()
   @ApiOperation({ summary: 'Get a property by ID' })
   @ApiResponse({ status: 200, description: 'Property retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Property not found' })

@@ -27,11 +27,11 @@ export function SignupForm({
   const [state, action] = useActionState(register, undefined);
   const [passwordChecked, setPasswordChecked] = useState(false);
 
-  useEffect(() => {
-    if (state?.success) {
-      redirect('/dashboard');
-    }
-  }, [state?.success]);
+  // useEffect(() => {
+  //   if (state?.success) {
+  //     redirect('/dashboard');
+  //   }
+  // }, [state?.success]);
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>

@@ -12,7 +12,7 @@ import { PrismaModule } from './prisma/prisma.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    AuthModule.forRoot({ auth }),
+    AuthModule.forRoot({ auth, disableGlobalAuthGuard: true }),
     UsersModule,
     PropertiesModule,
     PrismaModule,

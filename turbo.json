@@ -14,7 +14,8 @@
         "BETTER_AUTH_URL",
         "DATABASE_URL",
         "WEB_URL",
-        "BACKEND_URL"
+        "BACKEND_URL",
+        "RESEND_API_KEY"
       ]
     },
 

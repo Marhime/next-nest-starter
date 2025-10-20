@@ -4,7 +4,9 @@ import styles from './page.module.css';
 export default function Home() {
   return (
     <div className={styles.page}>
-      <main className={styles.main}></main>
+      <main className={styles.main}>
+        <h1 className="text-9xl font-black text-center">Welcome to HOMEPAGE</h1>
+      </main>
       <footer className={styles.footer}>
         <a
           href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"

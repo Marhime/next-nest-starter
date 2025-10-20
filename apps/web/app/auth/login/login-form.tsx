@@ -48,6 +48,9 @@ export function LoginForm({
           <form action={action}>
             <FieldGroup>
               <Field>
+                {state?.message && (
+                  <p className="mb-4 text-red-600 text-xs">{state.message}</p>
+                )}
                 <Button variant="outline" type="button">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path
