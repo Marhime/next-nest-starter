@@ -1,7 +1,24 @@
 import { GalleryVerticalEnd } from 'lucide-react';
 import { LoginForm } from './login-form';
+import { redirect } from '@/i18n/navigation';
+import { requireAdmin } from '@/lib/auth/session';
 
-export default function LoginPage() {
+export default async function LoginPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const session = await requireAdmin();
+  const { locale } = await params;
+
+  if (session?.user) {
+    if (session?.user.role === 'ADMIN') {
+      redirect({ href: { pathname: '/dashboard' }, locale });
+    } else {
+      redirect({ href: { pathname: '/' }, locale });
+    }
+  }
+
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="flex w-full max-w-md flex-col gap-6">

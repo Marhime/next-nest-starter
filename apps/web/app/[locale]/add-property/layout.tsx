@@ -3,24 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import Link from 'next/link';
 import { useAddPropertyStore } from './store';
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
 import { ReactNode } from 'react';
+import { useGlobalStore } from '../store';
 
-export default function OnboardingLayout({
+export default function AddPropertyLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  const setIsOpen = useAddPropertyStore((state) => state.setIsOpen);
-  const isOpen = useAddPropertyStore((state) => state.isOpen);
+  const setIsOpen = useGlobalStore((state) => state.setIsOpen);
   const currentStep = useAddPropertyStore((state) => state.currentStep);
 
   const steps = ['overview', 'type', 'location', 'space-type', 'photos'];
@@ -74,22 +65,6 @@ export default function OnboardingLayout({
           </div>
         </div>
       </section>
-      <Drawer open={isOpen} onOpenChange={setIsOpen}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>Do you need help?</DrawerTitle>
-            <DrawerDescription>This action cannot be undone.</DrawerDescription>
-          </DrawerHeader>
-          <DrawerFooter>
-            <div className="flex gap-2 mx-auto">
-              <Button>Submit</Button>
-              <DrawerClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DrawerClose>
-            </div>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
     </>
   );
 }

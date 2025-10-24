@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import "tw-animate-css";
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -7,6 +7,11 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+}
+
+a,
+button {
+  cursor: pointer;
 }
 
 .auth-layout {
@@ -139,4 +144,54 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 15;
+  top: 0;
+  left: 0;
+}
+
+.overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.2) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  z-index: -1;
+}
+
+.overlay::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  z-index: -1;
+}
+
+.glassy-effect {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: hsl(from 0deg 0% 100%) hsl(0deg 0% 100%) / 0.25;
+  backdrop-filter: blur(12px);
+}
+
+[data-slot='dropdown-menu-item'] {
+  cursor: pointer;
+  padding-inline: 12px;
 }

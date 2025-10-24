@@ -15,22 +15,29 @@ datasource db {
 }
 
 model User {
-  id            String        @id
+  id            String   @id
   name          String
   firstName     String?
   lastName      String?
   email         String
-  emailVerified Boolean       @default(false)
+  emailVerified Boolean  @default(false)
   phone         String?
-  phoneVerified Boolean       @default(false)
+  phoneVerified Boolean  @default(false)
   image         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @default(now()) @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  Property      Property[]
-  Reservation   Reservation[]
-  Favorite      Favorite[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  // Better Auth Admin plugin fields
+  role       UserRole  @default(USER)
+  banned     Boolean   @default(false)
+  banReason  String?
+  banExpires DateTime?
+
+  sessions    Session[]
+  accounts    Account[]
+  Property    Property[]
+  Reservation Reservation[]
+  Favorite    Favorite[]
 
   @@unique([email])
   @@map("user")
@@ -46,6 +53,9 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Better Auth Admin plugin field
+  impersonatedBy String?
 
   @@unique([token])
   @@map("session")
@@ -233,4 +243,11 @@ enum ReservationStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
+}
+
+enum UserRole {
+  USER
+  OWNER
+  AGENCY
+  ADMIN
 }

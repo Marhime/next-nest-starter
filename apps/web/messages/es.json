@@ -1,0 +1,39 @@
+{
+  "Home": {
+    "title": "Tu próximo hogar en Puerto Escondido.",
+    "subtitle": "Descubre las mejores casas, departamentos y terrenos en venta o renta. Todo el mercado local, actualizado en tiempo real — sin complicaciones.",
+    "searchPlaceholder": "Busca por dirección, ciudad o código postal",
+    "description": "Descubre las mejores casas, departamentos y terrenos en venta o renta. Todo el mercado local, actualizado en tiempo real — sin complicaciones.",
+    "search": "Buscar"
+  },
+  "Navigation": {
+    "home": "Inicio",
+    "listings": "Anuncios",
+    "about": "Sobre nosotros",
+    "services": "Servicios",
+    "contact": "Contacto"
+  },
+  "LocaleLayout": {
+    "title": "Bienes Raíces Puerto Escondido - Encuentra Tu Próximo Hogar",
+    "locales": {
+      "en": "English",
+      "es": "Español",
+      "fr": "Français"
+    }
+  },
+  "LoginForm": {
+    "title": "Bienvenido de nuevo",
+    "subtitle": "Inicia sesión con tu cuenta de Apple o Google",
+    "apple": "Continuar con Apple",
+    "google": "Continuar con Google",
+    "continueWith": "O continúa con",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "remember": "Recuérdame",
+    "forgot": "¿Olvidaste tu contraseña?",
+    "signup": "¿No tienes una cuenta?",
+    "signupLinkText": "Regístrate",
+    "agree": "Al iniciar sesión, aceptas nuestros Términos de Servicio y Política de Privacidad.",
+    "submit": "Iniciar Sesión"
+  }
+}

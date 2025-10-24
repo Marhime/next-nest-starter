@@ -10,6 +10,9 @@ import {
 export class UsersController {
   @Get('me')
   async getProfile(@Session() session: UserSession) {
+    if (!session) {
+      return { user: null };
+    }
     return { user: session.user };
   }
 

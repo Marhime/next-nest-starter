@@ -1,0 +1,44 @@
+{
+  "Home": {
+    "title": "Ton prochain chez-toi à Puerto Escondido.",
+    "subtitle": "Découvre les meilleures maisons, appartements et terrains à vendre ou à louer. Tout le marché local, mis à jour en temps réel — sans prise de tête.",
+    "searchPlaceholder": "Entre une adresse, une ville ou un code postal",
+    "description": "Découvrez les meilleures maisons, appartements et terrains à vendre ou à louer. Tout le marché local, mis à jour en temps réel — sans prise de tête.",
+    "search": "Recherche"
+  },
+  "Navigation": {
+    "home": "Accueil",
+    "listings": "Annonces",
+    "services": "Services",
+    "contact": "Contact",
+    "about": "À propos"
+  },
+  "LocaleLayout": {
+    "title": "Immobilier Puerto Escondido - Trouve Ton Prochain Chez-Toi",
+    "locales": {
+      "en": "English",
+      "es": "Español",
+      "fr": "Français"
+    }
+  },
+  "LoginForm": {
+    "title": "Bon retour parmi nous",
+    "subtitle": "Connecte-toi avec ton compte Apple ou Google",
+    "apple": "Continuer avec Apple",
+    "google": "Continuer avec Google",
+    "continueWith": "Ou continue avec",
+    "email": "Email",
+    "password": "Mot de passe",
+    "remember": "Se souvenir de moi",
+    "forgot": "Mot de passe oublié ?",
+    "signup": "Tu n'as pas de compte ?",
+    "signupLinkText": "Inscris-toi",
+    "agree": "En te connectant, tu acceptes nos",
+    "termsOfService": "Conditions d'Utilisation",
+    "privacyPolicy": "Politique de Confidentialité",
+    "submit": "Se Connecter",
+    "error": {
+      "invalidCredentials": "Identifiants invalides. Veuillez réessayer."
+    }
+  }
+}

@@ -13,7 +13,7 @@ import { MailModule } from './mail/mail.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    AuthModule.forRoot({ auth, disableGlobalAuthGuard: true }),
+    AuthModule.forRoot({ auth }),
     UsersModule,
     PropertiesModule,
     PrismaModule,

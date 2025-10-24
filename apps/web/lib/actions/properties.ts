@@ -1,15 +1,16 @@
 'use server';
 
-import { requireAuth } from '@/lib/auth/server';
 import { revalidatePath } from 'next/cache';
-
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
 
 /**
  * Helper pour faire des requêtes authentifiées vers l'API NestJS
  */
 async function fetchAPI(endpoint: string, options: RequestInit = {}) {
-  const session = await requireAuth();
+  return null;
+
+  if (!session) {
+    throw new Error('User is not authenticated');
+  }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,

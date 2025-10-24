@@ -1,0 +1,54 @@
+{
+  "Home": {
+    "title": "Your next home in Puerto Escondido.",
+    "subtitle": "Discover the best houses, apartments and plots for sale or rent. All the local market, updated in real time — no hassle.",
+    "searchPlaceholder": "Enter an address, city or ZIP code",
+    "description": "Discover the best houses, apartments and plots for sale or rent. All the local market, updated in real time — no hassle.",
+    "search": "Search"
+  },
+  "Navigation": {
+    "home": "Home",
+    "listings": "Listings",
+    "about": "About us",
+    "services": "Services",
+    "contact": "Contact"
+  },
+  "LocaleLayout": {
+    "title": "Puerto Escondido Real Estate - Find Your Next Home",
+    "locales": {
+      "en": "English",
+      "es": "Español",
+      "fr": "Français"
+    }
+  },
+  "LoginForm": {
+    "title": "Welcome back",
+    "subtitle": "Login with your Apple or Google account",
+    "apple": "Continue with Apple",
+    "google": "Continue with Google",
+    "continueWith": "Or continue with",
+    "email": "Email",
+    "password": "Password",
+    "remember": "Remember me",
+    "forgot": "Forgot your password?",
+    "signup": "Don't have an account?",
+    "signupLinkText": "Sign up",
+    "agree": "By logging in, you agree to our Terms of Service and Privacy Policy.",
+    "submit": "Log In"
+  },
+  "Errors": {
+    "LoginForm": {
+      "name": "Name must be at least 2 characters long.",
+      "email": "Please enter a valid email address.",
+      "password": "Password must be at least 8 characters long.",
+      "invalidCredentials": "Invalid credentials. Please try again.",
+      "emailTaken": "This email is already registered. Please use a different email.",
+      "default": "An error occurred during registration. Please try again."
+    },
+    "Generic": {
+      "required": "This field is required.",
+      "invalidFormat": "The format of this field is invalid.",
+      "server": "Failed to connect to the server. Please try again."
+    }
+  }
+}

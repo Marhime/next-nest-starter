@@ -20,29 +20,35 @@ import Link from 'next/link';
 import { useActionState, useEffect } from 'react';
 import { login } from '@/lib/auth';
 import SubmitButton from '@/components/SubmitButton';
-import { redirect } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
+import { redirect } from '@/i18n/navigation';
+import { authClient } from '@/lib/auth/auth-server';
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
   const [state, action] = useActionState(login, undefined);
+  const session = authClient.useSession();
+  const locale = useLocale();
+  const t = useTranslations('LoginForm');
 
   useEffect(() => {
-    if (state?.success) {
-      redirect('/dashboard');
+    if (session?.data?.user) {
+      if (session?.data?.user.role === 'ADMIN') {
+        redirect({ href: { pathname: '/dashboard' }, locale });
+      } else {
+        redirect({ href: { pathname: '/' }, locale });
+      }
     }
-    console.log('login state', state);
-  }, [state]);
+  }, [session?.data?.user, locale]);
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>
-            Login with your Apple or Google account
-          </CardDescription>
+          <CardTitle className="text-xl">{t('title')}</CardTitle>
+          <CardDescription>{t('subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={action}>
@@ -58,7 +64,7 @@ export function LoginForm({
                       fill="currentColor"
                     />
                   </svg>
-                  Login with Apple
+                  {t('apple')}
                 </Button>
                 <Button variant="outline" type="button">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -67,14 +73,14 @@ export function LoginForm({
                       fill="currentColor"
                     />
                   </svg>
-                  Login with Google
+                  {t('google')}
                 </Button>
               </Field>
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                Or continue with
+                {t('continueWith')}
               </FieldSeparator>
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="email">{t('email')}</FieldLabel>
                 <Input
                   id="email"
                   name="email"
@@ -86,12 +92,12 @@ export function LoginForm({
               </Field>
               <Field>
                 <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
+                  <FieldLabel htmlFor="password">{t('password')}</FieldLabel>
                   <a
                     href="#"
                     className="ml-auto text-sm underline-offset-4 hover:underline"
                   >
-                    Forgot your password?
+                    {t('forgot')}
                   </a>
                 </div>
                 <Input
@@ -103,10 +109,15 @@ export function LoginForm({
                 />
               </Field>
               <Field>
-                <SubmitButton>Login</SubmitButton>
+                <SubmitButton>{t('submit')}</SubmitButton>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account?{' '}
-                  <Link href="/auth/register">Create an account</Link>
+                  {t('signup')}{' '}
+                  <Link
+                    href="/auth/register"
+                    className="text-primary underline-offset-4 hover:underline"
+                  >
+                    {t('signupLinkText')}
+                  </Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

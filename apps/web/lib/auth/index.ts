@@ -1,13 +1,8 @@
 'use client';
 
 import type {} from 'better-auth';
-import { createAuthClient } from 'better-auth/react';
 import { FormState, LoginFormSchema, SignupFormSchema } from './type';
-
-export const authClient = createAuthClient({
-  /** The base URL of the server (optional if you're using the same domain) */
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
-});
+import { authClient } from './auth-server';
 
 export async function register(
   state: FormState,
