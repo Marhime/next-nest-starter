@@ -11,6 +11,12 @@ export type FormState =
       email?: string; // ✅ Ajouter email
       name?: string; // ✅ Ajouter name
       message?: string;
+      user?: {
+        id: string;
+        name: string;
+        email: string;
+        role: Role;
+      };
     }
   | undefined;
 

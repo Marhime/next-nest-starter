@@ -1,15 +1,13 @@
+'use client';
 import { GalleryVerticalEnd } from 'lucide-react';
 import { LoginForm } from './login-form';
 import { redirect } from '@/i18n/navigation';
-import { requireAdmin } from '@/lib/auth/session';
+import { authClient } from '@/lib/auth/auth-client';
+import { useLocale } from 'next-intl';
 
-export default async function LoginPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const session = await requireAdmin();
-  const { locale } = await params;
+export default function LoginPage({}: {}) {
+  const { data: session, isPending: isLoading } = authClient.useSession();
+  const locale = useLocale();
 
   if (session?.user) {
     if (session?.user.role === 'ADMIN') {

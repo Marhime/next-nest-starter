@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { IconLogout } from '@tabler/icons-react';
-import { authClient } from '@/lib/auth/auth-server';
+import { authClient } from '@/lib/auth/auth-client';
 import { VariantProps } from 'class-variance-authority';
 import { DropdownMenuItem } from './ui/dropdown-menu';
 

@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -10,13 +11,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
-import { requireAuth } from '@/lib/auth/session';
 import { LogoutButton } from '../LogoutButton';
 import { HelpButton } from '../ui/HelpButton';
+import { authClient } from '@/lib/auth/auth-client';
 
-const ProfileDropdown = async () => {
-  const session = await requireAuth();
+const ProfileDropdown = () => {
+  const { data: session, isPending: isLoading } = authClient.useSession();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   const user = session?.user;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

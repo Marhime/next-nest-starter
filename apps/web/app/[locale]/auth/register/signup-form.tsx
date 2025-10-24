@@ -14,24 +14,60 @@ import {
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import SubmitButton from '@/components/SubmitButton';
-import { register } from '@/lib/auth';
-import { useActionState, useEffect, useState } from 'react';
+import { useState } from 'react';
 import PasswordCheck from '@/components/PasswordCheck';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { authClient } from '@/lib/auth/auth-client';
+import { Button } from '@/components/ui/button';
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
-  const [state, action] = useActionState(register, undefined);
+  const router = useRouter();
   const [passwordChecked, setPasswordChecked] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<{
+    name?: string;
+    email?: string;
+    password?: string;
+    message?: string;
+  }>({});
 
-  // useEffect(() => {
-  //   if (state?.success) {
-  //     redirect('/dashboard');
-  //   }
-  // }, [state?.success]);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError({});
+
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    try {
+      const { error: authError } = await authClient.signUp.email({
+        email,
+        password,
+        name,
+      });
+
+      if (authError) {
+        setError({ message: authError.message || 'Registration failed' });
+        setLoading(false);
+        return;
+      }
+
+      // Redirection après succès
+      router.push('/dashboard');
+      router.refresh();
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError({
+        message: 'Failed to connect to the server. Please try again.',
+      });
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
@@ -43,7 +79,7 @@ export function SignupForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={action}>
+          <form onSubmit={handleSubmit}>
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="name">Full Name</FieldLabel>
@@ -52,9 +88,13 @@ export function SignupForm({
                   id="name"
                   type="text"
                   placeholder="John Doe"
-                  defaultValue={state?.name}
                   required
                 />
+                {error.name && (
+                  <FieldDescription className="text-destructive text-xs">
+                    {error.name}
+                  </FieldDescription>
+                )}
               </Field>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -62,17 +102,30 @@ export function SignupForm({
                   id="email"
                   type="email"
                   name="email"
-                  defaultValue={state?.email}
                   placeholder="m@example.com"
                   required
                 />
-                <FieldDescription className="text-destructive text-xs">
-                  {state?.error?.email}
-                </FieldDescription>
+                {error.email && (
+                  <FieldDescription className="text-destructive text-xs">
+                    {error.email}
+                  </FieldDescription>
+                )}
               </Field>
               <PasswordCheck setPasswordChecked={setPasswordChecked} />
+              {error.password && (
+                <FieldDescription className="text-destructive text-xs">
+                  {error.password}
+                </FieldDescription>
+              )}
+              {error.message && (
+                <FieldDescription className="text-destructive text-xs">
+                  {error.message}
+                </FieldDescription>
+              )}
               <Field>
-                <SubmitButton>Create an account</SubmitButton>
+                <Button type="submit" disabled={loading} className="w-full">
+                  {loading ? 'Creating account...' : 'Create an account'}
+                </Button>
                 <FieldDescription className="text-center">
                   Already have an account?{' '}
                   <a href="/auth/login">Connect here</a>

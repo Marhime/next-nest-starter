@@ -1,4 +1,3 @@
-'use client';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,21 +16,20 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import { useActionState, useEffect } from 'react';
-import { login } from '@/lib/auth';
-import SubmitButton from '@/components/SubmitButton';
+import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { redirect } from '@/i18n/navigation';
-import { authClient } from '@/lib/auth/auth-server';
+import { authClient } from '@/lib/auth/auth-client';
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
-  const [state, action] = useActionState(login, undefined);
   const session = authClient.useSession();
   const locale = useLocale();
   const t = useTranslations('LoginForm');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (session?.data?.user) {
@@ -43,6 +41,36 @@ export function LoginForm({
     }
   }, [session?.data?.user, locale]);
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    try {
+      const { error: authError, data } = await authClient.signIn.email({
+        email,
+        password,
+        rememberMe: true,
+      });
+
+      if (authError) {
+        setError(authError.message || 'Login failed');
+        setLoading(false);
+        return;
+      } else {
+        return data;
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Failed to connect to the server. Please try again.');
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
@@ -51,12 +79,10 @@ export function LoginForm({
           <CardDescription>{t('subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={action}>
+          <form onSubmit={handleSubmit}>
             <FieldGroup>
               <Field>
-                {state?.message && (
-                  <p className="mb-4 text-red-600 text-xs">{state.message}</p>
-                )}
+                {error && <p className="mb-4 text-red-600 text-xs">{error}</p>}
                 <Button variant="outline" type="button">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path
@@ -86,7 +112,6 @@ export function LoginForm({
                   name="email"
                   type="email"
                   placeholder="m@example.com"
-                  defaultValue={state?.email}
                   required
                 />
               </Field>
@@ -109,7 +134,9 @@ export function LoginForm({
                 />
               </Field>
               <Field>
-                <SubmitButton>{t('submit')}</SubmitButton>
+                <Button type="submit" disabled={loading} className="w-full">
+                  {loading ? 'Logging in...' : t('submit')}
+                </Button>
                 <FieldDescription className="text-center">
                   {t('signup')}{' '}
                   <Link

@@ -1,8 +1,7 @@
 'use client';
-
 import type {} from 'better-auth';
 import { FormState, LoginFormSchema, SignupFormSchema } from './type';
-import { authClient } from './auth-server';
+import { authClient } from './auth-client';
 
 export async function register(
   state: FormState,

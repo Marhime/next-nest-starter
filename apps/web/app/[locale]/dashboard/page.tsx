@@ -1,3 +1,4 @@
+'use client';
 import { ChartAreaInteractive } from '@/components/chart-area-interactive';
 import { DataTable } from '@/components/data-table';
 import { SectionCards } from '@/components/section-cards';
@@ -7,16 +8,15 @@ import { SidebarInset } from '@/components/ui/sidebar';
 import data from './data.json';
 import { redirect } from '@/i18n/navigation';
 import { requireAdmin } from '@/lib/auth/session';
+import { useLocale } from 'next-intl';
+import { authClient } from '@/lib/auth/auth-client';
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
-  const session = await requireAdmin();
+export default function Page({}: {}) {
+  const { data: session, isPending: isLoading } = authClient.useSession();
+  const locale = useLocale();
 
-  if (!session) {
+  if (isLoading) return null;
+  if (!session?.user?.role && session?.user.role !== 'ADMIN') {
     redirect({ href: { pathname: '/' }, locale });
   }
 
