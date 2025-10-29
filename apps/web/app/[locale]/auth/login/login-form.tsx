@@ -1,3 +1,5 @@
+'use client';
+
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,6 +12,7 @@ import {
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
@@ -20,6 +23,9 @@ import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { redirect } from '@/i18n/navigation';
 import { authClient } from '@/lib/auth/auth-client';
+import { useForm } from '@tanstack/react-form';
+import { LoginFormSchema } from '@/lib/auth/type';
+import { toast } from 'sonner';
 
 export function LoginForm({
   className,
@@ -28,8 +34,38 @@ export function LoginForm({
   const session = authClient.useSession();
   const locale = useLocale();
   const t = useTranslations('LoginForm');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const form = useForm({
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+    validators: {
+      onSubmit: LoginFormSchema,
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        const { error: authError, data } = await authClient.signIn.email({
+          email: value.email,
+          password: value.password,
+          rememberMe: true,
+        });
+
+        if (authError) {
+          setErrorMessage(authError.message || 'Login failed');
+          toast.error(authError.message || 'Login failed');
+          return;
+        }
+
+        toast.success('Login successful!');
+        return data;
+      } catch (err) {
+        console.error('Login error:', err);
+        toast.error('Failed to connect to the server. Please try again.');
+      }
+    },
+  });
 
   useEffect(() => {
     if (session?.data?.user) {
@@ -41,36 +77,6 @@ export function LoginForm({
     }
   }, [session?.data?.user, locale]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-
-    try {
-      const { error: authError, data } = await authClient.signIn.email({
-        email,
-        password,
-        rememberMe: true,
-      });
-
-      if (authError) {
-        setError(authError.message || 'Login failed');
-        setLoading(false);
-        return;
-      } else {
-        return data;
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-      setError('Failed to connect to the server. Please try again.');
-      setLoading(false);
-    }
-  };
-
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
@@ -79,10 +85,16 @@ export function LoginForm({
           <CardDescription>{t('subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
+          <form
+            id="login-form"
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
+          >
             <FieldGroup>
               <Field>
-                {error && <p className="mb-4 text-red-600 text-xs">{error}</p>}
                 <Button variant="outline" type="button">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path
@@ -105,37 +117,89 @@ export function LoginForm({
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
                 {t('continueWith')}
               </FieldSeparator>
+              <form.Field name="email">
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>{t('email')}</FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="email"
+                        value={field.state.value}
+                        onBlur={() => {
+                          field.handleBlur();
+                          if (errorMessage) setErrorMessage(null);
+                        }}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                          if (errorMessage) setErrorMessage(null);
+                        }}
+                        placeholder="m@example.com"
+                        aria-invalid={isInvalid}
+                        autoComplete="email"
+                      />
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+              <form.Field name="password">
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <div className="flex items-center">
+                        <FieldLabel htmlFor={field.name}>
+                          {t('password')}
+                        </FieldLabel>
+                        <Link
+                          href="/auth/forgot-password"
+                          className="ml-auto text-sm underline-offset-4 hover:underline"
+                        >
+                          {t('forgot')}
+                        </Link>
+                      </div>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="password"
+                        value={field.state.value}
+                        onBlur={() => {
+                          field.handleBlur();
+                          if (errorMessage) setErrorMessage(null);
+                        }}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                          if (errorMessage) setErrorMessage(null);
+                        }}
+                        placeholder="Password"
+                        aria-invalid={isInvalid}
+                        autoComplete="current-password"
+                      />
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                      {errorMessage && (
+                        <FieldError errors={[{ message: errorMessage }]} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+
               <Field>
-                <FieldLabel htmlFor="email">{t('email')}</FieldLabel>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                />
-              </Field>
-              <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="password">{t('password')}</FieldLabel>
-                  <a
-                    href="#"
-                    className="ml-auto text-sm underline-offset-4 hover:underline"
-                  >
-                    {t('forgot')}
-                  </a>
-                </div>
-                <Input
-                  id="password"
-                  name="password"
-                  placeholder="Password"
-                  type="password"
-                  required
-                />
-              </Field>
-              <Field>
-                <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? 'Logging in...' : t('submit')}
+                <Button
+                  type="submit"
+                  disabled={form.state.isSubmitting}
+                  className="w-full"
+                >
+                  {form.state.isSubmitting ? 'Logging in...' : t('submit')}
                 </Button>
                 <FieldDescription className="text-center">
                   {t('signup')}{' '}

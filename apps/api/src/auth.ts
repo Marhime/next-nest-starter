@@ -18,11 +18,12 @@ export const auth = betterAuth({
   },
   emailVerification: {
     sendOnSignUp: true, // Envoie automatiquement l'email lors de l'inscription
-    autoSignInAfterVerification: false, // L'utilisateur doit se connecter manuellement après vérification
+    sendOnSignIn: true, // Envoie un email si l'utilisateur tente de se connecter sans avoir vérifié son email
+    autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, token }) => {
       // URL de vérification personnalisée avec le token
       const verificationUrl = `${process.env.WEB_URL}/auth/verify-email?token=${token}`;
-      
+
       try {
         await resend.emails.send({
           from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
@@ -32,7 +33,7 @@ export const auth = betterAuth({
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <h2>Bienvenue !</h2>
               <p>Merci de vous être inscrit. Veuillez cliquer sur le lien ci-dessous pour vérifier votre adresse email :</p>
-              <a href="${verificationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0;">
+              <a href="${process.env.WEB_URL}/auth/verify-email?token=${token}" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0;">
                 Vérifier mon email
               </a>
               <p>Ou copiez ce lien dans votre navigateur :</p>

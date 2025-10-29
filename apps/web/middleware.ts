@@ -9,16 +9,42 @@ export async function middleware(request: NextRequest) {
   console.log('🔥 Pathname:', request.nextUrl.pathname);
 
   const { pathname } = request.nextUrl;
+  const sessionCookie = request.cookies.get('better-auth.session_token');
 
-  // Protected routes - match avec ou sans locale
-  const protectedRoutes = ['/dashboard', '/profile'];
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.includes(route),
-  );
+  // Auth routes - redirect if already connected (match /auth/* with or without locale)
+  const isAuthRoute = pathname.match(/^\/([a-z]{2}\/)?auth\//);
 
-  if (isProtectedRoute) {
+  if (isAuthRoute && sessionCookie) {
+    console.log('🔄 Auth route detected with active session, verifying...');
+
+    try {
+      const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+      const res = await fetch(`${backendUrl}/api/auth/get-session`, {
+        headers: {
+          cookie: `better-auth.session_token=${sessionCookie.value}`,
+        },
+      });
+
+      if (res.status === 200) {
+        const sessionData = await res.json();
+        console.log('✅ User is connected, redirecting to dashboard');
+
+        // Redirect to dashboard if ADMIN, otherwise to home
+        const redirectUrl =
+          sessionData.user.role === 'ADMIN' ? '/dashboard' : '/';
+        return NextResponse.redirect(new URL(redirectUrl, request.url));
+      }
+    } catch (error) {
+      console.error('❌ Error verifying session for auth route:', error);
+      // Continue to auth page if session verification fails
+    }
+  }
+
+  // Protected routes - match /dashboard/* with or without locale
+  const isDashboardRoute = pathname.match(/^\/([a-z]{2}\/)?dashboard/);
+
+  if (isDashboardRoute) {
     console.log('🔒 Protected route detected');
-    const sessionCookie = request.cookies.get('better-auth.session_token');
 
     if (!sessionCookie) {
       console.log('❌ No session cookie found, redirecting to home');
@@ -42,11 +68,8 @@ export async function middleware(request: NextRequest) {
       const sessionData = await res.json();
       console.log('✅ Session Data:', sessionData);
 
-      // Check role for dashboard
-      if (
-        pathname.includes('/dashboard') &&
-        sessionData.user.role !== 'ADMIN'
-      ) {
+      // Check role for dashboard - only ADMIN can access
+      if (sessionData.user.role !== 'ADMIN') {
         console.log('❌ User is not ADMIN, redirecting to home');
         return NextResponse.redirect(new URL('/', request.url));
       }

@@ -1,4 +1,5 @@
 'use client';
+
 import { cn } from '@/lib/utils';
 import {
   Card,
@@ -10,64 +11,55 @@ import {
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
-import PasswordCheck from '@/components/PasswordCheck';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth/auth-client';
 import { Button } from '@/components/ui/button';
+import { useForm } from '@tanstack/react-form';
+import { SignupFormSchema } from '@/lib/auth/type';
+import { toast } from 'sonner';
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
   const router = useRouter();
-  const [passwordChecked, setPasswordChecked] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<{
-    name?: string;
-    email?: string;
-    password?: string;
-    message?: string;
-  }>({});
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError({});
+  const form = useForm({
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+    },
+    validators: {
+      onSubmit: SignupFormSchema,
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        const { error: authError } = await authClient.signUp.email({
+          email: value.email,
+          password: value.password,
+          name: value.name,
+        });
 
-    const formData = new FormData(e.currentTarget);
-    const name = formData.get('name') as string;
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+        if (authError) {
+          toast.error(authError.message || 'Registration failed');
+          return;
+        }
 
-    try {
-      const { error: authError } = await authClient.signUp.email({
-        email,
-        password,
-        name,
-      });
-
-      if (authError) {
-        setError({ message: authError.message || 'Registration failed' });
-        setLoading(false);
-        return;
+        toast.success('Account created! Please check your email to verify.');
+        router.push('/auth/verify-email');
+      } catch (err) {
+        console.error('Registration error:', err);
+        toast.error('Failed to connect to the server. Please try again.');
       }
-
-      // Redirection après succès
-      router.push('/dashboard');
-      router.refresh();
-    } catch (err) {
-      console.error('Registration error:', err);
-      setError({
-        message: 'Failed to connect to the server. Please try again.',
-      });
-      setLoading(false);
-    }
-  };
+    },
+  });
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
@@ -79,56 +71,111 @@ export function SignupForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
+          <form
+            id="signup-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
+          >
             <FieldGroup>
+              <form.Field name="name">
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>Full Name</FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="text"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        placeholder="John Doe"
+                        aria-invalid={isInvalid}
+                        autoComplete="name"
+                      />
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+              <form.Field name="email">
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="email"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        placeholder="m@example.com"
+                        aria-invalid={isInvalid}
+                        autoComplete="email"
+                      />
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+              <form.Field name="password">
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="password"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        placeholder="••••••••"
+                        aria-invalid={isInvalid}
+                        autoComplete="new-password"
+                      />
+                      <FieldDescription className="text-xs">
+                        Must be at least 8 characters with a letter, number, and
+                        special character.
+                      </FieldDescription>
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
               <Field>
-                <FieldLabel htmlFor="name">Full Name</FieldLabel>
-                <Input
-                  name="name"
-                  id="name"
-                  type="text"
-                  placeholder="John Doe"
-                  required
-                />
-                {error.name && (
-                  <FieldDescription className="text-destructive text-xs">
-                    {error.name}
-                  </FieldDescription>
-                )}
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  name="email"
-                  placeholder="m@example.com"
-                  required
-                />
-                {error.email && (
-                  <FieldDescription className="text-destructive text-xs">
-                    {error.email}
-                  </FieldDescription>
-                )}
-              </Field>
-              <PasswordCheck setPasswordChecked={setPasswordChecked} />
-              {error.password && (
-                <FieldDescription className="text-destructive text-xs">
-                  {error.password}
-                </FieldDescription>
-              )}
-              {error.message && (
-                <FieldDescription className="text-destructive text-xs">
-                  {error.message}
-                </FieldDescription>
-              )}
-              <Field>
-                <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? 'Creating account...' : 'Create an account'}
+                <Button
+                  type="submit"
+                  disabled={form.state.isSubmitting}
+                  className="w-full"
+                >
+                  {form.state.isSubmitting
+                    ? 'Creating account...'
+                    : 'Create an account'}
                 </Button>
                 <FieldDescription className="text-center">
                   Already have an account?{' '}
-                  <a href="/auth/login">Connect here</a>
+                  <Link
+                    href="/auth/login"
+                    className="text-primary underline-offset-4 hover:underline"
+                  >
+                    Connect here
+                  </Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>
