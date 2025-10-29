@@ -47,7 +47,7 @@ const LocaleSwitcher = () => {
       <SelectContent>
         <SelectGroup>
           {routing.locales.map((loc) => (
-            <SelectItem key={loc} value={loc}>
+            <SelectItem key={loc} value={loc} className="cursor-pointer">
               <Image
                 src={`/${loc}.svg`}
                 alt={t(`locales.${loc}`)}

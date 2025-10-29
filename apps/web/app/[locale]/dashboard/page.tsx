@@ -7,18 +7,20 @@ import { SidebarInset } from '@/components/ui/sidebar';
 
 import data from './data.json';
 import { redirect } from '@/i18n/navigation';
-import { requireAdmin } from '@/lib/auth/session';
 import { useLocale } from 'next-intl';
 import { authClient } from '@/lib/auth/auth-client';
+import { useEffect } from 'react';
 
 export default function Page({}: {}) {
   const { data: session, isPending: isLoading } = authClient.useSession();
   const locale = useLocale();
 
-  if (isLoading) return null;
-  if (!session?.user?.role && session?.user.role !== 'ADMIN') {
-    redirect({ href: { pathname: '/' }, locale });
-  }
+  useEffect(() => {
+    if (isLoading) return;
+    if (!session?.user?.role && session?.user.role !== 'ADMIN') {
+      redirect({ href: { pathname: '/' }, locale });
+    }
+  }, [session, locale, isLoading]);
 
   return (
     <SidebarInset>

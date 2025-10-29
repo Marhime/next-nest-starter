@@ -28,7 +28,7 @@ model User {
   updatedAt     DateTime @default(now()) @updatedAt
 
   // Better Auth Admin plugin fields
-  role       UserRole  @default(USER)
+  role       UserRole  @default(REGULAR)
   banned     Boolean   @default(false)
   banReason  String?
   banExpires DateTime?
@@ -246,7 +246,7 @@ enum ReservationStatus {
 }
 
 enum UserRole {
-  USER
+  REGULAR
   OWNER
   AGENCY
   ADMIN

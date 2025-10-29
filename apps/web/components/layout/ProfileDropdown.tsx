@@ -35,14 +35,21 @@ const ProfileDropdown = () => {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={12}>
+        {user?.role === 'ADMIN' && (
+          <>
+            <DropdownMenuLabel>Admin</DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard">Dashboard</Link>
+            </DropdownMenuItem>
+          </>
+        )}
         {user && (
           <>
             <DropdownMenuLabel>My account</DropdownMenuLabel>
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href="/dashboard">Profile</Link>
+                <Link href="/">Profile</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>Billing</DropdownMenuItem>
             </DropdownMenuGroup>
           </>
         )}
