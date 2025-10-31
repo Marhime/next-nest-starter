@@ -3,7 +3,7 @@ import React from 'react';
 
 const page = ({ params }: { params: { propertyId: string } }) => {
   const { propertyId } = params;
-  return redirect(`/add-property/${propertyId}/overview`);
+  return redirect(`/hosting/${propertyId}/overview`);
 };
 
 export default page;

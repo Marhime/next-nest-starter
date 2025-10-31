@@ -69,7 +69,7 @@ export function CreateNewProperty({ onSuccess }: CreateNewPropertyProps) {
       if (onSuccess) {
         onSuccess(Number(property.id));
       } else {
-        router.push(`/add-property/${property.id}`);
+        router.push(`/hosting/${property.id}`);
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('errorMessage'));
@@ -175,7 +175,7 @@ export function DuplicateProperty({
       if (onSuccess) {
         onSuccess(newProperty.id);
       } else {
-        router.push(`/add-property/${newProperty.id}`);
+        router.push(`/hosting/${newProperty.id}`);
       }
     } catch {
       toast.error('Erreur lors de la duplication');

@@ -131,7 +131,7 @@ export class CreatePropertyDto {
   @IsString({ each: true })
   amenities?: string[];
 
-  @ApiPropertyOptional({ enum: PropertyStatus, default: PropertyStatus.ACTIVE })
+  @ApiPropertyOptional({ enum: PropertyStatus, default: PropertyStatus.DRAFT })
   @IsOptional()
   @IsEnum(PropertyStatus)
   status?: PropertyStatus;

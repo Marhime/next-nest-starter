@@ -25,7 +25,7 @@ export default function AddPropertyPage() {
   console.log('properties:', properties);
 
   const handlePropertyCreated = (propertyId: number) => {
-    router.push(`/add-property/${propertyId}`);
+    router.push(`/hosting/${propertyId}`);
   };
 
   if (showCreateForm) {

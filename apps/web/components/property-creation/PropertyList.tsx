@@ -72,11 +72,95 @@ function PropertyCard({
   onDuplicate,
   onDelete,
 }: PropertyCardProps) {
+  const [isPublishing, setIsPublishing] = React.useState(false);
+  const [validationResult, setValidationResult] = React.useState<{
+    isValid: boolean;
+    missingFields: string[];
+  } | null>(null);
+
   const primaryPhoto =
     property.photos?.find((p) => p.isPrimary) || property.photos?.[0];
-  const isCompleted =
-    property.status === 'ACTIVE' && property.title && property.description;
-  const isDraft = !isCompleted;
+  const isDraft = property.status === 'DRAFT';
+
+  const checkIfCanPublish = React.useCallback(async () => {
+    try {
+      const API_URL =
+        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const response = await fetch(
+        `${API_URL}/properties/${property.id}/validate`,
+        {
+          credentials: 'include',
+        },
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        setValidationResult(result);
+      }
+    } catch (error) {
+      console.error('Error checking publication status:', error);
+    }
+  }, [property.id]);
+
+  React.useEffect(() => {
+    // Vérifier si la propriété peut être publiée
+    if (isDraft) {
+      checkIfCanPublish();
+    }
+  }, [isDraft, checkIfCanPublish]);
+
+  const handlePublish = async () => {
+    setIsPublishing(true);
+    try {
+      const API_URL =
+        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const response = await fetch(
+        `${API_URL}/properties/${property.id}/publish`,
+        {
+          method: 'POST',
+          credentials: 'include',
+        },
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to publish');
+      }
+
+      toast.success('Annonce publiée avec succès !');
+      // Recharger la liste des propriétés
+      window.location.reload();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Erreur lors de la publication';
+      toast.error(message);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleUnpublish = async () => {
+    try {
+      const API_URL =
+        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const response = await fetch(
+        `${API_URL}/properties/${property.id}/unpublish`,
+        {
+          method: 'POST',
+          credentials: 'include',
+        },
+      );
+
+      if (!response.ok) throw new Error('Failed to unpublish');
+
+      toast.success('Annonce remise en brouillon');
+      window.location.reload();
+    } catch {
+      toast.error('Erreur lors de la modification');
+    }
+  };
 
   const getPrice = () => {
     if (property.nightlyPrice) {
@@ -125,7 +209,7 @@ function PropertyCard({
               Brouillon
             </Badge>
           )}
-          {isCompleted && (
+          {!isDraft && property.status === 'ACTIVE' && (
             <Badge variant="secondary" className="bg-green-500/90 text-white">
               Actif
             </Badge>
@@ -171,6 +255,22 @@ function PropertyCard({
                 Aperçu
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              {isDraft && validationResult?.isValid && (
+                <DropdownMenuItem
+                  onClick={handlePublish}
+                  disabled={isPublishing}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  {isPublishing ? 'Publication...' : 'Publier'}
+                </DropdownMenuItem>
+              )}
+              {!isDraft && property.status === 'ACTIVE' && (
+                <DropdownMenuItem onClick={handleUnpublish}>
+                  <Eye className="h-4 w-4 mr-2" />
+                  Remettre en brouillon
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => onDelete(property.id)}
                 className="text-destructive"
@@ -201,14 +301,44 @@ function PropertyCard({
         <div className="mt-2 font-semibold">{getPrice()}</div>
       </CardContent>
 
-      <CardFooter>
-        <Button
-          variant={isDraft ? 'default' : 'outline'}
-          className="w-full"
-          onClick={() => onEdit(property.id)}
-        >
-          {isDraft ? "Terminer l'annonce" : "Modifier l'annonce"}
-        </Button>
+      <CardFooter className="flex gap-2">
+        {isDraft && (
+          <>
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => onEdit(property.id)}
+            >
+              Modifier
+            </Button>
+            {validationResult?.isValid ? (
+              <Button
+                className="flex-1"
+                onClick={handlePublish}
+                disabled={isPublishing}
+              >
+                {isPublishing ? 'Publication...' : 'Publier'}
+              </Button>
+            ) : (
+              <Button
+                className="flex-1"
+                onClick={() => onEdit(property.id)}
+                variant="default"
+              >
+                Compléter
+              </Button>
+            )}
+          </>
+        )}
+        {!isDraft && (
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => onEdit(property.id)}
+          >
+            Modifier l&apos;annonce
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
@@ -238,7 +368,7 @@ export function PropertyList() {
   const router = useRouter();
 
   const handleEdit = (id: number) => {
-    router.push(`/add-property/${id}`);
+    router.push(`/hosting/${id}`);
   };
 
   const handleDuplicate = async (id: number) => {
@@ -255,7 +385,7 @@ export function PropertyList() {
       const newProperty = await response.json();
       toast.success('Annonce dupliquée avec succès !');
       mutate(); // Rafraîchir la liste
-      router.push(`/add-property/${newProperty.id}`);
+      router.push(`/hosting/${newProperty.id}`);
     } catch {
       toast.error('Erreur lors de la duplication');
     }
@@ -298,12 +428,8 @@ export function PropertyList() {
   }
 
   // Séparer les brouillons des annonces actives
-  const drafts = properties.filter(
-    (p) => p.status !== 'ACTIVE' || !p.description,
-  );
-  const active = properties.filter(
-    (p) => p.status === 'ACTIVE' && p.description,
-  );
+  const drafts = properties.filter((p) => p.status === 'DRAFT');
+  const active = properties.filter((p) => p.status === 'ACTIVE');
 
   return (
     <div className="space-y-8">

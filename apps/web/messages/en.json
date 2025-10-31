@@ -59,8 +59,8 @@
       "special": "At least one special character",
       "allMet": "Password meets all criteria"
     },
-    "passwordResetSuccessTitle": "Password Reset Email Sent",
-    "passwordResetSuccessSubtitle": "If an account with the provided email exists, a password reset link will be sent.",
+    "passwordResetSuccessTitle": "Password changed successfully",
+    "passwordResetSuccessSubtitle": "You can now log in with your new password.",
     "login": "Log In",
     "resettingPasswordFor": "Resetting password for "
   },

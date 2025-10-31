@@ -28,20 +28,20 @@ export default function AddPropertyLayout({
   useEffect(() => {
     // Si propertyId est undefined, vide, ou 'undefined' string
     if (!propertyId || propertyId === 'undefined' || propertyId === '') {
-      router.replace('/add-property');
+      router.replace('/hosting');
       return;
     }
 
     // Vérifier si propertyId est un nombre valide
     const id = Number(propertyId);
     if (isNaN(id) || id <= 0) {
-      router.replace('/add-property');
+      router.replace('/hosting');
       return;
     }
 
     // Attendre la fin du chargement pour vérifier l'erreur
     if (!isLoading && (isError || !property)) {
-      router.replace('/add-property');
+      router.replace('/hosting');
     }
   }, [propertyId, isLoading, isError, property, router, pathname]);
 
@@ -58,7 +58,7 @@ export default function AddPropertyLayout({
           <div className="flex gap-4 xl:gap-6 items-center">
             <Button onClick={() => setIsOpen?.(true)}>Questions ?</Button>
             <Button asChild variant="outline">
-              <Link href="/add-property">Save and quit</Link>
+              <Link href="/hosting">Save and quit</Link>
             </Button>
           </div>
         </div>
@@ -68,7 +68,7 @@ export default function AddPropertyLayout({
             {currentStep !== undefined && steps[currentStep - 1] && (
               <Button variant="link" className="underline text-md">
                 <Link
-                  href={`/add-property/${propertyId}/${steps[currentStep - 1]}`}
+                  href={`/hosting/${propertyId}/${steps[currentStep - 1]}`}
                 >
                   Back
                 </Link>
@@ -82,7 +82,7 @@ export default function AddPropertyLayout({
                 <Link
                   href={
                     currentStep !== undefined && steps[currentStep + 1]
-                      ? `/add-property/${propertyId}/${steps[currentStep + 1]}`
+                      ? `/hosting/${propertyId}/${steps[currentStep + 1]}`
                       : `/property/${propertyId}/preview`
                   }
                 >

@@ -139,4 +139,69 @@ export class PropertiesController {
   ) {
     return this.propertiesService.remove(id, session.user.id);
   }
+
+  @Get(':id/validate')
+  @ApiOperation({
+    summary: 'Validate if property can be published',
+    description: 'Check if all required fields are filled',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Validation result',
+    schema: {
+      properties: {
+        isValid: { type: 'boolean' },
+        canPublish: { type: 'boolean' },
+        missingFields: { type: 'array', items: { type: 'string' } },
+      },
+    },
+  })
+  @ApiResponse({ status: 404, description: 'Property not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  validateProperty(
+    @Param('id', ParseIntPipe) id: number,
+    @Session() session: UserSession,
+  ) {
+    return this.propertiesService.validatePropertyForPublishing(
+      id,
+      session.user.id,
+    );
+  }
+
+  @Post(':id/publish')
+  @ApiOperation({
+    summary: 'Publish a property',
+    description: 'Change status from DRAFT to ACTIVE',
+  })
+  @ApiResponse({ status: 200, description: 'Property published successfully' })
+  @ApiResponse({
+    status: 400,
+    description: 'Cannot publish - missing required fields',
+  })
+  @ApiResponse({ status: 404, description: 'Property not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  publishProperty(
+    @Param('id', ParseIntPipe) id: number,
+    @Session() session: UserSession,
+  ) {
+    return this.propertiesService.publishProperty(id, session.user.id);
+  }
+
+  @Post(':id/unpublish')
+  @ApiOperation({
+    summary: 'Unpublish a property',
+    description: 'Change status from ACTIVE to DRAFT',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Property unpublished successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Property not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  unpublishProperty(
+    @Param('id', ParseIntPipe) id: number,
+    @Session() session: UserSession,
+  ) {
+    return this.propertiesService.unpublishProperty(id, session.user.id);
+  }
 }

@@ -116,7 +116,7 @@ function PropertyTypeSelection({ className }: { className?: string }) {
       setIsOpen?.(false);
 
       // Rediriger vers la page d'ajout de propriété
-      router.push(`/add-property/${property.id}`);
+      router.push(`/hosting/${property.id}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('errorMessage'));
       setSelectedType(null);

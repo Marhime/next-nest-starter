@@ -32,7 +32,7 @@ export class PropertiesService {
         ...data,
         userId,
         amenities: amenities || [],
-        status: data.status || PropertyStatus.ACTIVE,
+        status: data.status || PropertyStatus.DRAFT, // Par défaut en brouillon
         currency: data.currency || Currency.MXN,
       },
       include: {
@@ -83,7 +83,7 @@ export class PropertiesService {
         userId,
         propertyType: createPropertyMinimalDto.propertyType,
         title: defaultTitles[createPropertyMinimalDto.propertyType],
-        status: PropertyStatus.ACTIVE,
+        status: PropertyStatus.DRAFT, // Les nouvelles propriétés sont en brouillon
         currency: Currency.MXN,
         amenities: [],
       },
@@ -272,6 +272,140 @@ export class PropertiesService {
 
     return this.prisma.property.delete({
       where: { id },
+    });
+  }
+
+  /**
+   * Valider si une propriété peut être publiée
+   * Retourne un objet avec isValid et les champs manquants
+   */
+  async validatePropertyForPublishing(id: number, userId: string) {
+    const property = await this.findOne(id);
+
+    // Vérifier la propriété
+    if (property.userId !== userId) {
+      throw new NotFoundException(
+        `Property with ID ${id} not found or you don't have permission to access it`,
+      );
+    }
+
+    const missingFields: string[] = [];
+    const requiredFields: Record<string, any> = {
+      title: property.title,
+      description: property.description,
+      propertyType: property.propertyType,
+    };
+
+    // Vérifier qu'au moins un type de prix est défini
+    if (
+      !property.monthlyPrice &&
+      !property.nightlyPrice &&
+      !property.salePrice
+    ) {
+      missingFields.push('price (monthly, nightly, or sale price required)');
+    }
+
+    // Vérifier les champs requis de base
+    Object.entries(requiredFields).forEach(([field, value]) => {
+      if (!value) {
+        missingFields.push(field);
+      }
+    });
+
+    // Pour les locations et ventes, certains champs sont requis
+    if (property.listingType) {
+      const locationRequiredFields: Record<string, any> = {
+        address: property.address,
+        city: property.city,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        area: property.area,
+      };
+
+      Object.entries(locationRequiredFields).forEach(([field, value]) => {
+        if (!value) {
+          missingFields.push(field);
+        }
+      });
+    }
+
+    // Au moins une photo est requise
+    if (!property.photos || property.photos.length === 0) {
+      missingFields.push('photos (at least one photo required)');
+    }
+
+    const isValid = missingFields.length === 0;
+
+    return {
+      isValid,
+      missingFields,
+      canPublish: isValid,
+    };
+  }
+
+  /**
+   * Publier une propriété (passer de DRAFT à ACTIVE)
+   */
+  async publishProperty(id: number, userId: string) {
+    // Valider d'abord
+    const validation = await this.validatePropertyForPublishing(id, userId);
+
+    if (!validation.isValid) {
+      throw new Error(
+        `Cannot publish property. Missing required fields: ${validation.missingFields.join(', ')}`,
+      );
+    }
+
+    // Mettre à jour le statut
+    return this.prisma.property.update({
+      where: { id },
+      data: {
+        status: PropertyStatus.ACTIVE,
+        updatedAt: new Date(),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        photos: true,
+      },
+    });
+  }
+
+  /**
+   * Remettre une propriété en brouillon
+   */
+  async unpublishProperty(id: number, userId: string) {
+    const property = await this.findOne(id);
+
+    if (property.userId !== userId) {
+      throw new NotFoundException(
+        `Property with ID ${id} not found or you don't have permission to modify it`,
+      );
+    }
+
+    return this.prisma.property.update({
+      where: { id },
+      data: {
+        status: PropertyStatus.DRAFT,
+        updatedAt: new Date(),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        photos: true,
+      },
     });
   }
 

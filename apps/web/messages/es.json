@@ -59,8 +59,8 @@
       "special": "Al menos un carácter especial",
       "allMet": "La contraseña cumple con todos los criterios"
     },
-    "passwordResetSuccessTitle": "Correo de restablecimiento enviado",
-    "passwordResetSuccessSubtitle": "Si existe una cuenta con el correo electrónico proporcionado, se enviará un enlace de restablecimiento de contraseña.",
+    "passwordResetSuccessTitle": "Contraseña cambiada con éxito",
+    "passwordResetSuccessSubtitle": "Ahora puedes iniciar sesión con tu nueva contraseña.",
     "login": "Iniciar Sesión",
     "resettingPasswordFor": "Restableciendo la contraseña para "
   },
