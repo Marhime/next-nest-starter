@@ -15,10 +15,15 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { PropertiesService } from './properties.service';
-import { CreatePropertyDto } from '@/src/properties/dto/create-property.dto';
+import { CreatePropertyMinimalDto } from '@/src/properties/dto/create-property-minimal.dto';
 import { UpdatePropertyDto } from '@/src/properties/dto/update-property.dto';
 import { QueryPropertyDto } from '@/src/properties/dto/query-property.dto';
-import { AllowAnonymous, AuthGuard } from '@thallesp/nestjs-better-auth';
+import {
+  AllowAnonymous,
+  AuthGuard,
+  Session,
+  UserSession,
+} from '@thallesp/nestjs-better-auth';
 
 @ApiTags('properties')
 @Controller('properties')
@@ -27,11 +32,22 @@ export class PropertiesController {
   constructor(private readonly propertiesService: PropertiesService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new property' })
+  @ApiOperation({
+    summary: 'Create a new property (minimal)',
+    description:
+      'Creates a property with only the type. Use PATCH to complete the property details later.',
+  })
   @ApiResponse({ status: 201, description: 'Property created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  create(@Body() createPropertyDto: CreatePropertyDto) {
-    return this.propertiesService.create(createPropertyDto);
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  create(
+    @Body() createPropertyDto: CreatePropertyMinimalDto,
+    @Session() session: UserSession,
+  ) {
+    return this.propertiesService.createMinimal(
+      createPropertyDto,
+      session.user.id,
+    );
   }
 
   @Get()
@@ -64,13 +80,24 @@ export class PropertiesController {
     return this.propertiesService.searchNearby(latitude, longitude, radius);
   }
 
+  @Get('user/me')
+  @ApiOperation({ summary: 'Get all properties of the authenticated user' })
+  @ApiResponse({
+    status: 200,
+    description: 'User properties retrieved successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  findMyProperties(@Session() session: UserSession) {
+    return this.propertiesService.findByUser(session.user.id);
+  }
+
   @Get('user/:userId')
   @ApiOperation({ summary: 'Get all properties of a specific user' })
   @ApiResponse({
     status: 200,
     description: 'User properties retrieved successfully',
   })
-  findByUser(@Param('userId', ParseIntPipe) userId: string) {
+  findByUser(@Param('userId') userId: string) {
     return this.propertiesService.findByUser(userId);
   }
 
@@ -87,11 +114,17 @@ export class PropertiesController {
   @ApiOperation({ summary: 'Update a property' })
   @ApiResponse({ status: 200, description: 'Property updated successfully' })
   @ApiResponse({ status: 404, description: 'Property not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updatePropertyDto: UpdatePropertyDto,
+    @Session() session: UserSession,
   ) {
-    return this.propertiesService.update(id, updatePropertyDto);
+    return this.propertiesService.update(
+      id,
+      updatePropertyDto,
+      session.user.id,
+    );
   }
 
   @Delete(':id')
@@ -99,7 +132,11 @@ export class PropertiesController {
   @ApiOperation({ summary: 'Delete a property' })
   @ApiResponse({ status: 204, description: 'Property deleted successfully' })
   @ApiResponse({ status: 404, description: 'Property not found' })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.propertiesService.remove(id);
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Session() session: UserSession,
+  ) {
+    return this.propertiesService.remove(id, session.user.id);
   }
 }

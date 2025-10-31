@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { LogoutButton } from '../LogoutButton';
 import { HelpButton } from '../ui/HelpButton';
 import { authClient } from '@/lib/auth/auth-client';
+import { AddPropertyButton } from '../AddPropertyButton';
 
 const ProfileDropdown = () => {
   const { data: session, isPending: isLoading } = authClient.useSession();
@@ -50,15 +51,17 @@ const ProfileDropdown = () => {
               <DropdownMenuItem asChild>
                 <Link href="/">Profile</Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <AddPropertyButton variant="link">
+                  Ajouter un bien
+                </AddPropertyButton>
+              </DropdownMenuItem>
             </DropdownMenuGroup>
           </>
         )}
 
         <HelpButton />
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Lorem</DropdownMenuItem>
-        <DropdownMenuItem>Ladentium</DropdownMenuItem>
-        <DropdownMenuItem>Oficina</DropdownMenuItem>
+
         <DropdownMenuSeparator />
 
         {user ? (

@@ -1,0 +1,42 @@
+{
+  "verification": {
+    "subject": "✉️ Verify your email address",
+    "title": "Email Verification",
+    "greeting": "Hello {name},",
+    "thankYou": "Thank you for signing up!",
+    "instructions": "To complete your registration, please verify your email address by clicking the button below:",
+    "button": "Verify my email",
+    "orCopy": "Or copy this link into your browser:",
+    "expiresIn": "⚠️ This link expires in 24 hours.",
+    "notYou": "If you didn't create an account, please ignore this email.",
+    "regards": "Best regards,",
+    "team": "The Team",
+    "footer": "You are receiving this email because a registration was made with this address."
+  },
+  "welcome": {
+    "subject": "🎉 Welcome!",
+    "title": "Welcome!",
+    "greeting": "Hello {name},",
+    "message": "We are delighted to welcome you to our platform!",
+    "accountCreated": "Your account has been successfully created. You can now log in and enjoy all our services.",
+    "questions": "If you have any questions, feel free to contact us.",
+    "button": "Log in",
+    "regards": "Best regards,",
+    "team": "The Team",
+    "footer": "You are receiving this email because you registered on our platform."
+  },
+  "passwordReset": {
+    "subject": "🔒 Password reset",
+    "title": "Password Reset",
+    "greeting": "Hello {name},",
+    "requested": "You requested to reset your password.",
+    "instructions": "Click the button below to create a new password:",
+    "button": "Reset my password",
+    "orCopy": "Or copy this link into your browser:",
+    "expiresIn": "⚠️ This link is valid for 1 hour.",
+    "notYou": "⛔ If you didn't request this reset, ignore this email and your password will remain unchanged.",
+    "regards": "Best regards,",
+    "team": "The Team",
+    "footer": "You are receiving this email because a reset request was made for your account."
+  }
+}

@@ -26,10 +26,12 @@ export class CreatePropertyDto {
   propertyType: PropertyType;
 
   @ApiProperty({ enum: ListingType })
+  @IsOptional()
   @IsEnum(ListingType)
   listingType: ListingType;
 
   @ApiProperty({ description: 'Property title' })
+  @IsOptional()
   @IsString()
   title: string;
 

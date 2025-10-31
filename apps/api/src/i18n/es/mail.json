@@ -1,0 +1,42 @@
+{
+  "verification": {
+    "subject": "✉️ Verifica tu dirección de correo",
+    "title": "Verificación de correo",
+    "greeting": "Hola {name},",
+    "thankYou": "¡Gracias por registrarte!",
+    "instructions": "Para completar tu registro, por favor verifica tu dirección de correo haciendo clic en el botón a continuación:",
+    "button": "Verificar mi correo",
+    "orCopy": "O copia este enlace en tu navegador:",
+    "expiresIn": "⚠️ Este enlace expira en 24 horas.",
+    "notYou": "Si no creaste una cuenta, ignora este correo.",
+    "regards": "Saludos cordiales,",
+    "team": "El equipo",
+    "footer": "Estás recibiendo este correo porque se realizó un registro con esta dirección."
+  },
+  "welcome": {
+    "subject": "🎉 ¡Bienvenido!",
+    "title": "¡Bienvenido!",
+    "greeting": "Hola {name},",
+    "message": "¡Estamos encantados de darte la bienvenida a nuestra plataforma!",
+    "accountCreated": "Tu cuenta ha sido creada con éxito. Ahora puedes iniciar sesión y disfrutar de todos nuestros servicios.",
+    "questions": "Si tienes alguna pregunta, no dudes en contactarnos.",
+    "button": "Iniciar sesión",
+    "regards": "Saludos cordiales,",
+    "team": "El equipo",
+    "footer": "Estás recibiendo este correo porque te registraste en nuestra plataforma."
+  },
+  "passwordReset": {
+    "subject": "🔒 Restablecimiento de contraseña",
+    "title": "Restablecimiento de contraseña",
+    "greeting": "Hola {name},",
+    "requested": "Solicitaste restablecer tu contraseña.",
+    "instructions": "Haz clic en el botón a continuación para crear una nueva contraseña:",
+    "button": "Restablecer mi contraseña",
+    "orCopy": "O copia este enlace en tu navegador:",
+    "expiresIn": "⚠️ Este enlace es válido por 1 hora.",
+    "notYou": "⛔ Si no solicitaste este restablecimiento, ignora este correo y tu contraseña permanecerá sin cambios.",
+    "regards": "Saludos cordiales,",
+    "team": "El equipo",
+    "footer": "Estás recibiendo este correo porque se realizó una solicitud de restablecimiento para tu cuenta."
+  }
+}

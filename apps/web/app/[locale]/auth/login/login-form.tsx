@@ -26,6 +26,7 @@ import { authClient } from '@/lib/auth/auth-client';
 import { useForm } from '@tanstack/react-form';
 import { LoginFormSchema } from '@/lib/auth/type';
 import { toast } from 'sonner';
+import { useGlobalStore } from '../../store';
 
 export function LoginForm({
   className,
@@ -34,11 +35,13 @@ export function LoginForm({
   const session = authClient.useSession();
   const locale = useLocale();
   const t = useTranslations('LoginForm');
+  const tErrors = useTranslations('Errors.LoginForm');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { passwordResetEmail, clearPasswordResetEmail } = useGlobalStore();
 
   const form = useForm({
     defaultValues: {
-      email: '',
+      email: passwordResetEmail || '',
       password: '',
     },
     validators: {
@@ -53,16 +56,19 @@ export function LoginForm({
         });
 
         if (authError) {
-          setErrorMessage(authError.message || 'Login failed');
-          toast.error(authError.message || 'Login failed');
+          setErrorMessage(authError.message || tErrors('loginFailed'));
+          toast.error(authError.message || tErrors('loginFailed'));
           return;
         }
 
-        toast.success('Login successful!');
+        // Nettoyer l'email du store après une connexion réussie
+        clearPasswordResetEmail?.();
+
+        toast.success(tErrors('loginSuccess'));
         return data;
       } catch (err) {
         console.error('Login error:', err);
-        toast.error('Failed to connect to the server. Please try again.');
+        toast.error(tErrors('serverError'));
       }
     },
   });
@@ -199,7 +205,7 @@ export function LoginForm({
                   disabled={form.state.isSubmitting}
                   className="w-full"
                 >
-                  {form.state.isSubmitting ? 'Logging in...' : t('submit')}
+                  {form.state.isSubmitting ? t('submitting') : t('submit')}
                 </Button>
                 <FieldDescription className="text-center">
                   {t('signup')}{' '}

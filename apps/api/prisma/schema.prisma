@@ -96,9 +96,9 @@ model Property {
   userId String
 
   propertyType PropertyType @map("property_type")
-  listingType  ListingType  @map("listing_type")
+  listingType  ListingType? @map("listing_type")
 
-  title        String
+  title        String?
   description  String?
   monthlyPrice Decimal? @map("monthly_price") @db.Decimal(10, 2)
   nightlyPrice Decimal? @map("nightly_price") @db.Decimal(10, 2)
@@ -120,7 +120,7 @@ model Property {
 
   amenities Json?
 
-  status        PropertyStatus @default(ACTIVE)
+  status        PropertyStatus @default(DRAFT)
   availableFrom DateTime?      @map("available_from")
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -226,6 +226,7 @@ enum Currency {
 }
 
 enum PropertyStatus {
+  DRAFT
   ACTIVE
   RENTED
   SOLD

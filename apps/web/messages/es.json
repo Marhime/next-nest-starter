@@ -29,11 +29,127 @@
     "continueWith": "O continúa con",
     "email": "Correo electrónico",
     "password": "Contraseña",
+    "confirm-password": "Confirmar Contraseña",
+    "newPassword": "Nueva contraseña",
+    "confirmNewPassword": "Confirmar nueva contraseña",
+    "sendResetLink": "Enviar enlace de restablecimiento",
+    "resetPasswordTitle": "Restablecer la contraseña",
+    "resetPasswordSubtitle": "Elige una nueva contraseña para tu cuenta",
+    "resetPasswordSubmit": "Restablecer",
+    "requestResetTitle": "¿Olvidaste tu contraseña?",
+    "requestResetSubtitle": "Ingresa tu correo para recibir un enlace de restablecimiento",
     "remember": "Recuérdame",
     "forgot": "¿Olvidaste tu contraseña?",
     "signup": "¿No tienes una cuenta?",
     "signupLinkText": "Regístrate",
-    "agree": "Al iniciar sesión, aceptas nuestros Términos de Servicio y Política de Privacidad.",
-    "submit": "Iniciar Sesión"
+    "agree": "Al iniciar sesión, aceptas nuestros",
+    "termsOfService": "Términos de Servicio",
+    "and": "y",
+    "privacyPolicy": "Política de Privacidad",
+    "submit": "Iniciar Sesión",
+    "submitting": "Iniciando sesión...",
+    "createAccount": "Crear una cuenta",
+    "creatingAccount": "Creando cuenta...",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+    "connectHere": "Conéctate aquí",
+    "passwordCriteria": {
+      "length": "Al menos 8 caracteres",
+      "uppercase": "Al menos una letra mayúscula",
+      "number": "Al menos un número",
+      "special": "Al menos un carácter especial",
+      "allMet": "La contraseña cumple con todos los criterios"
+    },
+    "passwordResetSuccessTitle": "Correo de restablecimiento enviado",
+    "passwordResetSuccessSubtitle": "Si existe una cuenta con el correo electrónico proporcionado, se enviará un enlace de restablecimiento de contraseña.",
+    "login": "Iniciar Sesión",
+    "resettingPasswordFor": "Restableciendo la contraseña para "
+  },
+  "Errors": {
+    "LoginForm": {
+      "name": "El nombre debe tener al menos 2 caracteres.",
+      "email": "Por favor ingrese un correo electrónico válido.",
+      "password": "La contraseña debe tener al menos 8 caracteres.",
+      "invalidCredentials": "Credenciales inválidas. Por favor intente de nuevo.",
+      "emailTaken": "Este correo ya está registrado. Por favor use un correo diferente.",
+      "default": "Ocurrió un error durante el registro. Por favor intente de nuevo.",
+      "loginFailed": "Error al iniciar sesión",
+      "loginSuccess": "¡Inicio de sesión exitoso!",
+      "registrationFailed": "Error en el registro",
+      "registrationSuccess": "¡Cuenta creada! Por favor revise su correo.",
+      "requestFailed": "Error en la solicitud",
+      "serverError": "No se pudo conectar con el servidor. Por favor intente de nuevo.",
+      "passwordResetSuccess": "Correo de restablecimiento enviado. Por favor revise su bandeja de entrada.",
+      "passwordResetFailed": "Error al restablecer la contraseña",
+      "passwordChangeSuccess": "La contraseña ha sido modificada con éxito.",
+      "unexpectedError": "Ocurrió un error inesperado."
+    },
+    "Generic": {
+      "required": "Este campo es obligatorio.",
+      "invalidFormat": "El formato de este campo es inválido.",
+      "server": "No se pudo conectar con el servidor. Por favor intente de nuevo."
+    }
+  },
+  "SignupForm": {
+    "title": "Crear tu cuenta",
+    "subtitle": "Ingresa tu correo abajo para crear tu cuenta",
+    "fullName": "Nombre completo",
+    "fullNamePlaceholder": "Juan Pérez",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "juan@ejemplo.com",
+    "password": "Contraseña",
+    "passwordPlaceholder": "••••••••",
+    "passwordDescription": "Debe tener al menos 8 caracteres con una letra, un número y un carácter especial.",
+    "submit": "Crear una cuenta",
+    "submitting": "Creando cuenta...",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+    "connectHere": "Conéctate aquí",
+    "agreeTerms": "Al continuar, aceptas nuestros",
+    "termsOfService": "Términos de Servicio",
+    "and": "y",
+    "privacyPolicy": "Política de Privacidad"
+  },
+  "PropertyList": {
+    "noProperties": "No hay propiedades en este momento.",
+    "price": "Precio",
+    "surface": "Superficie",
+    "address": "Dirección",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar esta propiedad?",
+    "deleteError": "Error",
+    "deleting": "..."
+  },
+  "HelpModal": {
+    "title": "¿Necesitas ayuda?",
+    "description": "Esta acción no se puede deshacer.",
+    "submit": "Enviar",
+    "cancel": "Cancelar"
+  },
+  "PropertyTypeModal": {
+    "title": "Elegir tipo de propiedad",
+    "description": "Selecciona el tipo de propiedad que deseas agregar",
+    "cancel": "Cancelar",
+    "house": {
+      "label": "Casa",
+      "description": "Casa independiente con jardín"
+    },
+    "apartment": {
+      "label": "Apartamento",
+      "description": "Apartamento en residencia"
+    },
+    "land": {
+      "label": "Terreno",
+      "description": "Terreno edificable o agrícola"
+    },
+    "creating": "Creando...",
+    "successMessage": "¡Propiedad creada con éxito!",
+    "errorMessage": "Error al crear la propiedad"
+  },
+  "AddPropertyButton": {
+    "label": "Agregar una propiedad"
+  },
+  "NotFound": {
+    "title": "404 - Página no encontrada",
+    "description": "La página que buscas no existe."
   }
 }

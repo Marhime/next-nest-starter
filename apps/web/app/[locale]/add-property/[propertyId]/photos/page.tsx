@@ -1,9 +1,11 @@
 'use client';
 import React, { useEffect } from 'react';
-import { useAddPropertyStore } from '../store';
+import { useAddPropertyStore } from '../../store';
 import { AddPropertySchema } from '@/features/add-property/schema';
+import { useParams } from 'next/navigation';
 
-const SpaceTypePage = () => {
+const PhotosPage = () => {
+  const { propertyId } = useParams();
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
 
   useEffect(() => {
@@ -12,7 +14,11 @@ const SpaceTypePage = () => {
 
   const setData = useAddPropertyStore((state) => state.setData);
 
-  return <div>SpaceTypePage</div>;
+  const onSubmit = (data: AddPropertySchema) => {
+    setData(data);
+  };
+
+  return <div>Photos page for property {propertyId}</div>;
 };
 
-export default SpaceTypePage;
+export default PhotosPage;

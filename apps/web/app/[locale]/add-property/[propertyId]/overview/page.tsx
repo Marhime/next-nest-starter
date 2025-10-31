@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect } from 'react';
-import { useAddPropertyStore } from '../store';
+import { useAddPropertyStore } from '../../store';
 import Image from 'next/image';
 
 const OverviewPage = () => {
@@ -16,7 +16,6 @@ const OverviewPage = () => {
   useEffect(() => {
     // wait it is hydrated
     setCurrentStep?.(0);
-    if (hasShownHelpDrawer) return;
     setIsOpen?.(true);
     setHasShownHelpDrawer?.(true);
   }, [setCurrentStep, setIsOpen, setHasShownHelpDrawer, hasShownHelpDrawer]);

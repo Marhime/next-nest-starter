@@ -1,28 +1,14 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { MailService } from './mail.service';
 import { MailController } from './mail.controller';
-import { MailerModule } from '@nestjs-modules/mailer';
+import { ResendModule } from './resend.module';
+import { EmailTemplateService } from './email-template.service';
 
 @Module({
-  imports: [
-    MailerModule.forRoot({
-      transport: {
-        host: process.env.MAIL_HOST || 'smtp.example.com',
-        port: parseInt(process.env.MAIL_PORT || '587'),
-        secure: false,
-        auth: {
-          user: process.env.MAIL_USER || 'user@example.com',
-          pass: process.env.MAIL_PASSWORD || 'password',
-        },
-      },
-      defaults: {
-        from: process.env.MAIL_FROM || '"nest-modules" <modules@nestjs.com>',
-      },
-      
-    }),
-  ],
+  imports: [ConfigModule, ResendModule],
   controllers: [MailController],
-  providers: [MailService],
+  providers: [MailService, EmailTemplateService],
   exports: [MailService],
 })
 export class MailModule {}

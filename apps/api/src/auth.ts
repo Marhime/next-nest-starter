@@ -1,11 +1,13 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { PrismaClient } from '@/generated/prisma';
-import { Resend } from 'resend';
 import { admin, customSession } from 'better-auth/plugins';
+import {
+  sendPasswordResetEmail,
+  sendVerificationEmail,
+} from './mail/mail.service';
 
 const prisma = new PrismaClient();
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -14,34 +16,27 @@ export const auth = betterAuth({
   trustedOrigins: [process.env.WEB_URL],
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true, // Requiert la vérification d'email pour se connecter
+    requireEmailVerification: true,
+    sendResetPassword: async ({ user, token }) => {
+      // TODO: Detect user's preferred language from database
+      const email = user.email as string;
+      const name = (user.name as string) || 'User';
+      await sendPasswordResetEmail(email, name, token, 'en');
+    },
+    onPasswordReset: async ({ user }) => {
+      console.log(`Password for user ${user.email} has been reset.`);
+    },
   },
   emailVerification: {
-    sendOnSignUp: true, // Envoie automatiquement l'email lors de l'inscription
-    sendOnSignIn: true, // Envoie un email si l'utilisateur tente de se connecter sans avoir vérifié son email
+    sendOnSignUp: true,
+    sendOnSignIn: true,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, token }) => {
-      // URL de vérification personnalisée avec le token
-      const verificationUrl = `${process.env.WEB_URL}/auth/verify-email?token=${token}`;
-
       try {
-        await resend.emails.send({
-          from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
-          to: user.email,
-          subject: 'Vérifiez votre adresse email',
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2>Bienvenue !</h2>
-              <p>Merci de vous être inscrit. Veuillez cliquer sur le lien ci-dessous pour vérifier votre adresse email :</p>
-              <a href="${process.env.WEB_URL}/auth/verify-email?token=${token}" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0;">
-                Vérifier mon email
-              </a>
-              <p>Ou copiez ce lien dans votre navigateur :</p>
-              <p style="color: #666; word-break: break-all;">${verificationUrl}</p>
-              <p style="color: #999; font-size: 12px; margin-top: 30px;">Ce lien expire dans 24 heures.</p>
-            </div>
-          `,
-        });
+        // TODO: Detect user's preferred language from database
+        const email = user.email as string;
+        const name = (user.name as string) || 'User';
+        await sendVerificationEmail(email, name, token, 'en');
       } catch (error) {
         console.error('Error sending verification email:', error);
         throw error;
@@ -51,13 +46,13 @@ export const auth = betterAuth({
   plugins: [
     admin({
       defaultRole: 'REGULAR',
-      adminRoles: ['ADMIN'], // Seuls les users avec le rôle 'ADMIN' ont les privilèges admin
+      adminRoles: ['ADMIN'],
     }),
     customSession(async ({ user, session }) => {
       return {
         user: {
           ...user,
-          role: user.role, // Ajoute le rôle dans la réponse
+          role: user.role,
         },
         session,
       };

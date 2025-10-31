@@ -29,16 +29,127 @@
     "continueWith": "Ou continue avec",
     "email": "Email",
     "password": "Mot de passe",
+    "confirm-password": "Confirmer le mot de passe",
+    "newPassword": "Nouveau mot de passe",
+    "confirmNewPassword": "Confirmer le nouveau mot de passe",
+    "sendResetLink": "Envoyer le lien de réinitialisation",
+    "resetPasswordTitle": "Réinitialiser le mot de passe",
+    "resetPasswordSubtitle": "Choisis un nouveau mot de passe pour ton compte",
+    "resetPasswordSubmit": "Réinitialiser",
+    "requestResetTitle": "Mot de passe oublié ?",
+    "requestResetSubtitle": "Entre ton email pour recevoir un lien de réinitialisation",
     "remember": "Se souvenir de moi",
     "forgot": "Mot de passe oublié ?",
     "signup": "Tu n'as pas de compte ?",
     "signupLinkText": "Inscris-toi",
     "agree": "En te connectant, tu acceptes nos",
     "termsOfService": "Conditions d'Utilisation",
+    "and": "et",
     "privacyPolicy": "Politique de Confidentialité",
     "submit": "Se Connecter",
-    "error": {
-      "invalidCredentials": "Identifiants invalides. Veuillez réessayer."
+    "submitting": "Connexion...",
+    "createAccount": "Créer un compte",
+    "creatingAccount": "Création du compte...",
+    "alreadyHaveAccount": "Tu as déjà un compte ?",
+    "connectHere": "Connecte-toi ici",
+    "passwordCriteria": {
+      "length": "Au moins 8 caractères",
+      "uppercase": "Au moins une lettre majuscule",
+      "number": "Au moins un chiffre",
+      "special": "Au moins un caractère spécial",
+      "allMet": "Le mot de passe répond à tous les critères"
+    },
+    "passwordResetSuccessTitle": "Mot de passe réinitialisé avec succès.",
+    "passwordResetSuccessSubtitle": "Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.",
+    "login": "Se connecter",
+    "resettingPasswordFor": "Réinitialisation du mot de passe pour "
+  },
+  "Errors": {
+    "LoginForm": {
+      "name": "Le nom doit contenir au moins 2 caractères.",
+      "email": "Veuillez entrer une adresse email valide.",
+      "password": "Le mot de passe doit contenir au moins 8 caractères.",
+      "invalidCredentials": "Identifiants invalides. Veuillez réessayer.",
+      "emailTaken": "Cet email est déjà enregistré. Veuillez utiliser un email différent.",
+      "default": "Une erreur s'est produite lors de l'inscription. Veuillez réessayer.",
+      "loginFailed": "Échec de la connexion",
+      "loginSuccess": "Connexion réussie !",
+      "registrationFailed": "Échec de l'inscription",
+      "registrationSuccess": "Compte créé ! Veuillez vérifier votre email.",
+      "requestFailed": "Échec de la requête",
+      "serverError": "Impossible de se connecter au serveur. Veuillez réessayer.",
+      "passwordResetSuccess": "Email de réinitialisation envoyé. Veuillez vérifier votre boîte de réception.",
+      "passwordResetFailed": "Échec de la réinitialisation du mot de passe",
+      "passwordChangeSuccess": "Le mot de passe a été modifié avec succès.",
+      "unexpectedError": "Une erreur inattendue s'est produite."
+    },
+    "Generic": {
+      "required": "Ce champ est requis.",
+      "invalidFormat": "Le format de ce champ est invalide.",
+      "server": "Impossible de se connecter au serveur. Veuillez réessayer."
     }
+  },
+  "SignupForm": {
+    "title": "Créer votre compte",
+    "subtitle": "Entrez votre email ci-dessous pour créer votre compte",
+    "fullName": "Nom complet",
+    "fullNamePlaceholder": "Jean Dupont",
+    "email": "Email",
+    "emailPlaceholder": "jean@exemple.com",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "••••••••",
+    "passwordDescription": "Doit contenir au moins 8 caractères avec une lettre, un chiffre et un caractère spécial.",
+    "submit": "Créer un compte",
+    "submitting": "Création du compte...",
+    "alreadyHaveAccount": "Tu as déjà un compte ?",
+    "connectHere": "Connecte-toi ici",
+    "agreeTerms": "En continuant, tu acceptes nos",
+    "termsOfService": "Conditions d'Utilisation",
+    "and": "et",
+    "privacyPolicy": "Politique de Confidentialité"
+  },
+  "PropertyList": {
+    "noProperties": "Aucun bien immobilier pour le moment.",
+    "price": "Prix",
+    "surface": "Surface",
+    "address": "Adresse",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce bien ?",
+    "deleteError": "Erreur",
+    "deleting": "..."
+  },
+  "HelpModal": {
+    "title": "As-tu besoin d'aide ?",
+    "description": "Cette action ne peut pas être annulée.",
+    "submit": "Envoyer",
+    "cancel": "Annuler"
+  },
+  "PropertyTypeModal": {
+    "title": "Choisir le type de bien",
+    "description": "Sélectionnez le type de bien que vous souhaitez ajouter",
+    "cancel": "Annuler",
+    "house": {
+      "label": "Maison",
+      "description": "Maison individuelle avec jardin"
+    },
+    "apartment": {
+      "label": "Appartement",
+      "description": "Appartement en résidence"
+    },
+    "land": {
+      "label": "Terrain",
+      "description": "Terrain constructible ou agricole"
+    },
+    "creating": "Création en cours...",
+    "successMessage": "Bien créé avec succès !",
+    "errorMessage": "Erreur lors de la création du bien"
+  },
+  "AddPropertyButton": {
+    "label": "Ajouter un bien"
+  },
+  "NotFound": {
+    "title": "404 - Page non trouvée",
+    "description": "La page que vous recherchez n'existe pas."
   }
 }

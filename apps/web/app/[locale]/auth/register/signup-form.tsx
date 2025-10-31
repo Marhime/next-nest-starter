@@ -23,12 +23,15 @@ import { Button } from '@/components/ui/button';
 import { useForm } from '@tanstack/react-form';
 import { SignupFormSchema } from '@/lib/auth/type';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
   const router = useRouter();
+  const t = useTranslations('SignupForm');
+  const tErrors = useTranslations('Errors.LoginForm');
 
   const form = useForm({
     defaultValues: {
@@ -48,15 +51,15 @@ export function SignupForm({
         });
 
         if (authError) {
-          toast.error(authError.message || 'Registration failed');
+          toast.error(authError.message || tErrors('registrationFailed'));
           return;
         }
 
-        toast.success('Account created! Please check your email to verify.');
+        toast.success(tErrors('registrationSuccess'));
         router.push('/auth/verify-email');
       } catch (err) {
         console.error('Registration error:', err);
-        toast.error('Failed to connect to the server. Please try again.');
+        toast.error(tErrors('serverError'));
       }
     },
   });
@@ -65,10 +68,8 @@ export function SignupForm({
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Create your account</CardTitle>
-          <CardDescription>
-            Enter your email below to create your account
-          </CardDescription>
+          <CardTitle className="text-xl">{t('title')}</CardTitle>
+          <CardDescription>{t('subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -85,7 +86,9 @@ export function SignupForm({
                     field.state.meta.isTouched && !field.state.meta.isValid;
                   return (
                     <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>Full Name</FieldLabel>
+                      <FieldLabel htmlFor={field.name}>
+                        {t('fullName')}
+                      </FieldLabel>
                       <Input
                         id={field.name}
                         name={field.name}
@@ -93,7 +96,7 @@ export function SignupForm({
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
-                        placeholder="John Doe"
+                        placeholder={t('fullNamePlaceholder')}
                         aria-invalid={isInvalid}
                         autoComplete="name"
                       />
@@ -110,7 +113,7 @@ export function SignupForm({
                     field.state.meta.isTouched && !field.state.meta.isValid;
                   return (
                     <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                      <FieldLabel htmlFor={field.name}>{t('email')}</FieldLabel>
                       <Input
                         id={field.name}
                         name={field.name}
@@ -118,7 +121,7 @@ export function SignupForm({
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
-                        placeholder="m@example.com"
+                        placeholder={t('emailPlaceholder')}
                         aria-invalid={isInvalid}
                         autoComplete="email"
                       />
@@ -135,7 +138,9 @@ export function SignupForm({
                     field.state.meta.isTouched && !field.state.meta.isValid;
                   return (
                     <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                      <FieldLabel htmlFor={field.name}>
+                        {t('password')}
+                      </FieldLabel>
                       <Input
                         id={field.name}
                         name={field.name}
@@ -143,13 +148,12 @@ export function SignupForm({
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
-                        placeholder="••••••••"
+                        placeholder={t('passwordPlaceholder')}
                         aria-invalid={isInvalid}
                         autoComplete="new-password"
                       />
                       <FieldDescription className="text-xs">
-                        Must be at least 8 characters with a letter, number, and
-                        special character.
+                        {t('passwordDescription')}
                       </FieldDescription>
                       {isInvalid && (
                         <FieldError errors={field.state.meta.errors} />
@@ -164,17 +168,15 @@ export function SignupForm({
                   disabled={form.state.isSubmitting}
                   className="w-full"
                 >
-                  {form.state.isSubmitting
-                    ? 'Creating account...'
-                    : 'Create an account'}
+                  {form.state.isSubmitting ? t('submitting') : t('submit')}
                 </Button>
                 <FieldDescription className="text-center">
-                  Already have an account?{' '}
+                  {t('alreadyHaveAccount')}{' '}
                   <Link
                     href="/auth/login"
                     className="text-primary underline-offset-4 hover:underline"
                   >
-                    Connect here
+                    {t('connectHere')}
                   </Link>
                 </FieldDescription>
               </Field>
@@ -183,8 +185,8 @@ export function SignupForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{' '}
-        and <a href="#">Privacy Policy</a>.
+        {t('agreeTerms')} <a href="#">{t('termsOfService')}</a> {t('and')}{' '}
+        <a href="#">{t('privacyPolicy')}</a>.
       </FieldDescription>
     </div>
   );

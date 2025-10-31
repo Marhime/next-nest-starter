@@ -1,0 +1,42 @@
+{
+  "verification": {
+    "subject": "✉️ Vérifiez votre adresse email",
+    "title": "Vérification d'email",
+    "greeting": "Bonjour {name},",
+    "thankYou": "Merci de vous être inscrit !",
+    "instructions": "Pour finaliser votre inscription, veuillez vérifier votre adresse email en cliquant sur le bouton ci-dessous :",
+    "button": "Vérifier mon email",
+    "orCopy": "Ou copiez ce lien dans votre navigateur :",
+    "expiresIn": "⚠️ Ce lien expire dans 24 heures.",
+    "notYou": "Si vous n'avez pas créé de compte, ignorez cet email.",
+    "regards": "Cordialement,",
+    "team": "L'équipe",
+    "footer": "Vous recevez cet email car une inscription a été effectuée avec cette adresse."
+  },
+  "welcome": {
+    "subject": "🎉 Bienvenue !",
+    "title": "Bienvenue !",
+    "greeting": "Bonjour {name},",
+    "message": "Nous sommes ravis de vous accueillir sur notre plateforme !",
+    "accountCreated": "Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter et profiter de tous nos services.",
+    "questions": "Si vous avez des questions, n'hésitez pas à nous contacter.",
+    "button": "Se connecter",
+    "regards": "Cordialement,",
+    "team": "L'équipe",
+    "footer": "Vous recevez cet email car vous vous êtes inscrit sur notre plateforme."
+  },
+  "passwordReset": {
+    "subject": "🔒 Réinitialisation de mot de passe",
+    "title": "Réinitialisation de mot de passe",
+    "greeting": "Bonjour {name},",
+    "requested": "Vous avez demandé à réinitialiser votre mot de passe.",
+    "instructions": "Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe :",
+    "button": "Réinitialiser mon mot de passe",
+    "orCopy": "Ou copiez ce lien dans votre navigateur :",
+    "expiresIn": "⚠️ Ce lien est valide pendant 1 heure.",
+    "notYou": "⛔ Si vous n'avez pas demandé cette réinitialisation, ignorez cet email et votre mot de passe restera inchangé.",
+    "regards": "Cordialement,",
+    "team": "L'équipe",
+    "footer": "Vous recevez cet email car une demande de réinitialisation a été effectuée pour votre compte."
+  }
+}

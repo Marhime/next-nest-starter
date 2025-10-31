@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { deleteProperty } from '@/lib/actions/properties';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 
 type Property = {
   id: string;
@@ -17,9 +18,10 @@ type Property = {
 
 export function PropertyList({ properties }: { properties: Property[] }) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const t = useTranslations('PropertyList');
 
   async function handleDelete(id: string) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce bien ?')) {
+    if (!confirm(t('deleteConfirm'))) {
       return;
     }
 
@@ -27,7 +29,7 @@ export function PropertyList({ properties }: { properties: Property[] }) {
     const result = await deleteProperty(id);
 
     if (!result.success) {
-      alert(`Erreur: ${result.error}`);
+      alert(`${t('deleteError')}: ${result.error}`);
     }
 
     setDeletingId(null);
@@ -37,7 +39,7 @@ export function PropertyList({ properties }: { properties: Property[] }) {
     return (
       <Card>
         <CardContent className="p-6 text-center text-muted-foreground">
-          Aucun bien immobilier pour le moment.
+          {t('noProperties')}
         </CardContent>
       </Card>
     );
@@ -56,22 +58,25 @@ export function PropertyList({ properties }: { properties: Property[] }) {
             </p>
             <div className="space-y-1 text-sm mb-4">
               <p>
-                <strong>Prix:</strong> {property.price.toLocaleString('fr-FR')} €
+                <strong>{t('price')}:</strong>{' '}
+                {property.price.toLocaleString('fr-FR')} €
               </p>
               <p>
-                <strong>Surface:</strong> {property.surface} m²
+                <strong>{t('surface')}:</strong> {property.surface} m²
               </p>
               <p>
-                <strong>Adresse:</strong> {property.address}
+                <strong>{t('address')}:</strong> {property.address}
               </p>
             </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => (window.location.href = `/dashboard/properties/${property.id}/edit`)}
+                onClick={() =>
+                  (window.location.href = `/dashboard/properties/${property.id}/edit`)
+                }
               >
-                ✏️ Modifier
+                ✏️ {t('edit')}
               </Button>
               <Button
                 variant="destructive"
@@ -79,7 +84,9 @@ export function PropertyList({ properties }: { properties: Property[] }) {
                 onClick={() => handleDelete(property.id)}
                 disabled={deletingId === property.id}
               >
-                {deletingId === property.id ? '...' : '🗑️ Supprimer'}
+                {deletingId === property.id
+                  ? t('deleting')
+                  : `🗑️ ${t('delete')}`}
               </Button>
             </div>
           </CardContent>

@@ -3,20 +3,89 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePropertyDto } from '@/src/properties/dto/create-property.dto';
 import { UpdatePropertyDto } from '@/src/properties/dto/update-property.dto';
 import { QueryPropertyDto } from '@/src/properties/dto/query-property.dto';
+import { CreatePropertyMinimalDto } from '@/src/properties/dto/create-property-minimal.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '@/generated/prisma';
+import { Prisma, PropertyStatus, Currency } from '@/generated/prisma';
 
 @Injectable()
 export class PropertiesService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createPropertyDto: CreatePropertyDto) {
+  /**
+   * Créer une propriété avec données complètes
+   * @deprecated Utiliser createMinimal pour l'initialisation, puis update pour compléter
+   */
+  async create(createPropertyDto: CreatePropertyDto, userId: string) {
     const { amenities, ...data } = createPropertyDto;
+
+    // Valider que l'utilisateur existe
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
 
     return this.prisma.property.create({
       data: {
         ...data,
+        userId,
         amenities: amenities || [],
+        status: data.status || PropertyStatus.ACTIVE,
+        currency: data.currency || Currency.MXN,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        photos: true,
+      },
+    });
+  }
+
+  /**
+   * Créer une propriété minimale (seulement le type)
+   * Recommandé pour l'initialisation rapide
+   */
+  async createMinimal(
+    createPropertyMinimalDto: CreatePropertyMinimalDto,
+    userId: string,
+  ) {
+    // Valider que l'utilisateur existe
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // Générer un titre par défaut basé sur le type de propriété
+    const defaultTitles = {
+      HOUSE: 'New House',
+      APARTMENT: 'New Apartment',
+      LAND: 'New Land',
+      HOTEL: 'New Hotel',
+      HOSTEL: 'New Hostel',
+      GUESTHOUSE: 'New Guesthouse',
+      ROOM: 'New Room',
+    };
+
+    // Créer la propriété avec des valeurs par défaut
+    return this.prisma.property.create({
+      data: {
+        userId,
+        propertyType: createPropertyMinimalDto.propertyType,
+        title: defaultTitles[createPropertyMinimalDto.propertyType],
+        status: PropertyStatus.ACTIVE,
+        currency: Currency.MXN,
+        amenities: [],
       },
       include: {
         user: {
@@ -154,8 +223,19 @@ export class PropertiesService {
     return property;
   }
 
-  async update(id: number, updatePropertyDto: UpdatePropertyDto) {
-    await this.findOne(id); // Check if exists
+  async update(
+    id: number,
+    updatePropertyDto: UpdatePropertyDto,
+    userId?: string,
+  ) {
+    const property = await this.findOne(id);
+
+    // Si un userId est fourni, vérifier que l'utilisateur est bien le propriétaire
+    if (userId && property.userId !== userId) {
+      throw new NotFoundException(
+        `Property with ID ${id} not found or you don't have permission to update it`,
+      );
+    }
 
     const { amenities, ...data } = updatePropertyDto;
 
@@ -164,6 +244,7 @@ export class PropertiesService {
       data: {
         ...data,
         ...(amenities && { amenities }),
+        updatedAt: new Date(), // Mettre à jour explicitement le timestamp
       },
       include: {
         user: {
@@ -179,8 +260,15 @@ export class PropertiesService {
     });
   }
 
-  async remove(id: number) {
-    await this.findOne(id); // Check if exists
+  async remove(id: number, userId?: string) {
+    const property = await this.findOne(id);
+
+    // Si un userId est fourni, vérifier que l'utilisateur est bien le propriétaire
+    if (userId && property.userId !== userId) {
+      throw new NotFoundException(
+        `Property with ID ${id} not found or you don't have permission to delete it`,
+      );
+    }
 
     return this.prisma.property.delete({
       where: { id },

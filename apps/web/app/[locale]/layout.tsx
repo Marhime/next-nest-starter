@@ -6,6 +6,7 @@ import { Inter } from 'next/font/google';
 import { routing } from '@/i18n/routing';
 import '../globals.css';
 import { HelpModal } from '@/components/HelpModal';
+import { PropertyTypeModal } from '@/components/PropertyTypeModal';
 import { Toaster } from '@/components/ui/sonner';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -45,10 +46,13 @@ export default async function LocaleLayout({
   return (
     <html className="h-full" lang={locale}>
       <body className={clsx(inter.className, 'flex h-full flex-col')}>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          {children}
+          <HelpModal />
+          <PropertyTypeModal />
+        </NextIntlClientProvider>
         <Toaster />
       </body>
-      <HelpModal />
     </html>
   );
 }

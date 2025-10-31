@@ -4,7 +4,17 @@
   "tasks": {
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": [
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "DATABASE_URL",
+        "WEB_URL",
+        "BACKEND_URL",
+        "RESEND_API_KEY",
+        "EMAIL_FROM",
+        "NEXT_WEB_URL"
+      ]
     },
     "build": {
       "dependsOn": ["^build"],
@@ -15,7 +25,9 @@
         "DATABASE_URL",
         "WEB_URL",
         "BACKEND_URL",
-        "RESEND_API_KEY"
+        "RESEND_API_KEY",
+        "EMAIL_FROM",
+        "NEXT_WEB_URL"
       ]
     },
 

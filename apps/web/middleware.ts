@@ -18,7 +18,8 @@ export async function middleware(request: NextRequest) {
     console.log('🔄 Auth route detected with active session, verifying...');
 
     try {
-      const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+      const backendUrl =
+        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       const res = await fetch(`${backendUrl}/api/auth/get-session`, {
         headers: {
           cookie: `better-auth.session_token=${sessionCookie.value}`,
@@ -53,7 +54,8 @@ export async function middleware(request: NextRequest) {
 
     // Verify the session with your backend
     try {
-      const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+      const backendUrl =
+        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       const res = await fetch(`${backendUrl}/api/auth/get-session`, {
         headers: {
           cookie: `better-auth.session_token=${sessionCookie.value}`,
