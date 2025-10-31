@@ -67,9 +67,7 @@ export default function AddPropertyLayout({
           <div className="flex justify-between items-center">
             {currentStep !== undefined && steps[currentStep - 1] && (
               <Button variant="link" className="underline text-md">
-                <Link
-                  href={`/hosting/${propertyId}/${steps[currentStep - 1]}`}
-                >
+                <Link href={`/hosting/${propertyId}/${steps[currentStep - 1]}`}>
                   Back
                 </Link>
               </Button>
