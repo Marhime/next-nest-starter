@@ -71,10 +71,8 @@ const PasswordChangeForm = ({
       <div className={cn('flex flex-col gap-6', className)} {...props}>
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-xl">Mail sent!</CardTitle>
-            <CardDescription>
-              Please check your inbox for the password reset link.
-            </CardDescription>
+            <CardTitle className="text-xl">{t('mailSentTitle')}</CardTitle>
+            <CardDescription>{t('mailSentSubtitle')}</CardDescription>
           </CardHeader>
 
           <CardContent>
@@ -85,7 +83,7 @@ const PasswordChangeForm = ({
               }}
               className="w-full"
             >
-              Resend Email
+              {t('resendEmail')}
             </Button>
           </CardContent>
         </Card>
