@@ -47,7 +47,7 @@ export default function AddPropertyLayout({
 
   // Afficher un loader pendant la vérification
 
-  const steps = ['overview', 'space-type', 'location', 'photos', 'about'];
+  const steps = ['overview', 'type', 'location', 'photos', 'about'];
   const maxSteps = steps.length - 1;
 
   return (

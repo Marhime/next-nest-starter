@@ -109,6 +109,7 @@ model Property {
   city       String?
   state      String?
   postalCode String?  @map("postal_code")
+  country    String?  @default("FR")
   latitude   Decimal? @db.Decimal(10, 8)
   longitude  Decimal? @db.Decimal(11, 8)
 
@@ -140,12 +141,13 @@ model Property {
 }
 
 model Photo {
-  id         Int      @id @default(autoincrement())
-  propertyId Int      @map("property_id")
-  url        String
-  order      Int      @default(0)
-  isPrimary  Boolean  @default(false) @map("is_primary")
-  createdAt  DateTime @default(now()) @map("created_at")
+  id           Int      @id @default(autoincrement())
+  propertyId   Int      @map("property_id")
+  url          String
+  thumbnailUrl String?  @map("thumbnail_url")
+  order        Int      @default(0)
+  isPrimary    Boolean  @default(false) @map("is_primary")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 

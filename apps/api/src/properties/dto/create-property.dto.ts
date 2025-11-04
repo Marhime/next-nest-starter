@@ -83,6 +83,14 @@ export class CreatePropertyDto {
   @IsString()
   postalCode?: string;
 
+  @ApiPropertyOptional({
+    description: 'Country code (ISO 3166-1 alpha-2)',
+    default: 'FR',
+  })
+  @IsOptional()
+  @IsString()
+  country?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()

@@ -1,0 +1,51 @@
+/* Leaflet custom styles for the app */
+
+/* Ensure Leaflet CSS is loaded properly */
+.leaflet-container {
+  font-family: inherit;
+  z-index: 0;
+}
+
+/* Fix for marker icon positioning */
+.leaflet-marker-icon {
+  margin-left: -12px !important;
+  margin-top: -41px !important;
+}
+
+/* Custom popup styling to match app design */
+.leaflet-popup-content-wrapper {
+  border-radius: 0.5rem;
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.leaflet-popup-content {
+  margin: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+/* Zoom control styling */
+.leaflet-control-zoom {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+}
+
+.leaflet-control-zoom a {
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--background));
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: hsl(var(--accent));
+}
+
+/* Attribution styling */
+.leaflet-control-attribution {
+  font-size: 0.75rem;
+  background-color: hsl(var(--background) / 0.8);
+  backdrop-filter: blur(4px);
+}

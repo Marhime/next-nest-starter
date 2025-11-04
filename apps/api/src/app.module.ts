@@ -8,16 +8,22 @@ import { ConfigModule } from '@nestjs/config';
 import { PropertiesModule } from './properties/properties.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { MailModule } from './mail/mail.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import {
   I18nModule,
   AcceptLanguageResolver,
   HeaderResolver,
 } from 'nestjs-i18n';
+import { PhotosModule } from './photos/photos.module';
 import * as path from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    ServeStaticModule.forRoot({
+      rootPath: path.join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
+    }),
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {
@@ -31,6 +37,7 @@ import * as path from 'path';
     PropertiesModule,
     PrismaModule,
     MailModule,
+    PhotosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
