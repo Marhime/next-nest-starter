@@ -1,0 +1,55 @@
+{
+  "errors": {
+    "generic": {
+      "serverError": "Ocurrió un error en el servidor.",
+      "notFound": "Recurso no encontrado.",
+      "unauthorized": "No estás autorizado para realizar esta acción.",
+      "forbidden": "Acceso prohibido.",
+      "badRequest": "Solicitud inválida.",
+      "validationError": "Error de validación."
+    },
+    "auth": {
+      "invalidCredentials": "Credenciales inválidas.",
+      "emailAlreadyExists": "Esta dirección de correo ya está registrada.",
+      "userNotFound": "Usuario no encontrado.",
+      "tokenExpired": "El token ha expirado.",
+      "tokenInvalid": "Token inválido.",
+      "emailNotVerified": "Correo electrónico no verificado.",
+      "passwordTooWeak": "La contraseña es demasiado débil."
+    },
+    "property": {
+      "notFound": "Propiedad no encontrada.",
+      "unauthorized": "No estás autorizado para modificar esta propiedad.",
+      "invalidData": "Datos de propiedad inválidos.",
+      "creationFailed": "Error al crear la propiedad.",
+      "updateFailed": "Error al actualizar la propiedad.",
+      "deleteFailed": "Error al eliminar la propiedad."
+    },
+    "photo": {
+      "uploadFailed": "Error al subir la foto.",
+      "invalidFormat": "Formato de imagen inválido.",
+      "fileTooLarge": "El archivo es demasiado grande.",
+      "deleteFailed": "Error al eliminar la foto.",
+      "notFound": "Foto no encontrada."
+    }
+  },
+  "success": {
+    "property": {
+      "created": "Propiedad creada con éxito.",
+      "updated": "Propiedad actualizada con éxito.",
+      "deleted": "Propiedad eliminada con éxito."
+    },
+    "photo": {
+      "uploaded": "Foto subida con éxito.",
+      "deleted": "Foto eliminada con éxito.",
+      "setPrimary": "Foto principal establecida con éxito."
+    },
+    "auth": {
+      "registered": "Registro exitoso.",
+      "loggedIn": "Inicio de sesión exitoso.",
+      "loggedOut": "Cierre de sesión exitoso.",
+      "passwordReset": "Contraseña restablecida con éxito.",
+      "emailVerified": "Correo verificado con éxito."
+    }
+  }
+}

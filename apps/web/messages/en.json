@@ -117,7 +117,41 @@
     "delete": "Delete",
     "deleteConfirm": "Are you sure you want to delete this property?",
     "deleteError": "Error",
-    "deleting": "..."
+    "deleting": "...",
+    "publishSuccess": "Listing published successfully!",
+    "draftSuccess": "Listing set to draft",
+    "updateError": "Error updating",
+    "duplicateSuccess": "Listing duplicated successfully!",
+    "duplicateError": "Error duplicating",
+    "deleteSuccess": "Listing deleted successfully!",
+    "draft": "Draft",
+    "published": "Published",
+    "status": "Status",
+    "modify": "Modify",
+    "duplicate": "Duplicate",
+    "preview": "Preview",
+    "publish": "Publish",
+    "publishing": "Publishing...",
+    "setToDraft": "Set to draft",
+    "bedrooms": "bed.",
+    "bathrooms": "bath.",
+    "night": "night",
+    "month": "month",
+    "priceNotSet": "Price not set",
+    "complete": "Complete",
+    "propertyTypes": {
+      "HOUSE": "House",
+      "APARTMENT": "Apartment",
+      "LAND": "Land",
+      "HOTEL": "Hotel",
+      "HOSTEL": "Hostel",
+      "GUESTHOUSE": "Guesthouse",
+      "ROOM": "Room"
+    },
+    "drafts": "Drafts",
+    "activeListings": "Active listings",
+    "deleteConfirmMessage": "Are you sure you want to delete this listing?",
+    "editListing": "Edit listing"
   },
   "HelpModal": {
     "title": "Do you need help?",
@@ -148,8 +182,176 @@
   "AddPropertyButton": {
     "label": "Add a property"
   },
+  "HostingPage": {
+    "back": "← Back",
+    "duplicateFrom": "Create from existing listing",
+    "selectToDuplicate": "Select the listing you want to duplicate",
+    "welcomeTitle": "Welcome to your hosting space",
+    "welcomeSubtitle": "Create and manage your real estate listings with ease",
+    "getStarted": "Get Started",
+    "createNew": "Create a new listing",
+    "createNewDescription": "Start from scratch with your new property",
+    "duplicateListing": "Duplicate a listing",
+    "duplicateDescription": "Save time by starting from an existing listing",
+    "yourListings": "Your listings",
+    "newListing": "New listing",
+    "loading": "Loading your listings...",
+    "noListingsYet": "You don't have any listings yet",
+    "createFirst": "Start by creating your first real estate listing",
+    "createMyFirst": "Create my first listing",
+    "helpCenter": "Help Center",
+    "helpCenterDescription": "Find answers to your questions and tips for creating attractive listings",
+    "expertTips": "Expert Tips",
+    "expertTipsDescription": "Discover best practices to optimize your listings and attract more visitors",
+    "community": "Community",
+    "communityDescription": "Connect with other hosts and share your experiences"
+  },
   "NotFound": {
     "title": "404 - Page Not Found",
     "description": "The page you are looking for does not exist."
+  },
+  "PropertyForm": {
+    "propertyTypes": {
+      "house": "House",
+      "apartment": "Apartment",
+      "land": "Land",
+      "hotel": "Hotel",
+      "hostel": "Hostel",
+      "guesthouse": "Guesthouse",
+      "room": "Room"
+    },
+    "listingTypes": {
+      "shortTerm": "Short term",
+      "shortTermDescription": "Seasonal rental",
+      "longTerm": "Long term",
+      "longTermDescription": "Monthly rental",
+      "sale": "Sale",
+      "saleDescription": "For sale"
+    },
+    "labels": {
+      "propertyType": "Property type",
+      "listingType": "Listing type",
+      "pricing": "Pricing (MXN)",
+      "monthlyPrice": "Monthly price",
+      "nightlyPrice": "Nightly price",
+      "salePrice": "Sale price",
+      "perMonth": "/ month",
+      "perNight": "/ night",
+      "required": "Required",
+      "back": "Back",
+      "continue": "Continue",
+      "continueAndValidate": "Continue and validate",
+      "pricingDescription": "Define the property type and applicable rates"
+    },
+    "messages": {
+      "loading": "Loading...",
+      "updating": "Updating...",
+      "selectPropertyType": "Please select a property type",
+      "monthlyPriceRequired": "Monthly price is required for long-term rentals",
+      "nightlyPriceRequired": "Nightly price is required for short-term rentals",
+      "salePriceRequired": "Sale price is required for sales",
+      "setPriceAtLeast": "Please set at least one price",
+      "updateSuccess": "Information updated successfully!",
+      "updateError": "Error updating",
+      "monthlyPriceInfo": "Monthly price required for long-term rentals",
+      "nightlyPriceInfo": "Nightly price required for short-term rentals",
+      "salePriceInfo": "Sale price required for sales"
+    },
+    "navigation": {
+      "questions": "Questions?",
+      "saveAndQuit": "Save and quit",
+      "back": "Back",
+      "next": "Next",
+      "preview": "Preview"
+    }
+  },
+  "LocationForm": {
+    "titles": {
+      "search": "Where is your property located?",
+      "form": "Confirm your address",
+      "confirm": "Is the marker in the right place?"
+    },
+    "descriptions": {
+      "search": "Your address is only shared with guests once their reservation is confirmed.",
+      "form": "Check and complete your address information.",
+      "confirm": "Move the marker if needed to precisely position your property."
+    },
+    "labels": {
+      "searchPlaceholder": "Enter your address",
+      "street": "Street",
+      "buildingInfo": "Apartment, suite, etc.",
+      "buildingName": "Building name",
+      "postalCode": "Postal code",
+      "city": "City",
+      "state": "State",
+      "country": "Country",
+      "latitude": "Latitude",
+      "longitude": "Longitude"
+    },
+    "buttons": {
+      "back": "Back",
+      "continue": "Continue",
+      "validateAndContinue": "Validate and continue",
+      "useCurrentLocation": "Use my current location",
+      "changeAddress": "Search for an address",
+      "modifyAddress": "Modify address"
+    },
+    "messages": {
+      "loading": "Loading...",
+      "validating": "Validating...",
+      "addressRequired": "Address is required",
+      "postalCodeRequired": "Postal code is required",
+      "cityRequired": "City is required",
+      "selectAddress": "Please select an address on the map",
+      "invalidCoordinates": "Invalid coordinates, please select a new address",
+      "positionUpdated": "Position updated",
+      "addressSaved": "Address saved successfully!",
+      "updateError": "Error updating",
+      "selectedLocation": "Selected location",
+      "defaultLocation": "Puerto Escondido, Oaxaca",
+      "clickToSelect": "Click on the map to select a precise location",
+      "dragMarker": "Drag me to adjust the position",
+      "propertyLocation": "Your property's location",
+      "addressDetails": "Address details",
+      "mapInstructions": "Adjust the marker position if needed to accurately locate your property",
+      "geolocationNotSupported": "Geolocation is not supported by your browser",
+      "cannotAccessLocation": "Cannot access your location",
+      "cannotGetAddress": "Cannot retrieve your address",
+      "cannotSearchAddresses": "Cannot search addresses at the moment"
+    }
+  },
+  "PhotoUpload": {
+    "labels": {
+      "dragAndDrop": "Drag & drop photos here, or click to select",
+      "dropHere": "Drop the photos here...",
+      "uploadPhotos": "Upload Photos",
+      "uploading": "Uploading...",
+      "setAsPrimary": "Primary",
+      "delete": "Delete",
+      "deleting": "Deleting...",
+      "noPhotos": "No photos uploaded yet. Add photos to showcase your property.",
+      "photoCount": "{count} photo",
+      "photoCount_plural": "{count} photos",
+      "selected": "selected",
+      "primaryBadge": "Cover"
+    },
+    "messages": {
+      "maxFiles": "You can only upload up to {max} photos.",
+      "fileTooLarge": "Some files are too large. Maximum size is 10MB per file.",
+      "invalidFileType": "Only JPEG, PNG, and WebP images are allowed.",
+      "uploadError": "Failed to upload photos",
+      "deleteError": "Failed to delete photo",
+      "setPrimaryError": "Failed to set primary photo",
+      "maxSize": "Maximum 10MB, JPG, PNG, or WebP",
+      "confirmDelete": "Are you sure you want to delete this photo?",
+      "confirmDeleteMessage": "This action cannot be undone.",
+      "cancel": "Cancel"
+    }
+  },
+  "DuplicateProperty": {
+    "button": "Duplicate this listing",
+    "duplicating": "Duplicating...",
+    "success": "Listing duplicated successfully!",
+    "error": "Error duplicating"
   }
 }

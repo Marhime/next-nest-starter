@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useAddPropertyStore } from '../../store';
 import { useParams, useRouter } from 'next/navigation';
 import { useProperty } from '@/hooks/use-properties';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -57,6 +58,7 @@ interface AddressFormData {
 }
 
 const LocationPage = () => {
+  const t = useTranslations('LocationForm');
   const router = useRouter();
   const { propertyId } = useParams();
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
@@ -162,27 +164,25 @@ const LocationPage = () => {
   const handleFormConfirm = () => {
     // Validation du formulaire
     if (!addressForm.street) {
-      toast.error("L'adresse est requise");
+      toast.error(t('messages.addressRequired'));
       return;
     }
     if (!addressForm.postalCode) {
-      toast.error('Le code postal est requis');
+      toast.error(t('messages.postalCodeRequired'));
       return;
     }
     if (!addressForm.city) {
-      toast.error('La commune est requise');
+      toast.error(t('messages.cityRequired'));
       return;
     }
     if (!coordinates) {
-      toast.error('Veuillez sélectionner une adresse sur la carte');
+      toast.error(t('messages.selectAddress'));
       return;
     }
 
     // Vérifier que les coordonnées sont valides
     if (isNaN(coordinates.lat) || isNaN(coordinates.lng)) {
-      toast.error(
-        'Coordonnées invalides, veuillez sélectionner une nouvelle adresse',
-      );
+      toast.error(t('messages.invalidCoordinates'));
       setCurrentPhase('search');
       return;
     }
@@ -193,7 +193,7 @@ const LocationPage = () => {
 
   const handleMarkerDragEnd = (lat: number, lng: number) => {
     setCoordinates({ lat, lng });
-    toast.info('Position mise à jour');
+    toast.info(t('messages.positionUpdated'));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -201,22 +201,22 @@ const LocationPage = () => {
 
     // Validation
     if (!addressForm.street) {
-      toast.error("L'adresse est requise");
+      toast.error(t('messages.addressRequired'));
       return;
     }
 
     if (!addressForm.postalCode) {
-      toast.error('Le code postal est requis');
+      toast.error(t('messages.postalCodeRequired'));
       return;
     }
 
     if (!addressForm.city) {
-      toast.error('La commune est requise');
+      toast.error(t('messages.cityRequired'));
       return;
     }
 
     if (!coordinates) {
-      toast.error('Veuillez sélectionner une adresse sur la carte');
+      toast.error(t('messages.selectAddress'));
       return;
     }
 
@@ -252,16 +252,14 @@ const LocationPage = () => {
         throw new Error(error.message || 'Failed to update property');
       }
 
-      toast.success('Adresse enregistrée avec succès !');
+      toast.success(t('messages.addressSaved'));
       mutate(); // Refresh data
 
       // Navigate to next step
       router.push(`/hosting/${propertyId}/photos`);
     } catch (error) {
       const message =
-        error instanceof Error
-          ? error.message
-          : 'Erreur lors de la mise à jour';
+        error instanceof Error ? error.message : t('messages.updateError');
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -281,17 +279,14 @@ const LocationPage = () => {
       <Card className="w-full max-w-4xl">
         <CardHeader>
           <CardTitle>
-            {currentPhase === 'search' && 'Où est situé votre logement ?'}
-            {currentPhase === 'form' && 'Confirmez votre adresse'}
-            {currentPhase === 'confirm' && 'Le repère est-il au bon endroit ?'}
+            {currentPhase === 'search' && t('titles.search')}
+            {currentPhase === 'form' && t('titles.form')}
+            {currentPhase === 'confirm' && t('titles.confirm')}
           </CardTitle>
           <CardDescription>
-            {currentPhase === 'search' &&
-              'Votre adresse est uniquement communiquée aux voyageurs une fois leur réservation effectuée.'}
-            {currentPhase === 'form' &&
-              'Vérifiez et complétez les informations de votre adresse.'}
-            {currentPhase === 'confirm' &&
-              'Déplacez le marqueur si nécessaire pour positionner précisément votre bien.'}
+            {currentPhase === 'search' && t('descriptions.search')}
+            {currentPhase === 'form' && t('descriptions.form')}
+            {currentPhase === 'confirm' && t('descriptions.confirm')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -337,7 +332,7 @@ const LocationPage = () => {
                   onClick={() => router.push(`/hosting/${propertyId}/type`)}
                   className="flex-1"
                 >
-                  Retour
+                  {t('buttons.back')}
                 </Button>
               </div>
             </div>
@@ -358,7 +353,7 @@ const LocationPage = () => {
                   onClick={() => setCurrentPhase('search')}
                   className="flex-1"
                 >
-                  Retour
+                  {t('buttons.back')}
                 </Button>
                 <Button
                   type="button"
@@ -371,7 +366,7 @@ const LocationPage = () => {
                   }
                   className="flex-1"
                 >
-                  Continuer
+                  {t('buttons.continue')}
                 </Button>
               </div>
             </div>
@@ -403,14 +398,14 @@ const LocationPage = () => {
                       onClick={() => setCurrentPhase('form')}
                       className="flex-1"
                     >
-                      Retour
+                      {t('buttons.back')}
                     </Button>
                     <Button
                       type="button"
                       onClick={() => setCurrentPhase('search')}
                       className="flex-1"
                     >
-                      Rechercher une adresse
+                      {t('buttons.changeAddress')}
                     </Button>
                   </div>
                 </div>
@@ -464,7 +459,7 @@ const LocationPage = () => {
                         onClick={() => setCurrentPhase('form')}
                         className="flex-1"
                       >
-                        Modifier l&apos;adresse
+                        {t('buttons.modifyAddress')}
                       </Button>
                       <Button
                         type="submit"
@@ -474,10 +469,10 @@ const LocationPage = () => {
                         {isSubmitting ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Enregistrement...
+                            {t('messages.validating')}
                           </>
                         ) : (
-                          'Valider et continuer'
+                          t('buttons.validateAndContinue')
                         )}
                       </Button>
                     </div>

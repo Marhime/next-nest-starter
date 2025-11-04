@@ -117,7 +117,41 @@
     "delete": "Eliminar",
     "deleteConfirm": "¿Estás seguro de que quieres eliminar esta propiedad?",
     "deleteError": "Error",
-    "deleting": "..."
+    "deleting": "...",
+    "publishSuccess": "¡Anuncio publicado con éxito!",
+    "draftSuccess": "Anuncio puesto en borrador",
+    "updateError": "Error al actualizar",
+    "duplicateSuccess": "¡Anuncio duplicado con éxito!",
+    "duplicateError": "Error al duplicar",
+    "deleteSuccess": "¡Anuncio eliminado con éxito!",
+    "draft": "Borrador",
+    "published": "Publicado",
+    "status": "Estado",
+    "modify": "Modificar",
+    "duplicate": "Duplicar",
+    "preview": "Vista previa",
+    "publish": "Publicar",
+    "publishing": "Publicando...",
+    "setToDraft": "Volver a borrador",
+    "bedrooms": "dorm.",
+    "bathrooms": "baños",
+    "night": "noche",
+    "month": "mes",
+    "priceNotSet": "Precio no definido",
+    "complete": "Completar",
+    "propertyTypes": {
+      "HOUSE": "Casa",
+      "APARTMENT": "Apartamento",
+      "LAND": "Terreno",
+      "HOTEL": "Hotel",
+      "HOSTEL": "Albergue",
+      "GUESTHOUSE": "Casa de huéspedes",
+      "ROOM": "Habitación"
+    },
+    "drafts": "Borradores",
+    "activeListings": "Anuncios activos",
+    "deleteConfirmMessage": "¿Estás seguro de que quieres eliminar este anuncio?",
+    "editListing": "Editar anuncio"
   },
   "HelpModal": {
     "title": "¿Necesitas ayuda?",
@@ -146,10 +180,178 @@
     "errorMessage": "Error al crear la propiedad"
   },
   "AddPropertyButton": {
-    "label": "Agregar una propiedad"
+    "label": "Añadir una propiedad"
+  },
+  "HostingPage": {
+    "back": "← Atrás",
+    "duplicateFrom": "Crear desde un anuncio existente",
+    "selectToDuplicate": "Selecciona el anuncio que deseas duplicar",
+    "welcomeTitle": "Bienvenido a tu espacio de anfitrión",
+    "welcomeSubtitle": "Crea y gestiona tus anuncios inmobiliarios con facilidad",
+    "getStarted": "Empezar",
+    "createNew": "Crear un nuevo anuncio",
+    "createNewDescription": "Empezar desde cero con tu nueva propiedad",
+    "duplicateListing": "Duplicar un anuncio",
+    "duplicateDescription": "Ahorra tiempo partiendo de un anuncio existente",
+    "yourListings": "Tus anuncios",
+    "newListing": "Nuevo anuncio",
+    "loading": "Cargando tus anuncios...",
+    "noListingsYet": "Aún no tienes anuncios",
+    "createFirst": "Comienza creando tu primer anuncio inmobiliario",
+    "createMyFirst": "Crear mi primer anuncio",
+    "helpCenter": "Centro de ayuda",
+    "helpCenterDescription": "Encuentra respuestas a tus preguntas y consejos para crear anuncios atractivos",
+    "expertTips": "Consejos de expertos",
+    "expertTipsDescription": "Descubre las mejores prácticas para optimizar tus anuncios y atraer más visitantes",
+    "community": "Comunidad",
+    "communityDescription": "Conecta con otros anfitriones y comparte tus experiencias"
   },
   "NotFound": {
     "title": "404 - Página no encontrada",
     "description": "La página que buscas no existe."
+  },
+  "PropertyForm": {
+    "propertyTypes": {
+      "house": "Casa",
+      "apartment": "Apartamento",
+      "land": "Terreno",
+      "hotel": "Hotel",
+      "hostel": "Albergue",
+      "guesthouse": "Casa de huéspedes",
+      "room": "Habitación"
+    },
+    "listingTypes": {
+      "shortTerm": "Corto plazo",
+      "shortTermDescription": "Renta vacacional",
+      "longTerm": "Largo plazo",
+      "longTermDescription": "Renta mensual",
+      "sale": "Venta",
+      "saleDescription": "En venta"
+    },
+    "labels": {
+      "propertyType": "Tipo de propiedad",
+      "listingType": "Tipo de anuncio",
+      "pricing": "Precios (MXN)",
+      "monthlyPrice": "Precio mensual",
+      "nightlyPrice": "Precio por noche",
+      "salePrice": "Precio de venta",
+      "perMonth": "/ mes",
+      "perNight": "/ noche",
+      "required": "Requerido",
+      "back": "Atrás",
+      "continue": "Continuar",
+      "continueAndValidate": "Continuar y validar",
+      "pricingDescription": "Define el tipo de propiedad y las tarifas aplicables"
+    },
+    "messages": {
+      "loading": "Cargando...",
+      "updating": "Actualizando...",
+      "selectPropertyType": "Por favor selecciona un tipo de propiedad",
+      "monthlyPriceRequired": "El precio mensual es requerido para rentas de largo plazo",
+      "nightlyPriceRequired": "El precio por noche es requerido para rentas de corto plazo",
+      "salePriceRequired": "El precio de venta es requerido para ventas",
+      "setPriceAtLeast": "Por favor define al menos un precio",
+      "updateSuccess": "¡Información actualizada con éxito!",
+      "updateError": "Error al actualizar",
+      "monthlyPriceInfo": "Precio mensual requerido para rentas de largo plazo",
+      "nightlyPriceInfo": "Precio por noche requerido para rentas de corto plazo",
+      "salePriceInfo": "Precio de venta requerido para ventas"
+    },
+    "navigation": {
+      "questions": "¿Preguntas?",
+      "saveAndQuit": "Guardar y salir",
+      "back": "Atrás",
+      "next": "Siguiente",
+      "preview": "Vista previa"
+    }
+  },
+  "LocationForm": {
+    "titles": {
+      "search": "¿Dónde está ubicada tu propiedad?",
+      "form": "Confirma tu dirección",
+      "confirm": "¿El marcador está en el lugar correcto?"
+    },
+    "descriptions": {
+      "search": "Tu dirección solo se comparte con los huéspedes una vez confirmada su reserva.",
+      "form": "Verifica y completa la información de tu dirección.",
+      "confirm": "Mueve el marcador si es necesario para posicionar con precisión tu propiedad."
+    },
+    "labels": {
+      "searchPlaceholder": "Ingresa tu dirección",
+      "street": "Calle",
+      "buildingInfo": "Apartamento, suite, etc.",
+      "buildingName": "Nombre del edificio",
+      "postalCode": "Código postal",
+      "city": "Ciudad",
+      "state": "Estado",
+      "country": "País",
+      "latitude": "Latitud",
+      "longitude": "Longitud"
+    },
+    "buttons": {
+      "back": "Atrás",
+      "continue": "Continuar",
+      "validateAndContinue": "Validar y continuar",
+      "useCurrentLocation": "Usar mi ubicación actual",
+      "changeAddress": "Buscar una dirección",
+      "modifyAddress": "Modificar dirección"
+    },
+    "messages": {
+      "loading": "Cargando...",
+      "validating": "Validando...",
+      "addressRequired": "La dirección es requerida",
+      "postalCodeRequired": "El código postal es requerido",
+      "cityRequired": "La ciudad es requerida",
+      "selectAddress": "Por favor selecciona una dirección en el mapa",
+      "invalidCoordinates": "Coordenadas inválidas, por favor selecciona una nueva dirección",
+      "positionUpdated": "Posición actualizada",
+      "addressSaved": "¡Dirección guardada con éxito!",
+      "updateError": "Error al actualizar",
+      "selectedLocation": "Ubicación seleccionada",
+      "defaultLocation": "Puerto Escondido, Oaxaca",
+      "clickToSelect": "Haz clic en el mapa para seleccionar una ubicación precisa",
+      "dragMarker": "Arrástrameelo para ajustar la posición",
+      "propertyLocation": "Ubicación de tu propiedad",
+      "addressDetails": "Detalles de la dirección",
+      "mapInstructions": "Ajusta la posición del marcador si es necesario para localizar con precisión tu propiedad",
+      "geolocationNotSupported": "La geolocalización no está soportada por tu navegador",
+      "cannotAccessLocation": "No se puede acceder a tu ubicación",
+      "cannotGetAddress": "No se puede obtener tu dirección",
+      "cannotSearchAddresses": "No se pueden buscar direcciones en este momento"
+    }
+  },
+  "PhotoUpload": {
+    "labels": {
+      "dragAndDrop": "Arrastra y suelta fotos aquí, o haz clic para seleccionar",
+      "dropHere": "Suelta las fotos aquí...",
+      "uploadPhotos": "Subir fotos",
+      "uploading": "Subiendo...",
+      "setAsPrimary": "Principal",
+      "delete": "Eliminar",
+      "deleting": "Eliminando...",
+      "noPhotos": "No hay fotos subidas aún. Agrega fotos para mostrar tu propiedad.",
+      "photoCount": "{count} foto",
+      "photoCount_plural": "{count} fotos",
+      "selected": "seleccionada",
+      "primaryBadge": "Portada"
+    },
+    "messages": {
+      "maxFiles": "Solo puedes subir hasta {max} fotos.",
+      "fileTooLarge": "Algunos archivos son demasiado grandes. El tamaño máximo es de 10MB por archivo.",
+      "invalidFileType": "Solo se permiten imágenes JPEG, PNG y WebP.",
+      "uploadError": "Error al subir las fotos",
+      "deleteError": "Error al eliminar la foto",
+      "setPrimaryError": "Error al establecer la foto principal",
+      "maxSize": "Máximo 10MB, JPG, PNG o WebP",
+      "confirmDelete": "¿Estás seguro de que quieres eliminar esta foto?",
+      "confirmDeleteMessage": "Esta acción no se puede deshacer.",
+      "cancel": "Cancelar"
+    }
+  },
+  "DuplicateProperty": {
+    "button": "Duplicar este anuncio",
+    "duplicating": "Duplicando...",
+    "success": "¡Anuncio duplicado con éxito!",
+    "error": "Error al duplicar"
   }
 }

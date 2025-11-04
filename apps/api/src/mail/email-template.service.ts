@@ -11,7 +11,7 @@ export class EmailTemplateService {
   async getVerificationEmail(
     name: string,
     verificationUrl: string,
-    lang: string = 'en',
+    lang: string = 'es',
   ): Promise<{ subject: string; html: string }> {
     const t = (key: string, args?: Record<string, any>) =>
       this.i18n.translate(`mail.verification.${key}`, {
@@ -109,7 +109,7 @@ export class EmailTemplateService {
    */
   async getWelcomeEmail(
     name: string,
-    lang: string = 'en',
+    lang: string = 'es',
   ): Promise<{ subject: string; html: string }> {
     const t = (key: string, args?: Record<string, any>) =>
       this.i18n.translate(`mail.welcome.${key}`, {
@@ -194,7 +194,7 @@ export class EmailTemplateService {
   async getPasswordResetEmail(
     name: string,
     resetUrl: string,
-    lang: string = 'en',
+    lang: string = 'es',
   ): Promise<{ subject: string; html: string }> {
     const t = (key: string, args?: Record<string, any>) =>
       this.i18n.translate(`mail.passwordReset.${key}`, {

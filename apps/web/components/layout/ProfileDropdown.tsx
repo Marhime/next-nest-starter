@@ -52,9 +52,7 @@ const ProfileDropdown = () => {
                 <Link href="/">Profile</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <AddPropertyButton variant="link">
-                  Ajouter un bien
-                </AddPropertyButton>
+                <AddPropertyButton variant="link" />
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </>

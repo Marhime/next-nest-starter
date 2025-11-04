@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useAddPropertyStore } from '../../store';
 import { useParams, useRouter } from 'next/navigation';
 import { useProperty } from '@/hooks/use-properties';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -29,38 +30,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const PropertyTypeOptions = [
-  { value: 'HOUSE', label: 'Maison', icon: Home },
-  { value: 'APARTMENT', label: 'Appartement', icon: Building2 },
-  { value: 'LAND', label: 'Terrain', icon: LandPlot },
-  { value: 'HOTEL', label: 'Hôtel', icon: Hotel },
-  { value: 'HOSTEL', label: 'Auberge', icon: Building },
-  { value: 'GUESTHOUSE', label: "Maison d'hôtes", icon: House },
-  { value: 'ROOM', label: 'Chambre', icon: BedDouble },
-];
-
-const ListingTypeOptions = [
-  {
-    value: 'SHORT_TERM',
-    label: 'Court terme',
-    description: 'Location saisonnière',
-    icon: Calendar,
-  },
-  {
-    value: 'LONG_TERM',
-    label: 'Long terme',
-    description: 'Location mensuelle',
-    icon: CalendarClock,
-  },
-  {
-    value: 'SALE',
-    label: 'Vente',
-    description: 'Mise en vente',
-    icon: DollarSign,
-  },
-];
-
 const TypePage = () => {
+  const t = useTranslations('PropertyForm');
   const router = useRouter();
   const { propertyId } = useParams();
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
@@ -69,6 +40,41 @@ const TypePage = () => {
     isLoading: isLoadingProperty,
     mutate,
   } = useProperty(propertyId as string);
+
+  const PropertyTypeOptions = [
+    { value: 'HOUSE', label: t('propertyTypes.house'), icon: Home },
+    {
+      value: 'APARTMENT',
+      label: t('propertyTypes.apartment'),
+      icon: Building2,
+    },
+    { value: 'LAND', label: t('propertyTypes.land'), icon: LandPlot },
+    { value: 'HOTEL', label: t('propertyTypes.hotel'), icon: Hotel },
+    { value: 'HOSTEL', label: t('propertyTypes.hostel'), icon: Building },
+    { value: 'GUESTHOUSE', label: t('propertyTypes.guesthouse'), icon: House },
+    { value: 'ROOM', label: t('propertyTypes.room'), icon: BedDouble },
+  ];
+
+  const ListingTypeOptions = [
+    {
+      value: 'SHORT_TERM',
+      label: t('listingTypes.shortTerm'),
+      description: t('listingTypes.shortTermDescription'),
+      icon: Calendar,
+    },
+    {
+      value: 'LONG_TERM',
+      label: t('listingTypes.longTerm'),
+      description: t('listingTypes.longTermDescription'),
+      icon: CalendarClock,
+    },
+    {
+      value: 'SALE',
+      label: t('listingTypes.sale'),
+      description: t('listingTypes.saleDescription'),
+      icon: DollarSign,
+    },
+  ];
 
   console.log('Loaded property in TypePage:', property);
 
@@ -156,23 +162,23 @@ const TypePage = () => {
 
     // Validation: PropertyType obligatoire
     if (!formData.propertyType) {
-      toast.error('Veuillez sélectionner un type de bien');
+      toast.error(t('messages.selectPropertyType'));
       return;
     }
 
     // Validation conditionnelle des prix selon le ListingType
     if (formData.listingType === 'LONG_TERM' && !formData.monthlyPrice) {
-      toast.error('Le prix mensuel est requis pour une location long terme');
+      toast.error(t('messages.monthlyPriceRequired'));
       return;
     }
 
     if (formData.listingType === 'SHORT_TERM' && !formData.nightlyPrice) {
-      toast.error('Le prix par nuit est requis pour une location court terme');
+      toast.error(t('messages.nightlyPriceRequired'));
       return;
     }
 
     if (formData.listingType === 'SALE' && !formData.salePrice) {
-      toast.error('Le prix de vente est requis pour une vente');
+      toast.error(t('messages.salePriceRequired'));
       return;
     }
 
@@ -183,7 +189,7 @@ const TypePage = () => {
       !formData.nightlyPrice &&
       !formData.salePrice
     ) {
-      toast.error('Veuillez définir au moins un prix');
+      toast.error(t('messages.setPriceAtLeast'));
       return;
     }
 
@@ -219,16 +225,14 @@ const TypePage = () => {
         throw new Error(error.message || 'Failed to update property');
       }
 
-      toast.success('Informations mises à jour avec succès !');
+      toast.success(t('messages.updateSuccess'));
       mutate(); // Rafraîchir les données
 
       // Rediriger vers la prochaine étape
       router.push(`/hosting/${propertyId}/location`);
     } catch (error) {
       const message =
-        error instanceof Error
-          ? error.message
-          : 'Erreur lors de la mise à jour';
+        error instanceof Error ? error.message : t('messages.updateError');
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -247,17 +251,16 @@ const TypePage = () => {
     <div className="flex w-full h-full justify-center items-center p-4">
       <Card className="w-full max-w-2xl">
         <CardHeader>
-          <CardTitle>Type de bien et tarification</CardTitle>
-          <CardDescription>
-            Définissez le type de bien et les tarifs applicables
-          </CardDescription>
+          <CardTitle>{t('labels.propertyType')} et tarification</CardTitle>
+          <CardDescription>{t('labels.pricingDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Property Type */}
             <div className="space-y-3">
               <Label>
-                Type de bien <span className="text-red-500">*</span>
+                {t('labels.propertyType')}{' '}
+                <span className="text-red-500">*</span>
               </Label>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {PropertyTypeOptions.map((option) => {
@@ -300,7 +303,8 @@ const TypePage = () => {
             {/* Listing Type */}
             <div className="space-y-3">
               <Label>
-                Type d&apos;annonce <span className="text-red-500">*</span>
+                {t('labels.listingType')}{' '}
+                <span className="text-red-500">*</span>
               </Label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {ListingTypeOptions.map((option) => {
@@ -345,11 +349,11 @@ const TypePage = () => {
               {formData.listingType && (
                 <p className="text-sm text-muted-foreground">
                   {formData.listingType === 'LONG_TERM' &&
-                    'Prix mensuel requis pour les locations long terme'}
+                    t('messages.monthlyPriceInfo')}
                   {formData.listingType === 'SHORT_TERM' &&
-                    'Prix par nuit requis pour les locations court terme'}
+                    t('messages.nightlyPriceInfo')}
                   {formData.listingType === 'SALE' &&
-                    'Prix de vente requis pour une vente'}
+                    t('messages.salePriceInfo')}
                 </p>
               )}
             </div>
@@ -358,7 +362,7 @@ const TypePage = () => {
             {formData.listingType && (
               <div className="space-y-4">
                 <Label>
-                  Tarification (MXN){' '}
+                  {t('labels.pricing')}{' '}
                   {formData.listingType && (
                     <span className="text-red-500">*</span>
                   )}
@@ -370,7 +374,7 @@ const TypePage = () => {
                       htmlFor="monthlyPrice"
                       className="text-sm font-normal"
                     >
-                      Prix mensuel
+                      {t('labels.monthlyPrice')}
                       {formData.listingType === 'LONG_TERM' && (
                         <span className="text-red-500 ml-1">*</span>
                       )}
@@ -396,7 +400,7 @@ const TypePage = () => {
                         required={formData.listingType === 'LONG_TERM'}
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                        MXN / mois
+                        MXN {t('labels.perMonth')}
                       </span>
                     </div>
                   </div>
@@ -409,7 +413,7 @@ const TypePage = () => {
                       htmlFor="nightlyPrice"
                       className="text-sm font-normal"
                     >
-                      Prix par nuit
+                      {t('labels.nightlyPrice')}
                       {formData.listingType === 'SHORT_TERM' && (
                         <span className="text-red-500 ml-1">*</span>
                       )}
@@ -435,7 +439,7 @@ const TypePage = () => {
                         required={formData.listingType === 'SHORT_TERM'}
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                        MXN / nuit
+                        MXN {t('labels.perNight')}
                       </span>
                     </div>
                   </div>
@@ -445,7 +449,7 @@ const TypePage = () => {
                 {formData.listingType === 'SALE' && (
                   <div className="space-y-2">
                     <Label htmlFor="salePrice" className="text-sm font-normal">
-                      Prix de vente
+                      {t('labels.salePrice')}
                       {formData.listingType === 'SALE' && (
                         <span className="text-red-500 ml-1">*</span>
                       )}
@@ -486,7 +490,7 @@ const TypePage = () => {
                 onClick={() => router.push(`/hosting/${propertyId}/overview`)}
                 className="flex-1"
               >
-                Retour
+                {t('labels.back')}
               </Button>
               <Button
                 type="submit"
@@ -500,10 +504,10 @@ const TypePage = () => {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Enregistrement...
+                    {t('messages.updating')}
                   </>
                 ) : (
-                  'Continuer'
+                  t('labels.continue')
                 )}
               </Button>
             </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { deleteProperty } from '@/lib/actions/properties';
+// import { deleteProperty } from '@/lib/actions/properties';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from 'next-intl';
@@ -26,11 +26,11 @@ export function PropertyList({ properties }: { properties: Property[] }) {
     }
 
     setDeletingId(id);
-    const result = await deleteProperty(id);
+    // const result = await deleteProperty(id);
 
-    if (!result.success) {
-      alert(`${t('deleteError')}: ${result.error}`);
-    }
+    // if (!result.success) {
+    //   alert(`${t('deleteError')}: ${result.error}`);
+    // }
 
     setDeletingId(null);
   }

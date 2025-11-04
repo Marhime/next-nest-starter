@@ -1,0 +1,55 @@
+{
+  "errors": {
+    "generic": {
+      "serverError": "Une erreur s'est produite sur le serveur.",
+      "notFound": "Ressource non trouvée.",
+      "unauthorized": "Vous n'êtes pas autorisé à effectuer cette action.",
+      "forbidden": "Accès interdit.",
+      "badRequest": "Requête invalide.",
+      "validationError": "Erreur de validation."
+    },
+    "auth": {
+      "invalidCredentials": "Identifiants invalides.",
+      "emailAlreadyExists": "Cette adresse email est déjà enregistrée.",
+      "userNotFound": "Utilisateur non trouvé.",
+      "tokenExpired": "Le jeton a expiré.",
+      "tokenInvalid": "Jeton invalide.",
+      "emailNotVerified": "Adresse email non vérifiée.",
+      "passwordTooWeak": "Le mot de passe est trop faible."
+    },
+    "property": {
+      "notFound": "Bien immobilier non trouvé.",
+      "unauthorized": "Vous n'êtes pas autorisé à modifier ce bien.",
+      "invalidData": "Données du bien invalides.",
+      "creationFailed": "Échec de la création du bien.",
+      "updateFailed": "Échec de la mise à jour du bien.",
+      "deleteFailed": "Échec de la suppression du bien."
+    },
+    "photo": {
+      "uploadFailed": "Échec du téléchargement de la photo.",
+      "invalidFormat": "Format d'image invalide.",
+      "fileTooLarge": "Le fichier est trop volumineux.",
+      "deleteFailed": "Échec de la suppression de la photo.",
+      "notFound": "Photo non trouvée."
+    }
+  },
+  "success": {
+    "property": {
+      "created": "Bien créé avec succès.",
+      "updated": "Bien mis à jour avec succès.",
+      "deleted": "Bien supprimé avec succès."
+    },
+    "photo": {
+      "uploaded": "Photo téléchargée avec succès.",
+      "deleted": "Photo supprimée avec succès.",
+      "setPrimary": "Photo principale définie avec succès."
+    },
+    "auth": {
+      "registered": "Inscription réussie.",
+      "loggedIn": "Connexion réussie.",
+      "loggedOut": "Déconnexion réussie.",
+      "passwordReset": "Mot de passe réinitialisé avec succès.",
+      "emailVerified": "Email vérifié avec succès."
+    }
+  }
+}

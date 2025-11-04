@@ -1,7 +1,11 @@
 import { redirect } from 'next/navigation';
 
-const page = ({ params }: { params: { propertyId: string } }) => {
-  const { propertyId } = params;
+const page = async ({
+  params,
+}: {
+  params: Promise<{ propertyId: string }>;
+}) => {
+  const { propertyId } = await params;
 
   // redirect conditionally if propertyId is invalid
   if (!propertyId) {

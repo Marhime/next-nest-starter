@@ -25,7 +25,7 @@ import * as path from 'path';
       serveRoot: '/uploads',
     }),
     I18nModule.forRoot({
-      fallbackLanguage: 'en',
+      fallbackLanguage: 'es',
       loaderOptions: {
         path: path.join(__dirname, '/i18n/'),
         watch: true,

@@ -36,7 +36,7 @@ export class MailService {
   async sendWelcomeEmail(
     to: string,
     userName: string,
-    lang: string = 'en',
+    lang: string = 'es',
   ): Promise<void> {
     try {
       const { subject, html } = await this.emailTemplateService.getWelcomeEmail(
@@ -61,7 +61,7 @@ export class MailService {
     to: string,
     userName: string,
     verificationToken: string,
-    lang: string = 'en',
+    lang: string = 'es',
   ): Promise<void> {
     try {
       const webUrl = this.configService.get<string>('WEB_URL');
@@ -91,7 +91,7 @@ export class MailService {
     to: string,
     userName: string,
     resetToken: string,
-    lang: string = 'en',
+    lang: string = 'es',
   ): Promise<void> {
     try {
       const webUrl = this.configService.get<string>('WEB_URL');
@@ -123,7 +123,7 @@ export const sendPasswordResetEmail = async (
   email: string,
   name: string,
   resetToken: string,
-  lang: string = 'en',
+  lang: string = 'es',
 ): Promise<void> => {
   const resend = new Resend(process.env.RESEND_API_KEY);
   const webUrl = process.env.WEB_URL;
@@ -160,7 +160,7 @@ export const sendVerificationEmail = async (
   email: string,
   name: string,
   verificationToken: string,
-  lang: string = 'en',
+  lang: string = 'es',
 ): Promise<void> => {
   const resend = new Resend(process.env.RESEND_API_KEY);
   const webUrl = process.env.WEB_URL;

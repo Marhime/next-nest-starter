@@ -1,0 +1,55 @@
+{
+  "errors": {
+    "generic": {
+      "serverError": "An error occurred on the server.",
+      "notFound": "Resource not found.",
+      "unauthorized": "You are not authorized to perform this action.",
+      "forbidden": "Access forbidden.",
+      "badRequest": "Invalid request.",
+      "validationError": "Validation error."
+    },
+    "auth": {
+      "invalidCredentials": "Invalid credentials.",
+      "emailAlreadyExists": "This email address is already registered.",
+      "userNotFound": "User not found.",
+      "tokenExpired": "Token has expired.",
+      "tokenInvalid": "Invalid token.",
+      "emailNotVerified": "Email address not verified.",
+      "passwordTooWeak": "Password is too weak."
+    },
+    "property": {
+      "notFound": "Property not found.",
+      "unauthorized": "You are not authorized to modify this property.",
+      "invalidData": "Invalid property data.",
+      "creationFailed": "Failed to create property.",
+      "updateFailed": "Failed to update property.",
+      "deleteFailed": "Failed to delete property."
+    },
+    "photo": {
+      "uploadFailed": "Failed to upload photo.",
+      "invalidFormat": "Invalid image format.",
+      "fileTooLarge": "File is too large.",
+      "deleteFailed": "Failed to delete photo.",
+      "notFound": "Photo not found."
+    }
+  },
+  "success": {
+    "property": {
+      "created": "Property created successfully.",
+      "updated": "Property updated successfully.",
+      "deleted": "Property deleted successfully."
+    },
+    "photo": {
+      "uploaded": "Photo uploaded successfully.",
+      "deleted": "Photo deleted successfully.",
+      "setPrimary": "Primary photo set successfully."
+    },
+    "auth": {
+      "registered": "Registration successful.",
+      "loggedIn": "Logged in successfully.",
+      "loggedOut": "Logged out successfully.",
+      "passwordReset": "Password reset successfully.",
+      "emailVerified": "Email verified successfully."
+    }
+  }
+}

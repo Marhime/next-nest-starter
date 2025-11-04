@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -17,6 +18,7 @@ import { CreateNewProperty } from '@/components/property-creation/CreateNewPrope
 import { useUserProperties } from '@/hooks/use-properties';
 
 export default function AddPropertyPage() {
+  const t = useTranslations('HostingPage');
   const [showCreateForm, setShowCreateForm] = React.useState(false);
   const [showDuplicateFrom, setShowDuplicateFrom] = React.useState(false);
   const { properties, isLoading } = useUserProperties();
@@ -37,7 +39,7 @@ export default function AddPropertyPage() {
             onClick={() => setShowCreateForm(false)}
             className="mb-4"
           >
-            ← Retour
+            {t('back')}
           </Button>
         </div>
         <CreateNewProperty onSuccess={handlePropertyCreated} />
@@ -54,14 +56,10 @@ export default function AddPropertyPage() {
             onClick={() => setShowDuplicateFrom(false)}
             className="mb-4"
           >
-            ← Retour
+            {t('back')}
           </Button>
-          <h1 className="text-3xl font-bold">
-            Créer à partir d&apos;une annonce existante
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Sélectionnez l&apos;annonce que vous souhaitez dupliquer
-          </p>
+          <h1 className="text-3xl font-bold">{t('duplicateFrom')}</h1>
+          <p className="text-muted-foreground mt-2">{t('selectToDuplicate')}</p>
         </div>
         <PropertyList />
       </div>
@@ -75,10 +73,10 @@ export default function AddPropertyPage() {
         <div className="container mx-auto py-12 px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Bienvenue dans votre espace hôte
+              {t('welcomeTitle')}
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Créez et gérez vos annonces immobilières en toute simplicité
+              {t('welcomeSubtitle')}
             </p>
           </div>
         </div>
@@ -88,7 +86,7 @@ export default function AddPropertyPage() {
       <div className="container mx-auto py-12 px-4 max-w-6xl">
         {/* Quick Actions */}
         <div className="mb-12">
-          <h2 className="text-2xl font-semibold mb-6">Démarrer</h2>
+          <h2 className="text-2xl font-semibold mb-6">{t('getStarted')}</h2>
           <div className="grid gap-4 md:grid-cols-2">
             <Card
               className="cursor-pointer hover:shadow-lg transition-all hover:border-primary"
@@ -100,9 +98,9 @@ export default function AddPropertyPage() {
                     <Plus className="h-6 w-6" />
                   </div>
                   <div>
-                    <CardTitle>Créer une nouvelle annonce</CardTitle>
+                    <CardTitle>{t('createNew')}</CardTitle>
                     <CardDescription>
-                      Commencer de zéro avec votre nouveau bien
+                      {t('createNewDescription')}
                     </CardDescription>
                   </div>
                 </div>
@@ -123,9 +121,9 @@ export default function AddPropertyPage() {
                     <Copy className="h-6 w-6" />
                   </div>
                   <div>
-                    <CardTitle>Dupliquer une annonce</CardTitle>
+                    <CardTitle>{t('duplicateListing')}</CardTitle>
                     <CardDescription>
-                      Gagner du temps en partant d&apos;une annonce existante
+                      {t('duplicateDescription')}
                     </CardDescription>
                   </div>
                 </div>
@@ -139,11 +137,11 @@ export default function AddPropertyPage() {
         {/* Properties List */}
         <div className="mb-12">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold">Vos annonces</h2>
+            <h2 className="text-2xl font-semibold">{t('yourListings')}</h2>
             {properties.length > 0 && (
               <Button onClick={() => setShowCreateForm(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Nouvelle annonce
+                {t('newListing')}
               </Button>
             )}
           </div>
@@ -152,9 +150,7 @@ export default function AddPropertyPage() {
             <div className="text-center py-12">
               <div className="animate-pulse">
                 <HomeIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">
-                  Chargement de vos annonces...
-                </p>
+                <p className="text-muted-foreground">{t('loading')}</p>
               </div>
             </div>
           ) : properties.length === 0 ? (
@@ -163,14 +159,14 @@ export default function AddPropertyPage() {
                 <div className="text-center">
                   <HomeIcon className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
                   <h3 className="text-xl font-semibold mb-2">
-                    Vous n&apos;avez pas encore d&apos;annonce
+                    {t('noListingsYet')}
                   </h3>
                   <p className="text-muted-foreground mb-6">
-                    Commencez par créer votre première annonce immobilière
+                    {t('createFirst')}
                   </p>
                   <Button onClick={() => setShowCreateForm(true)} size="lg">
                     <Plus className="h-4 w-4 mr-2" />
-                    Créer ma première annonce
+                    {t('createMyFirst')}
                   </Button>
                 </div>
               </CardContent>
@@ -186,36 +182,28 @@ export default function AddPropertyPage() {
         <div className="grid gap-6 md:grid-cols-3">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Centre d&apos;aide</CardTitle>
+              <CardTitle className="text-lg">{t('helpCenter')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>
-                Trouvez des réponses à vos questions et des conseils pour créer
-                une annonce attractive
-              </CardDescription>
+              <CardDescription>{t('helpCenterDescription')}</CardDescription>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Conseils d&apos;expert</CardTitle>
+              <CardTitle className="text-lg">{t('expertTips')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>
-                Découvrez les meilleures pratiques pour optimiser vos annonces
-                et attirer plus de visiteurs
-              </CardDescription>
+              <CardDescription>{t('expertTipsDescription')}</CardDescription>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Communauté</CardTitle>
+              <CardTitle className="text-lg">{t('community')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>
-                Échangez avec d&apos;autres hôtes et partagez vos expériences
-              </CardDescription>
+              <CardDescription>{t('communityDescription')}</CardDescription>
             </CardContent>
           </Card>
         </div>

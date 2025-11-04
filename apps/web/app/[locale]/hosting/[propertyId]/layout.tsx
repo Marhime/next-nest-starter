@@ -8,12 +8,14 @@ import { useGlobalStore } from '../../store';
 import { useParams, useRouter } from 'next/navigation';
 import { useProperty } from '@/hooks/use-properties';
 import { usePathname } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 
 export default function AddPropertyLayout({
   children,
 }: {
   children: ReactNode;
 }) {
+  const t = useTranslations('PropertyForm');
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -56,9 +58,11 @@ export default function AddPropertyLayout({
         <div className="flex w-full justify-between p-4 xl:py-10 xl:px-12">
           <Link href="/">Logo</Link>
           <div className="flex gap-4 xl:gap-6 items-center">
-            <Button onClick={() => setIsOpen?.(true)}>Questions ?</Button>
+            <Button onClick={() => setIsOpen?.(true)}>
+              {t('navigation.questions')}
+            </Button>
             <Button asChild variant="outline">
-              <Link href="/hosting">Save and quit</Link>
+              <Link href="/hosting">{t('navigation.saveAndQuit')}</Link>
             </Button>
           </div>
         </div>
@@ -68,7 +72,7 @@ export default function AddPropertyLayout({
             {currentStep !== undefined && steps[currentStep - 1] && (
               <Button variant="link" className="underline text-md">
                 <Link href={`/hosting/${propertyId}/${steps[currentStep - 1]}`}>
-                  Back
+                  {t('navigation.back')}
                 </Link>
               </Button>
             )}
@@ -84,7 +88,9 @@ export default function AddPropertyLayout({
                       : `/property/${propertyId}/preview`
                   }
                 >
-                  {currentStep === maxSteps ? 'Preview' : 'Next'}
+                  {currentStep === maxSteps
+                    ? t('navigation.preview')
+                    : t('navigation.next')}
                 </Link>
               </Button>
               {currentStep !== undefined && steps[currentStep + 1] && (

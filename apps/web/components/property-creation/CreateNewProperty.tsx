@@ -150,6 +150,7 @@ export function DuplicateProperty({
 }: DuplicatePropertyProps) {
   const [isDuplicating, setIsDuplicating] = React.useState(false);
   const router = useRouter();
+  const t = useTranslations('DuplicateProperty');
 
   const handleDuplicate = async () => {
     setIsDuplicating(true);
@@ -170,7 +171,7 @@ export function DuplicateProperty({
 
       const newProperty = await response.json();
 
-      toast.success('Annonce dupliquée avec succès !');
+      toast.success(t('success'));
 
       if (onSuccess) {
         onSuccess(newProperty.id);
@@ -178,7 +179,7 @@ export function DuplicateProperty({
         router.push(`/hosting/${newProperty.id}`);
       }
     } catch {
-      toast.error('Erreur lors de la duplication');
+      toast.error(t('error'));
     } finally {
       setIsDuplicating(false);
     }
@@ -192,7 +193,7 @@ export function DuplicateProperty({
       className="w-full"
     >
       <Copy className="h-4 w-4 mr-2" />
-      {isDuplicating ? 'Duplication...' : 'Dupliquer cette annonce'}
+      {isDuplicating ? t('duplicating') : t('button')}
     </Button>
   );
 }

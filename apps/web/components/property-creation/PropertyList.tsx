@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserProperties } from '@/hooks/use-properties';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -72,6 +73,7 @@ function PropertyCard({
   onDuplicate,
   onDelete,
 }: PropertyCardProps) {
+  const t = useTranslations('PropertyList');
   const [isPublishing, setIsPublishing] = React.useState(false);
   const [validationResult, setValidationResult] = React.useState<{
     isValid: boolean;
@@ -127,7 +129,7 @@ function PropertyCard({
         throw new Error(error.message || 'Failed to publish');
       }
 
-      toast.success('Annonce publiée avec succès !');
+      toast.success(t('publishSuccess'));
       // Recharger la liste des propriétés
       window.location.reload();
     } catch (error) {
@@ -155,37 +157,28 @@ function PropertyCard({
 
       if (!response.ok) throw new Error('Failed to unpublish');
 
-      toast.success('Annonce remise en brouillon');
+      toast.success(t('draftSuccess'));
       window.location.reload();
     } catch {
-      toast.error('Erreur lors de la modification');
+      toast.error(t('updateError'));
     }
   };
 
   const getPrice = () => {
     if (property.nightlyPrice) {
-      return `${property.currency || 'MXN'} $${property.nightlyPrice}/nuit`;
+      return `${property.currency || 'MXN'} $${property.nightlyPrice}/${t('night')}`;
     }
     if (property.monthlyPrice) {
-      return `${property.currency || 'MXN'} $${property.monthlyPrice}/mois`;
+      return `${property.currency || 'MXN'} $${property.monthlyPrice}/${t('month')}`;
     }
     if (property.salePrice) {
       return `${property.currency || 'MXN'} $${property.salePrice}`;
     }
-    return 'Prix non défini';
+    return t('priceNotSet');
   };
 
   const getPropertyTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      HOUSE: 'Maison',
-      APARTMENT: 'Appartement',
-      LAND: 'Terrain',
-      HOTEL: 'Hôtel',
-      HOSTEL: 'Auberge',
-      GUESTHOUSE: "Maison d'hôtes",
-      ROOM: 'Chambre',
-    };
-    return labels[type] || type;
+    return t(`propertyTypes.${type}` as 'propertyTypes.HOUSE') || type;
   };
 
   return (
@@ -206,12 +199,12 @@ function PropertyCard({
         <div className="absolute top-2 right-2 flex gap-2">
           {isDraft && (
             <Badge variant="secondary" className="bg-yellow-500/90 text-white">
-              Brouillon
+              {t('draft')}
             </Badge>
           )}
           {!isDraft && property.status === 'ACTIVE' && (
             <Badge variant="secondary" className="bg-green-500/90 text-white">
-              Actif
+              {t('published')}
             </Badge>
           )}
         </div>
@@ -244,15 +237,15 @@ function PropertyCard({
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onEdit(property.id)}>
                 <Edit className="h-4 w-4 mr-2" />
-                Modifier
+                {t('modify')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onDuplicate(property.id)}>
                 <Copy className="h-4 w-4 mr-2" />
-                Dupliquer
+                {t('duplicate')}
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Eye className="h-4 w-4 mr-2" />
-                Aperçu
+                {t('preview')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {isDraft && validationResult?.isValid && (
@@ -261,13 +254,13 @@ function PropertyCard({
                   disabled={isPublishing}
                 >
                   <Eye className="h-4 w-4 mr-2" />
-                  {isPublishing ? 'Publication...' : 'Publier'}
+                  {isPublishing ? t('publishing') : t('publish')}
                 </DropdownMenuItem>
               )}
               {!isDraft && property.status === 'ACTIVE' && (
                 <DropdownMenuItem onClick={handleUnpublish}>
                   <Eye className="h-4 w-4 mr-2" />
-                  Remettre en brouillon
+                  {t('setToDraft')}
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
@@ -276,7 +269,7 @@ function PropertyCard({
                 className="text-destructive"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Supprimer
+                {t('delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -288,13 +281,17 @@ function PropertyCard({
           {property.bedrooms && (
             <div className="flex items-center gap-1">
               <Bed className="h-4 w-4" />
-              <span>{property.bedrooms} ch.</span>
+              <span>
+                {property.bedrooms} {t('bedrooms')}
+              </span>
             </div>
           )}
           {property.bathrooms && (
             <div className="flex items-center gap-1">
               <Bath className="h-4 w-4" />
-              <span>{property.bathrooms} sdb.</span>
+              <span>
+                {property.bathrooms} {t('bathrooms')}
+              </span>
             </div>
           )}
         </div>
@@ -309,7 +306,7 @@ function PropertyCard({
               className="flex-1"
               onClick={() => onEdit(property.id)}
             >
-              Modifier
+              {t('modify')}
             </Button>
             {validationResult?.isValid ? (
               <Button
@@ -317,7 +314,7 @@ function PropertyCard({
                 onClick={handlePublish}
                 disabled={isPublishing}
               >
-                {isPublishing ? 'Publication...' : 'Publier'}
+                {isPublishing ? t('publishing') : t('publish')}
               </Button>
             ) : (
               <Button
@@ -325,7 +322,7 @@ function PropertyCard({
                 onClick={() => onEdit(property.id)}
                 variant="default"
               >
-                Compléter
+                {t('complete')}
               </Button>
             )}
           </>
@@ -336,7 +333,7 @@ function PropertyCard({
             className="w-full"
             onClick={() => onEdit(property.id)}
           >
-            Modifier l&apos;annonce
+            {t('editListing')}
           </Button>
         )}
       </CardFooter>
@@ -366,6 +363,7 @@ function PropertyCardSkeleton() {
 export function PropertyList() {
   const { properties, isLoading, mutate } = useUserProperties();
   const router = useRouter();
+  const t = useTranslations('PropertyList');
 
   const handleEdit = (id: number) => {
     router.push(`/hosting/${id}`);
@@ -383,16 +381,16 @@ export function PropertyList() {
       if (!response.ok) throw new Error('Failed to duplicate');
 
       const newProperty = await response.json();
-      toast.success('Annonce dupliquée avec succès !');
+      toast.success(t('duplicateSuccess'));
       mutate(); // Rafraîchir la liste
       router.push(`/hosting/${newProperty.id}`);
     } catch {
-      toast.error('Erreur lors de la duplication');
+      toast.error(t('duplicateError'));
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette annonce ?')) {
+    if (!confirm(t('deleteConfirmMessage'))) {
       return;
     }
 
@@ -406,10 +404,10 @@ export function PropertyList() {
 
       if (!response.ok) throw new Error('Failed to delete');
 
-      toast.success('Annonce supprimée avec succès !');
+      toast.success(t('deleteSuccess'));
       mutate(); // Rafraîchir la liste
     } catch {
-      toast.error('Erreur lors de la suppression');
+      toast.error(t('duplicateError'));
     }
   };
 
@@ -436,7 +434,7 @@ export function PropertyList() {
       {drafts.length > 0 && (
         <div>
           <h2 className="text-2xl font-semibold mb-4">
-            Brouillons ({drafts.length})
+            {t('drafts')} ({drafts.length})
           </h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {drafts.map((property) => (
@@ -455,7 +453,7 @@ export function PropertyList() {
       {active.length > 0 && (
         <div>
           <h2 className="text-2xl font-semibold mb-4">
-            Annonces actives ({active.length})
+            {t('activeListings')} ({active.length})
           </h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {active.map((property) => (

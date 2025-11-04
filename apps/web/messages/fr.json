@@ -109,15 +109,49 @@
     "privacyPolicy": "Politique de Confidentialité"
   },
   "PropertyList": {
-    "noProperties": "Aucun bien immobilier pour le moment.",
+    "noProperties": "Aucune propriété pour le moment.",
     "price": "Prix",
     "surface": "Surface",
     "address": "Adresse",
     "edit": "Modifier",
     "delete": "Supprimer",
-    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce bien ?",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette propriété ?",
     "deleteError": "Erreur",
-    "deleting": "..."
+    "deleting": "...",
+    "publishSuccess": "Annonce publiée avec succès !",
+    "draftSuccess": "Annonce remise en brouillon",
+    "updateError": "Erreur lors de la modification",
+    "duplicateSuccess": "Annonce dupliquée avec succès !",
+    "duplicateError": "Erreur lors de la duplication",
+    "deleteSuccess": "Annonce supprimée avec succès !",
+    "draft": "Brouillon",
+    "published": "Publié",
+    "status": "Statut",
+    "modify": "Modifier",
+    "duplicate": "Dupliquer",
+    "preview": "Aperçu",
+    "publish": "Publier",
+    "publishing": "Publication...",
+    "setToDraft": "Remettre en brouillon",
+    "bedrooms": "ch.",
+    "bathrooms": "sdb.",
+    "night": "nuit",
+    "month": "mois",
+    "priceNotSet": "Prix non défini",
+    "complete": "Compléter",
+    "propertyTypes": {
+      "HOUSE": "Maison",
+      "APARTMENT": "Appartement",
+      "LAND": "Terrain",
+      "HOTEL": "Hôtel",
+      "HOSTEL": "Auberge",
+      "GUESTHOUSE": "Maison d'hôtes",
+      "ROOM": "Chambre"
+    },
+    "drafts": "Brouillons",
+    "activeListings": "Annonces actives",
+    "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer cette annonce ?",
+    "editListing": "Modifier l'annonce"
   },
   "HelpModal": {
     "title": "As-tu besoin d'aide ?",
@@ -148,8 +182,176 @@
   "AddPropertyButton": {
     "label": "Ajouter un bien"
   },
+  "HostingPage": {
+    "back": "← Retour",
+    "duplicateFrom": "Créer à partir d'une annonce existante",
+    "selectToDuplicate": "Sélectionnez l'annonce que vous souhaitez dupliquer",
+    "welcomeTitle": "Bienvenue dans votre espace hôte",
+    "welcomeSubtitle": "Créez et gérez vos annonces immobilières en toute simplicité",
+    "getStarted": "Démarrer",
+    "createNew": "Créer une nouvelle annonce",
+    "createNewDescription": "Commencer de zéro avec votre nouveau bien",
+    "duplicateListing": "Dupliquer une annonce",
+    "duplicateDescription": "Gagner du temps en partant d'une annonce existante",
+    "yourListings": "Vos annonces",
+    "newListing": "Nouvelle annonce",
+    "loading": "Chargement de vos annonces...",
+    "noListingsYet": "Vous n'avez pas encore d'annonce",
+    "createFirst": "Commencez par créer votre première annonce immobilière",
+    "createMyFirst": "Créer ma première annonce",
+    "helpCenter": "Centre d'aide",
+    "helpCenterDescription": "Trouvez des réponses à vos questions et des conseils pour créer une annonce attractive",
+    "expertTips": "Conseils d'expert",
+    "expertTipsDescription": "Découvrez les meilleures pratiques pour optimiser vos annonces et attirer plus de visiteurs",
+    "community": "Communauté",
+    "communityDescription": "Échangez avec d'autres hôtes et partagez vos expériences"
+  },
   "NotFound": {
     "title": "404 - Page non trouvée",
     "description": "La page que vous recherchez n'existe pas."
+  },
+  "PropertyForm": {
+    "propertyTypes": {
+      "house": "Maison",
+      "apartment": "Appartement",
+      "land": "Terrain",
+      "hotel": "Hôtel",
+      "hostel": "Auberge",
+      "guesthouse": "Maison d'hôtes",
+      "room": "Chambre"
+    },
+    "listingTypes": {
+      "shortTerm": "Court terme",
+      "shortTermDescription": "Location saisonnière",
+      "longTerm": "Long terme",
+      "longTermDescription": "Location mensuelle",
+      "sale": "Vente",
+      "saleDescription": "Mise en vente"
+    },
+    "labels": {
+      "propertyType": "Type de bien",
+      "listingType": "Type d'annonce",
+      "pricing": "Tarification (MXN)",
+      "monthlyPrice": "Prix mensuel",
+      "nightlyPrice": "Prix par nuit",
+      "salePrice": "Prix de vente",
+      "perMonth": "/ mois",
+      "perNight": "/ nuit",
+      "required": "Requis",
+      "back": "Retour",
+      "continue": "Continuer",
+      "continueAndValidate": "Continuer et valider",
+      "pricingDescription": "Définissez le type de bien et les tarifs applicables"
+    },
+    "messages": {
+      "loading": "Chargement...",
+      "updating": "Mise à jour...",
+      "selectPropertyType": "Veuillez sélectionner un type de bien",
+      "monthlyPriceRequired": "Le prix mensuel est requis pour une location long terme",
+      "nightlyPriceRequired": "Le prix par nuit est requis pour une location court terme",
+      "salePriceRequired": "Le prix de vente est requis pour une vente",
+      "setPriceAtLeast": "Veuillez définir au moins un prix",
+      "updateSuccess": "Informations mises à jour avec succès !",
+      "updateError": "Erreur lors de la mise à jour",
+      "monthlyPriceInfo": "Prix mensuel requis pour les locations long terme",
+      "nightlyPriceInfo": "Prix par nuit requis pour les locations court terme",
+      "salePriceInfo": "Prix de vente requis pour une vente"
+    },
+    "navigation": {
+      "questions": "Questions ?",
+      "saveAndQuit": "Sauvegarder et quitter",
+      "back": "Retour",
+      "next": "Suivant",
+      "preview": "Aperçu"
+    }
+  },
+  "LocationForm": {
+    "titles": {
+      "search": "Où est situé votre logement ?",
+      "form": "Confirmez votre adresse",
+      "confirm": "Le repère est-il au bon endroit ?"
+    },
+    "descriptions": {
+      "search": "Votre adresse est uniquement communiquée aux voyageurs une fois leur réservation effectuée.",
+      "form": "Vérifiez et complétez les informations de votre adresse.",
+      "confirm": "Déplacez le marqueur si nécessaire pour positionner précisément votre bien."
+    },
+    "labels": {
+      "searchPlaceholder": "Saisissez votre adresse",
+      "street": "Rue",
+      "buildingInfo": "Appartement, suite, etc.",
+      "buildingName": "Nom du bâtiment",
+      "postalCode": "Code postal",
+      "city": "Ville",
+      "state": "État",
+      "country": "Pays",
+      "latitude": "Latitude",
+      "longitude": "Longitude"
+    },
+    "buttons": {
+      "back": "Retour",
+      "continue": "Continuer",
+      "validateAndContinue": "Valider et continuer",
+      "useCurrentLocation": "Utiliser ma position actuelle",
+      "changeAddress": "Rechercher une adresse",
+      "modifyAddress": "Modifier l'adresse"
+    },
+    "messages": {
+      "loading": "Chargement...",
+      "validating": "Validation...",
+      "addressRequired": "L'adresse est requise",
+      "postalCodeRequired": "Le code postal est requis",
+      "cityRequired": "La commune est requise",
+      "selectAddress": "Veuillez sélectionner une adresse sur la carte",
+      "invalidCoordinates": "Coordonnées invalides, veuillez sélectionner une nouvelle adresse",
+      "positionUpdated": "Position mise à jour",
+      "addressSaved": "Adresse enregistrée avec succès !",
+      "updateError": "Erreur lors de la mise à jour",
+      "selectedLocation": "Emplacement sélectionné",
+      "defaultLocation": "Puerto Escondido, Oaxaca",
+      "clickToSelect": "Cliquez sur la carte pour sélectionner un emplacement précis",
+      "dragMarker": "Déplacez-moi pour ajuster la position",
+      "propertyLocation": "Emplacement de votre bien",
+      "addressDetails": "Détails de l'adresse",
+      "mapInstructions": "Ajustez la position du marqueur si nécessaire pour localiser précisément votre bien",
+      "geolocationNotSupported": "La géolocalisation n'est pas supportée par votre navigateur",
+      "cannotAccessLocation": "Impossible d'accéder à votre position",
+      "cannotGetAddress": "Impossible de récupérer votre adresse",
+      "cannotSearchAddresses": "Impossible de rechercher des adresses pour le moment"
+    }
+  },
+  "PhotoUpload": {
+    "labels": {
+      "dragAndDrop": "Glissez-déposez des photos ici, ou cliquez pour sélectionner",
+      "dropHere": "Déposez les photos ici...",
+      "uploadPhotos": "Télécharger les photos",
+      "uploading": "Téléchargement...",
+      "setAsPrimary": "Principale",
+      "delete": "Supprimer",
+      "deleting": "Suppression...",
+      "noPhotos": "Aucune photo téléchargée pour le moment. Ajoutez des photos pour présenter votre bien.",
+      "photoCount": "{count} photo",
+      "photoCount_plural": "{count} photos",
+      "selected": "sélectionnée",
+      "primaryBadge": "Couverture"
+    },
+    "messages": {
+      "maxFiles": "Vous ne pouvez télécharger que {max} photos maximum.",
+      "fileTooLarge": "Certains fichiers sont trop volumineux. La taille maximale est de 10 Mo par fichier.",
+      "invalidFileType": "Seules les images JPEG, PNG et WebP sont autorisées.",
+      "uploadError": "Échec du téléchargement des photos",
+      "deleteError": "Échec de la suppression de la photo",
+      "setPrimaryError": "Échec de la définition de la photo principale",
+      "maxSize": "Maximum 10 Mo, JPG, PNG ou WebP",
+      "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette photo ?",
+      "confirmDeleteMessage": "Cette action ne peut pas être annulée.",
+      "cancel": "Annuler"
+    }
+  },
+  "DuplicateProperty": {
+    "button": "Dupliquer cette annonce",
+    "duplicating": "Duplication...",
+    "success": "Annonce dupliquée avec succès !",
+    "error": "Erreur lors de la duplication"
   }
 }
