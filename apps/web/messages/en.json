@@ -265,7 +265,8 @@
       "saveAndQuit": "Save and quit",
       "back": "Back",
       "next": "Next",
-      "preview": "Preview"
+      "preview": "Preview",
+      "publish": "Publish listing"
     }
   },
   "LocationForm": {
@@ -308,6 +309,7 @@
       "selectAddress": "Please select an address on the map",
       "invalidCoordinates": "Invalid coordinates, please select a new address",
       "positionUpdated": "Position updated",
+      "addressUpdated": "Address automatically updated",
       "addressSaved": "Address saved successfully!",
       "updateError": "Error updating",
       "selectedLocation": "Selected location",
@@ -324,6 +326,8 @@
     }
   },
   "PhotoUpload": {
+    "title": "Add photos to your listing",
+    "description": "Showcase your property with high-quality photos",
     "labels": {
       "dragAndDrop": "Drag & drop photos here, or click to select",
       "dropHere": "Drop the photos here...",
@@ -338,12 +342,33 @@
       "selected": "selected",
       "primaryBadge": "Cover"
     },
+    "upload": {
+      "title": "Upload Photos",
+      "description": "Drag and drop or click to select photos from your device"
+    },
+    "gallery": {
+      "title": "Your Photos",
+      "description": "Drag photos to reorder them. The first photo will be your cover photo.",
+      "reordering": "Saving new order..."
+    },
+    "validation": {
+      "minimumPhotos": "Please upload at least {count} more photo(s)",
+      "minimumRequired": "You need {needed} more photo(s) to continue (minimum {minimum})",
+      "ready": "Great! You have enough photos to continue."
+    },
     "messages": {
       "maxFiles": "You can only upload up to {max} photos.",
       "fileTooLarge": "Some files are too large. Maximum size is 10MB per file.",
       "invalidFileType": "Only JPEG, PNG, and WebP images are allowed.",
+      "uploadSuccess": "{count} photo(s) uploaded successfully",
+      "uploadSuccessDescription": "Your photos are now visible in the gallery",
       "uploadError": "Failed to upload photos",
+      "deleteSuccess": "Photo deleted successfully",
       "deleteError": "Failed to delete photo",
+      "primarySuccess": "Cover photo updated",
+      "primaryError": "Failed to set cover photo",
+      "reorderSuccess": "Photos reordered successfully",
+      "reorderError": "Failed to reorder photos",
       "setPrimaryError": "Failed to set primary photo",
       "maxSize": "Maximum 10MB, JPG, PNG, or WebP",
       "confirmDelete": "Are you sure you want to delete this photo?",

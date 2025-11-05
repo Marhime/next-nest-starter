@@ -23,6 +23,8 @@ export default function AddPropertyLayout({
   console.log('Params in layout:', params);
   const setIsOpen = useGlobalStore((state) => state.setIsOpen);
   const currentStep = useAddPropertyStore((state) => state.currentStep);
+  const canProceed = useAddPropertyStore((state) => state.canProceed);
+  const handleNext = useAddPropertyStore((state) => state.handleNext);
 
   // Vérifier si la propriété existe
   const { property, isLoading, isError } = useProperty(propertyId as string);
@@ -54,7 +56,7 @@ export default function AddPropertyLayout({
 
   return (
     <>
-      <section className="h-screen flex flex-col relative">
+      <section className="min-h-screen flex flex-col relative">
         <div className="flex w-full justify-between p-4 xl:py-10 xl:px-12">
           <Link href="/">Logo</Link>
           <div className="flex gap-4 xl:gap-6 items-center">
@@ -66,8 +68,8 @@ export default function AddPropertyLayout({
             </Button>
           </div>
         </div>
-        <div className="flex-1">{children}</div>
-        <div className="relative p-4 xl:py-6 xl:px-12">
+        <div className="flex-1 pb-[96px]">{children}</div>
+        <div className="fixed bottom-0 left-0 right-0 p-4 xl:py-6 xl:px-12 bg-white">
           <div className="flex justify-between items-center">
             {currentStep !== undefined && steps[currentStep - 1] && (
               <Button variant="link" className="underline text-md">
@@ -78,20 +80,32 @@ export default function AddPropertyLayout({
             )}
             <>
               <Button
-                asChild
+                onClick={async (e) => {
+                  e.preventDefault();
+                  console.log('Next button clicked, handleNext:', handleNext);
+                  console.log('canProceed:', canProceed);
+                  console.log('currentStep:', currentStep);
+
+                  if (handleNext) {
+                    console.log('Calling handleNext');
+                    await handleNext();
+                  } else {
+                    console.log('No handleNext, using fallback navigation');
+                    // Fallback: navigation directe si pas de handler
+                    const nextUrl =
+                      currentStep !== undefined && steps[currentStep + 1]
+                        ? `/hosting/${propertyId}/${steps[currentStep + 1]}`
+                        : `/property/${propertyId}`;
+                    console.log('Navigating to:', nextUrl);
+                    router.push(nextUrl);
+                  }
+                }}
+                disabled={!canProceed && currentStep !== 0}
                 className="rounded-full px-10 py-6 text-md ml-auto"
               >
-                <Link
-                  href={
-                    currentStep !== undefined && steps[currentStep + 1]
-                      ? `/hosting/${propertyId}/${steps[currentStep + 1]}`
-                      : `/property/${propertyId}/preview`
-                  }
-                >
-                  {currentStep === maxSteps
-                    ? t('navigation.preview')
-                    : t('navigation.next')}
-                </Link>
+                {currentStep === maxSteps
+                  ? t('navigation.publish')
+                  : t('navigation.next')}
               </Button>
               {currentStep !== undefined && steps[currentStep + 1] && (
                 <div className="absolute top-0 left-0 w-full">

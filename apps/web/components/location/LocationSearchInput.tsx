@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MapPin, Loader2, Navigation } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 export interface LocationResult {
   place_id: string;
@@ -33,10 +34,11 @@ interface LocationSearchInputProps {
 
 export function LocationSearchInput({
   onLocationSelect,
-  placeholder = 'Saisissez votre adresse',
+  placeholder,
   defaultValue = '',
   className,
 }: LocationSearchInputProps) {
+  const t = useTranslations('LocationForm');
   const [query, setQuery] = useState(defaultValue);
   const [results, setResults] = useState<LocationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,53 +50,56 @@ export function LocationSearchInput({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Debounced search
-  const searchLocation = useCallback(async (searchQuery: string) => {
-    if (searchQuery.length < 3) {
-      setResults([]);
-      setIsOpen(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Nominatim API - Free geocoding service from OpenStreetMap
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?` +
-          new URLSearchParams({
-            q: searchQuery,
-            format: 'json',
-            addressdetails: '1',
-            limit: '5',
-            countrycodes: 'fr,mx', // Ajuste selon tes besoins
-          }),
-        {
-          headers: {
-            'Accept-Language': 'fr',
-            // Best practice: Include app identifier for Nominatim
-            'User-Agent': 'PropertyApp/1.0',
-          },
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch locations');
+  const searchLocation = useCallback(
+    async (searchQuery: string) => {
+      if (searchQuery.length < 3) {
+        setResults([]);
+        setIsOpen(false);
+        return;
       }
 
-      const data: LocationResult[] = await response.json();
-      setResults(data);
-      setIsOpen(data.length > 0);
-      setSelectedIndex(-1);
-    } catch (err) {
-      console.error('Location search error:', err);
-      setError('Impossible de rechercher des adresses pour le moment');
-      setResults([]);
-      setIsOpen(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // Nominatim API - Free geocoding service from OpenStreetMap
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?` +
+            new URLSearchParams({
+              q: searchQuery,
+              format: 'json',
+              addressdetails: '1',
+              limit: '5',
+              countrycodes: 'fr,mx', // Ajuste selon tes besoins
+            }),
+          {
+            headers: {
+              'Accept-Language': 'fr',
+              // Best practice: Include app identifier for Nominatim
+              'User-Agent': 'PropertyApp/1.0',
+            },
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch locations');
+        }
+
+        const data: LocationResult[] = await response.json();
+        setResults(data);
+        setIsOpen(data.length > 0);
+        setSelectedIndex(-1);
+      } catch (err) {
+        console.error('Location search error:', err);
+        setError(t('messages.cannotSearchAddresses'));
+        setResults([]);
+        setIsOpen(false);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [t],
+  );
 
   // Handle input change with debounce
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,7 +154,7 @@ export function LocationSearchInput({
   // Get current location using browser geolocation
   const handleUseCurrentLocation = async () => {
     if (!navigator.geolocation) {
-      setError("La géolocalisation n'est pas supportée par votre navigateur");
+      setError(t('messages.geolocationNotSupported'));
       return;
     }
 
@@ -185,14 +190,14 @@ export function LocationSearchInput({
           onLocationSelect(data);
         } catch (err) {
           console.error('Reverse geocoding error:', err);
-          setError('Impossible de récupérer votre adresse');
+          setError(t('messages.cannotGetAddress'));
         } finally {
           setIsLoading(false);
         }
       },
       (err) => {
         console.error('Geolocation error:', err);
-        setError("Impossible d'accéder à votre position");
+        setError(t('messages.cannotAccessLocation'));
         setIsLoading(false);
       },
     );
@@ -233,9 +238,9 @@ export function LocationSearchInput({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             onFocus={() => results.length > 0 && setIsOpen(true)}
-            placeholder={placeholder}
+            placeholder={placeholder || t('labels.searchPlaceholder')}
             className="pl-10"
-            aria-label="Recherche d'adresse"
+            aria-label={t('labels.searchPlaceholder')}
             aria-autocomplete="list"
             aria-controls="location-results"
             aria-expanded={isOpen}
@@ -250,7 +255,7 @@ export function LocationSearchInput({
           size="icon"
           onClick={handleUseCurrentLocation}
           disabled={isLoading}
-          title="Utiliser mon emplacement actuel"
+          title={t('buttons.useCurrentLocation')}
         >
           <Navigation className="h-4 w-4" />
         </Button>

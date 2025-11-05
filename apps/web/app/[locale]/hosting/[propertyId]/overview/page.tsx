@@ -6,6 +6,7 @@ import Image from 'next/image';
 const OverviewPage = () => {
   const setIsOpen = useAddPropertyStore((state) => state.setIsOpen);
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
+  const setCanProceed = useAddPropertyStore((state) => state.setCanProceed);
   const setHasShownHelpDrawer = useAddPropertyStore(
     (state) => state.setHasShownHelpDrawer,
   );
@@ -18,7 +19,15 @@ const OverviewPage = () => {
     setCurrentStep?.(0);
     setIsOpen?.(true);
     setHasShownHelpDrawer?.(true);
-  }, [setCurrentStep, setIsOpen, setHasShownHelpDrawer, hasShownHelpDrawer]);
+    // Overview page always allows proceeding
+    setCanProceed?.(true);
+  }, [
+    setCurrentStep,
+    setIsOpen,
+    setHasShownHelpDrawer,
+    hasShownHelpDrawer,
+    setCanProceed,
+  ]);
 
   return (
     <>

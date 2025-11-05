@@ -1,7 +1,6 @@
 /**
- * PhotoGallery Component
- * Professional photo management with drag-and-drop reordering,
- * optimistic updates, and smooth animations
+ * PhotoGallery Component (V3)
+ * Airbnb-style photo gallery with hero image and grid layout
  */
 
 'use client';
@@ -28,14 +27,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Trash2,
-  Star,
-  GripVertical,
-  ZoomIn,
-  Loader2,
-  Check,
-} from 'lucide-react';
+import { Trash2, Star, GripVertical, ZoomIn, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import type { Photo, PhotoReorderItem } from '@/types/photo';
@@ -67,14 +59,16 @@ function SortablePhoto({
   onDelete,
   onSetPrimary,
   onPreview,
-  isFirst,
+  isPrimary,
+  isHero,
   readOnly,
 }: {
   photo: Photo;
   onDelete: () => void;
   onSetPrimary: () => void;
   onPreview: () => void;
-  isFirst: boolean;
+  isPrimary: boolean;
+  isHero: boolean;
   readOnly: boolean;
 }) {
   const {
@@ -120,45 +114,47 @@ function SortablePhoto({
         ref={setNodeRef}
         style={style}
         className={cn(
-          'group relative aspect-square rounded-lg overflow-hidden bg-muted',
+          'group relative rounded-lg overflow-hidden bg-muted',
           'border-2 transition-all duration-200',
+          isHero ? 'md:row-span-2 md:col-span-2' : 'aspect-square',
           isDragging && 'opacity-50 scale-95 z-50',
-          photo.isPrimary
+          isPrimary
             ? 'border-primary ring-2 ring-primary ring-offset-2'
             : 'border-transparent hover:border-primary/50',
         )}
       >
         {/* Image */}
-        <Image
-          src={photo.url}
-          alt={`Photo ${photo.order}`}
-          fill
+        <div
           className={cn(
-            'object-cover transition-transform duration-300',
-            !readOnly && 'group-hover:scale-105',
+            'relative w-full',
+            isHero ? 'h-full min-h-[400px]' : 'aspect-square',
           )}
-          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-        />
+        >
+          <Image
+            src={photo.url}
+            alt={`Photo ${photo.order}`}
+            fill
+            className={cn(
+              'object-cover transition-transform duration-300',
+              !readOnly && 'group-hover:scale-105',
+            )}
+            sizes={
+              isHero
+                ? '(max-width: 768px) 100vw, 50vw'
+                : '(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw'
+            }
+            priority={isHero}
+          />
+        </div>
 
         {/* Primary badge */}
-        {photo.isPrimary && (
+        {isPrimary && (
           <Badge
-            className="absolute top-2 left-2 bg-primary text-primary-foreground"
+            className="absolute top-3 left-3 bg-primary text-primary-foreground shadow-lg"
             variant="default"
           >
             <Star className="h-3 w-3 mr-1 fill-current" />
-            Cover
-          </Badge>
-        )}
-
-        {/* First photo indicator */}
-        {isFirst && !photo.isPrimary && (
-          <Badge
-            className="absolute top-2 left-2 bg-blue-500 text-white"
-            variant="default"
-          >
-            <Check className="h-3 w-3 mr-1" />
-            First
+            Cover Photo
           </Badge>
         )}
 
@@ -174,7 +170,7 @@ function SortablePhoto({
             <Button
               variant="secondary"
               size="icon"
-              className="cursor-grab active:cursor-grabbing"
+              className="cursor-grab active:cursor-grabbing shadow-lg"
               {...attributes}
               {...listeners}
             >
@@ -187,17 +183,19 @@ function SortablePhoto({
               size="icon"
               onClick={onPreview}
               disabled={isDeleting}
+              className="shadow-lg"
             >
               <ZoomIn className="h-4 w-4" />
             </Button>
 
             {/* Set as primary */}
-            {!photo.isPrimary && (
+            {!isPrimary && (
               <Button
                 variant="secondary"
                 size="icon"
                 onClick={handleSetPrimary}
                 disabled={isSettingPrimary || isDeleting}
+                className="shadow-lg"
               >
                 {isSettingPrimary ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -213,6 +211,7 @@ function SortablePhoto({
               size="icon"
               onClick={() => setShowDeleteDialog(true)}
               disabled={isDeleting}
+              className="shadow-lg"
             >
               {isDeleting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -258,7 +257,7 @@ function SortablePhoto({
 }
 
 /**
- * Main PhotoGallery component
+ * Main PhotoGallery component with Airbnb-style layout
  */
 export function PhotoGallery({
   photos,
@@ -277,10 +276,26 @@ export function PhotoGallery({
     setLocalPhotos(photos);
   }, [photos]);
 
+  // Sort photos: primary first, then by order
+  const sortedPhotos = useMemo(() => {
+    return [...localPhotos].sort((a, b) => {
+      // Primary photo always first
+      if (a.isPrimary) return -1;
+      if (b.isPrimary) return 1;
+      // Otherwise sort by order
+      return a.order - b.order;
+    });
+  }, [localPhotos]);
+
+  const primaryPhoto = useMemo(
+    () => sortedPhotos.find((p) => p.isPrimary) || sortedPhotos[0],
+    [sortedPhotos],
+  );
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // 8px de mouvement avant d'activer le drag
+        distance: 8,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -301,15 +316,15 @@ export function PhotoGallery({
         return;
       }
 
-      const oldIndex = localPhotos.findIndex((p) => p.id === active.id);
-      const newIndex = localPhotos.findIndex((p) => p.id === over.id);
+      const oldIndex = sortedPhotos.findIndex((p) => p.id === active.id);
+      const newIndex = sortedPhotos.findIndex((p) => p.id === over.id);
 
       if (oldIndex === -1 || newIndex === -1) {
         return;
       }
 
       // Optimistic update
-      const newOrder = arrayMove(localPhotos, oldIndex, newIndex).map(
+      const newOrder = arrayMove(sortedPhotos, oldIndex, newIndex).map(
         (photo, index) => ({
           ...photo,
           order: index,
@@ -337,7 +352,7 @@ export function PhotoGallery({
         }
       }
     },
-    [localPhotos, photos, onReorder],
+    [sortedPhotos, photos, onReorder],
   );
 
   const handleDelete = useCallback(
@@ -368,11 +383,11 @@ export function PhotoGallery({
   );
 
   const activePhoto = useMemo(
-    () => localPhotos.find((p) => p.id === activeId),
-    [localPhotos, activeId],
+    () => sortedPhotos.find((p) => p.id === activeId),
+    [sortedPhotos, activeId],
   );
 
-  if (localPhotos.length === 0) {
+  if (sortedPhotos.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
         <p>No photos yet. Upload some to get started!</p>
@@ -396,18 +411,20 @@ export function PhotoGallery({
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={localPhotos.map((p) => p.id)}
+          items={sortedPhotos.map((p) => p.id)}
           strategy={rectSortingStrategy}
         >
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {localPhotos.map((photo, index) => (
+          {/* Airbnb-style Grid Layout */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 auto-rows-fr">
+            {sortedPhotos.map((photo, index) => (
               <SortablePhoto
                 key={photo.id}
                 photo={photo}
                 onDelete={handleDelete(photo.id)}
                 onSetPrimary={handleSetPrimary(photo.id)}
                 onPreview={handlePreview(photo)}
-                isFirst={index === 0}
+                isPrimary={photo.id === primaryPhoto?.id}
+                isHero={index === 0} // First photo (primary) is the hero
                 readOnly={readOnly}
               />
             ))}

@@ -1,10 +1,9 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAddPropertyStore } from '../../store';
 import { useParams, useRouter } from 'next/navigation';
 import { useProperty } from '@/hooks/use-properties';
 import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import {
@@ -35,6 +34,8 @@ const TypePage = () => {
   const router = useRouter();
   const { propertyId } = useParams();
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
+  const setCanProceed = useAddPropertyStore((state) => state.setCanProceed);
+  const setHandleNext = useAddPropertyStore((state) => state.setHandleNext);
   const {
     property,
     isLoading: isLoadingProperty,
@@ -99,6 +100,19 @@ const TypePage = () => {
     setCurrentStep?.(1);
   }, [setCurrentStep]);
 
+  // Validation du formulaire
+  useEffect(() => {
+    const isValid =
+      formData.propertyType !== undefined &&
+      formData.listingType !== undefined &&
+      ((formData.listingType === 'LONG_TERM' && formData.monthlyPrice !== '') ||
+        (formData.listingType === 'SHORT_TERM' &&
+          formData.nightlyPrice !== '') ||
+        (formData.listingType === 'SALE' && formData.salePrice !== ''));
+
+    setCanProceed?.(isValid);
+  }, [formData, setCanProceed]);
+
   // Charger les données existantes
   useEffect(() => {
     if (property) {
@@ -157,87 +171,111 @@ const TypePage = () => {
     }
   }, [formData.listingType, initialLoadDone, property]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    // Validation: PropertyType obligatoire
-    if (!formData.propertyType) {
-      toast.error(t('messages.selectPropertyType'));
-      return;
-    }
-
-    // Validation conditionnelle des prix selon le ListingType
-    if (formData.listingType === 'LONG_TERM' && !formData.monthlyPrice) {
-      toast.error(t('messages.monthlyPriceRequired'));
-      return;
-    }
-
-    if (formData.listingType === 'SHORT_TERM' && !formData.nightlyPrice) {
-      toast.error(t('messages.nightlyPriceRequired'));
-      return;
-    }
-
-    if (formData.listingType === 'SALE' && !formData.salePrice) {
-      toast.error(t('messages.salePriceRequired'));
-      return;
-    }
-
-    // Si pas de ListingType, au moins un prix doit être défini
-    if (
-      !formData.listingType &&
-      !formData.monthlyPrice &&
-      !formData.nightlyPrice &&
-      !formData.salePrice
-    ) {
-      toast.error(t('messages.setPriceAtLeast'));
-      return;
-    }
-
-    console.log(formData.listingType);
-
-    setIsSubmitting(true);
-
-    try {
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-      const response = await fetch(`${API_URL}/properties/${propertyId}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          propertyType: formData.propertyType,
-          listingType: formData.listingType,
-          monthlyPrice: formData.monthlyPrice
-            ? parseFloat(formData.monthlyPrice)
-            : null,
-          nightlyPrice: formData.nightlyPrice
-            ? parseFloat(formData.nightlyPrice)
-            : null,
-          salePrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
-          currency: 'MXN',
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to update property');
+      // Validation: PropertyType obligatoire
+      if (!formData.propertyType) {
+        toast.error(t('messages.selectPropertyType'));
+        return;
       }
 
-      toast.success(t('messages.updateSuccess'));
-      mutate(); // Rafraîchir les données
+      // Validation conditionnelle des prix selon le ListingType
+      if (formData.listingType === 'LONG_TERM' && !formData.monthlyPrice) {
+        toast.error(t('messages.monthlyPriceRequired'));
+        return;
+      }
 
-      // Rediriger vers la prochaine étape
-      router.push(`/hosting/${propertyId}/location`);
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : t('messages.updateError');
-      toast.error(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+      if (formData.listingType === 'SHORT_TERM' && !formData.nightlyPrice) {
+        toast.error(t('messages.nightlyPriceRequired'));
+        return;
+      }
+
+      if (formData.listingType === 'SALE' && !formData.salePrice) {
+        toast.error(t('messages.salePriceRequired'));
+        return;
+      }
+
+      // Si pas de ListingType, au moins un prix doit être défini
+      if (
+        !formData.listingType &&
+        !formData.monthlyPrice &&
+        !formData.nightlyPrice &&
+        !formData.salePrice
+      ) {
+        toast.error(t('messages.setPriceAtLeast'));
+        return;
+      }
+
+      console.log(formData.listingType);
+
+      setIsSubmitting(true);
+
+      try {
+        const API_URL =
+          process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        const response = await fetch(`${API_URL}/properties/${propertyId}`, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            propertyType: formData.propertyType,
+            listingType: formData.listingType,
+            monthlyPrice: formData.monthlyPrice
+              ? parseFloat(formData.monthlyPrice)
+              : null,
+            nightlyPrice: formData.nightlyPrice
+              ? parseFloat(formData.nightlyPrice)
+              : null,
+            salePrice: formData.salePrice
+              ? parseFloat(formData.salePrice)
+              : null,
+            currency: 'MXN',
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to update property');
+        }
+
+        toast.success(t('messages.updateSuccess'));
+        mutate(); // Rafraîchir les données
+
+        // Rediriger vers la prochaine étape
+        router.push(`/hosting/${propertyId}/location`);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : t('messages.updateError');
+        toast.error(message);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [formData, propertyId, router, mutate, t],
+  );
+
+  // Configurer le handler pour le bouton Next
+  useEffect(() => {
+    const handler = async () => {
+      console.log('Type page handleNext called');
+      const syntheticEvent = {
+        preventDefault: () => {},
+      } as React.FormEvent;
+      await handleSubmit(syntheticEvent);
+    };
+
+    console.log('Type page: Setting handleNext');
+    setHandleNext?.(handler);
+
+    return () => {
+      console.log('Type page: Clearing handleNext');
+      setHandleNext?.(undefined);
+    };
+  }, [setHandleNext, handleSubmit]);
 
   if (isLoadingProperty) {
     return (
@@ -249,7 +287,7 @@ const TypePage = () => {
 
   return (
     <div className="flex w-full h-full justify-center items-center p-4">
-      <Card className="w-full max-w-2xl">
+      <div className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle>{t('labels.propertyType')} et tarification</CardTitle>
           <CardDescription>{t('labels.pricingDescription')}</CardDescription>
@@ -482,38 +520,9 @@ const TypePage = () => {
                 )}
               </div>
             )}
-
-            <div className="flex gap-4 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.push(`/hosting/${propertyId}/overview`)}
-                className="flex-1"
-              >
-                {t('labels.back')}
-              </Button>
-              <Button
-                type="submit"
-                disabled={
-                  isSubmitting ||
-                  !formData.propertyType ||
-                  !formData.listingType
-                }
-                className="flex-1"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t('messages.updating')}
-                  </>
-                ) : (
-                  t('labels.continue')
-                )}
-              </Button>
-            </div>
           </form>
         </CardContent>
-      </Card>
+      </div>
     </div>
   );
 };

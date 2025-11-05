@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAddPropertyStore } from '../../store';
 import { useParams, useRouter } from 'next/navigation';
 import { useProperty } from '@/hooks/use-properties';
@@ -62,6 +62,8 @@ const LocationPage = () => {
   const router = useRouter();
   const { propertyId } = useParams();
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
+  const setCanProceed = useAddPropertyStore((state) => state.setCanProceed);
+  const setHandleNext = useAddPropertyStore((state) => state.setHandleNext);
   const {
     property,
     isLoading: isLoadingProperty,
@@ -91,6 +93,36 @@ const LocationPage = () => {
     setCurrentStep?.(2);
   }, [setCurrentStep]);
 
+  // Validation: activer Next seulement si on a les données nécessaires pour chaque phase
+  useEffect(() => {
+    let isValid = false;
+
+    if (currentPhase === 'search') {
+      // En phase search, on peut avancer si on a des coordonnées
+      isValid = coordinates !== null;
+    } else if (currentPhase === 'form') {
+      // En phase form, on peut avancer si tous les champs sont remplis
+      isValid = !!(
+        addressForm.street &&
+        addressForm.postalCode &&
+        addressForm.city &&
+        coordinates
+      );
+    } else if (currentPhase === 'confirm') {
+      // En phase confirm, on peut soumettre
+      isValid = coordinates !== null;
+    }
+
+    console.log('Location validation:', {
+      currentPhase,
+      coordinates,
+      isValid,
+      addressForm,
+    });
+
+    setCanProceed?.(isValid);
+  }, [currentPhase, coordinates, addressForm, setCanProceed]);
+
   // Load existing property data
   useEffect(() => {
     if (property) {
@@ -104,7 +136,7 @@ const LocationPage = () => {
         postalCode: extendedProperty.postalCode || '',
         city: property.city || '',
         state: property.state || '',
-        country: extendedProperty.country || 'FR',
+        country: extendedProperty.country || 'MX',
       });
 
       const propLatitude = extendedProperty.latitude;
@@ -161,110 +193,171 @@ const LocationPage = () => {
     setAddressForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleFormConfirm = () => {
-    // Validation du formulaire
-    if (!addressForm.street) {
-      toast.error(t('messages.addressRequired'));
-      return;
-    }
-    if (!addressForm.postalCode) {
-      toast.error(t('messages.postalCodeRequired'));
-      return;
-    }
-    if (!addressForm.city) {
-      toast.error(t('messages.cityRequired'));
-      return;
-    }
-    if (!coordinates) {
-      toast.error(t('messages.selectAddress'));
-      return;
-    }
-
-    // Vérifier que les coordonnées sont valides
-    if (isNaN(coordinates.lat) || isNaN(coordinates.lng)) {
-      toast.error(t('messages.invalidCoordinates'));
-      setCurrentPhase('search');
-      return;
-    }
-
-    // Passer à la phase de confirmation avec carte
-    setCurrentPhase('confirm');
-  };
-
-  const handleMarkerDragEnd = (lat: number, lng: number) => {
+  const handleMarkerDragEnd = async (lat: number, lng: number) => {
     setCoordinates({ lat, lng });
-    toast.info(t('messages.positionUpdated'));
-  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validation
-    if (!addressForm.street) {
-      toast.error(t('messages.addressRequired'));
-      return;
-    }
-
-    if (!addressForm.postalCode) {
-      toast.error(t('messages.postalCodeRequired'));
-      return;
-    }
-
-    if (!addressForm.city) {
-      toast.error(t('messages.cityRequired'));
-      return;
-    }
-
-    if (!coordinates) {
-      toast.error(t('messages.selectAddress'));
-      return;
-    }
-
-    setIsSubmitting(true);
-
+    // Reverse geocoding pour mettre à jour l'adresse
     try {
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
-      const payload = {
-        address: addressForm.street,
-        city: addressForm.city,
-        state: addressForm.state || null,
-        postalCode: addressForm.postalCode,
-        country: addressForm.country,
-        latitude: Number(coordinates.lat),
-        longitude: Number(coordinates.lng),
-      };
-
-      console.log('Sending location data:', payload);
-
-      const response = await fetch(`${API_URL}/properties/${propertyId}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=en`,
+      );
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to update property');
+        throw new Error('Reverse geocoding failed');
       }
 
-      toast.success(t('messages.addressSaved'));
-      mutate(); // Refresh data
+      const data = await response.json();
 
-      // Navigate to next step
-      router.push(`/hosting/${propertyId}/photos`);
+      if (data.address) {
+        setAddressForm({
+          street:
+            `${data.address.house_number || ''} ${data.address.road || ''}`.trim(),
+          buildingInfo: '',
+          buildingName: '',
+          postalCode: data.address.postcode || '',
+          city:
+            data.address.city ||
+            data.address.town ||
+            data.address.village ||
+            '',
+          state: data.address.state || '',
+          country: data.address.country_code?.toUpperCase() || 'FR',
+        });
+        toast.success(t('messages.addressUpdated'));
+      } else {
+        toast.info(t('messages.positionUpdated'));
+      }
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : t('messages.updateError');
-      toast.error(message);
-    } finally {
-      setIsSubmitting(false);
+      console.error('Reverse geocoding error:', error);
+      toast.info(t('messages.positionUpdated'));
     }
   };
+
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+
+      // Validation
+      if (!addressForm.street) {
+        toast.error(t('messages.addressRequired'));
+        return;
+      }
+
+      if (!addressForm.postalCode) {
+        toast.error(t('messages.postalCodeRequired'));
+        return;
+      }
+
+      if (!addressForm.city) {
+        toast.error(t('messages.cityRequired'));
+        return;
+      }
+
+      if (!coordinates) {
+        toast.error(t('messages.selectAddress'));
+        return;
+      }
+
+      setIsSubmitting(true);
+
+      try {
+        const API_URL =
+          process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+        const payload = {
+          address: addressForm.street,
+          city: addressForm.city,
+          state: addressForm.state || null,
+          postalCode: addressForm.postalCode,
+          country: addressForm.country,
+          latitude: Number(coordinates.lat),
+          longitude: Number(coordinates.lng),
+        };
+
+        console.log('Sending location data:', payload);
+
+        const response = await fetch(`${API_URL}/properties/${propertyId}`, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to update property');
+        }
+
+        toast.success(t('messages.addressSaved'));
+        mutate(); // Refresh data
+
+        // Navigate to next step
+        router.push(`/hosting/${propertyId}/photos`);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : t('messages.updateError');
+        toast.error(message);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [addressForm, coordinates, propertyId, router, mutate, t],
+  );
+
+  // Configurer le handler pour le bouton Next
+  useEffect(() => {
+    const handler = async () => {
+      console.log('Location page handleNext called, phase:', currentPhase);
+
+      if (currentPhase === 'search') {
+        // Passer à la phase formulaire
+        console.log('Moving from search to form');
+        setCurrentPhase('form');
+      } else if (currentPhase === 'form') {
+        // Valider et passer à confirm
+        console.log('Validating form and moving to confirm');
+        if (!addressForm.street) {
+          toast.error(t('messages.addressRequired'));
+          return;
+        }
+        if (!addressForm.postalCode) {
+          toast.error(t('messages.postalCodeRequired'));
+          return;
+        }
+        if (!addressForm.city) {
+          toast.error(t('messages.cityRequired'));
+          return;
+        }
+        if (!coordinates) {
+          toast.error(t('messages.selectAddress'));
+          return;
+        }
+        if (isNaN(coordinates.lat) || isNaN(coordinates.lng)) {
+          toast.error(t('messages.invalidCoordinates'));
+          setCurrentPhase('search');
+          return;
+        }
+        setCurrentPhase('confirm');
+      } else if (currentPhase === 'confirm') {
+        // Soumettre le formulaire
+        console.log('Submitting location data');
+        const syntheticEvent = {
+          preventDefault: () => {},
+        } as React.FormEvent;
+        await handleSubmit(syntheticEvent);
+      }
+    };
+
+    console.log('Location page: Setting handleNext for phase:', currentPhase);
+    setHandleNext?.(handler);
+
+    return () => {
+      console.log('Location page: Clearing handleNext');
+      setHandleNext?.(undefined);
+    };
+  }, [setHandleNext, handleSubmit, currentPhase, addressForm, coordinates, t]);
 
   if (isLoadingProperty) {
     return (
@@ -289,12 +382,13 @@ const LocationPage = () => {
             {currentPhase === 'confirm' && t('descriptions.confirm')}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative">
           {/* PHASE 1: Search */}
           {currentPhase === 'search' && (
             <div className="space-y-6">
               <LocationSearchInput
                 onLocationSelect={handleLocationSelect}
+                className="absolute top-5 left-1/2 transform -translate-x-1/2 w-[calc(100%-5rem)] shadow-md rounded-xl z-10 bg-white p-5"
                 defaultValue={
                   property?.address
                     ? `${property.address}, ${property.city || ''}`
@@ -308,11 +402,11 @@ const LocationPage = () => {
                   latitude={coordinates?.lat || 15.865}
                   longitude={coordinates?.lng || -97.0681}
                   zoom={coordinates ? 15 : 12}
-                  className="h-[400px] w-full"
+                  className="h-[900px] w-full"
                   markerTitle={
                     coordinates
-                      ? 'Emplacement sélectionné'
-                      : 'Puerto Escondido, Oaxaca'
+                      ? t('messages.selectedLocation')
+                      : t('messages.defaultLocation')
                   }
                   showMarker={!!coordinates}
                 />
@@ -320,21 +414,9 @@ const LocationPage = () => {
 
               {!coordinates && (
                 <p className="text-sm text-muted-foreground text-center">
-                  📍 Recherchez votre adresse pour positionner votre bien sur la
-                  carte
+                  📍 {t('messages.clickToSelect')}
                 </p>
               )}
-
-              <div className="flex gap-4 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.push(`/hosting/${propertyId}/type`)}
-                  className="flex-1"
-                >
-                  {t('buttons.back')}
-                </Button>
-              </div>
             </div>
           )}
 
@@ -345,30 +427,6 @@ const LocationPage = () => {
                 formData={addressForm}
                 onChange={handleFormChange}
               />
-
-              <div className="flex gap-4 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setCurrentPhase('search')}
-                  className="flex-1"
-                >
-                  {t('buttons.back')}
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handleFormConfirm}
-                  disabled={
-                    !addressForm.street ||
-                    !addressForm.postalCode ||
-                    !addressForm.city ||
-                    !coordinates
-                  }
-                  className="flex-1"
-                >
-                  {t('buttons.continue')}
-                </Button>
-              </div>
             </div>
           )}
 
@@ -382,11 +440,10 @@ const LocationPage = () => {
                     <MapPin className="h-12 w-12 mx-auto text-muted-foreground" />
                     <div>
                       <h3 className="font-semibold mb-2">
-                        Aucune position définie
+                        {t('messages.selectAddress')}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        Veuillez rechercher et sélectionner une adresse pour
-                        positionner votre bien sur la carte.
+                        {t('descriptions.search')}
                       </p>
                     </div>
                   </div>
@@ -439,44 +496,27 @@ const LocationPage = () => {
                         longitude={coordinates.lng}
                         zoom={17}
                         className="h-[500px] w-full"
-                        markerTitle="Déplacez-moi pour ajuster la position"
+                        markerTitle={t('messages.dragMarker')}
                         draggableMarker={true}
                         onMarkerDragEnd={handleMarkerDragEnd}
                       />
                     </div>
                     <p className="text-sm text-muted-foreground text-center">
-                      💡 Vous pouvez déplacer le marqueur pour positionner
-                      précisément votre bien
+                      {t('messages.mapInstructions')}
                     </p>
                   </div>
 
-                  {/* Action Buttons */}
-                  <form onSubmit={handleSubmit}>
-                    <div className="flex gap-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setCurrentPhase('form')}
-                        className="flex-1"
-                      >
-                        {t('buttons.modifyAddress')}
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="flex-1"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            {t('messages.validating')}
-                          </>
-                        ) : (
-                          t('buttons.validateAndContinue')
-                        )}
-                      </Button>
-                    </div>
-                  </form>
+                  {/* Bouton pour modifier l'adresse */}
+                  <div className="flex justify-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setCurrentPhase('search')}
+                      disabled={isSubmitting}
+                    >
+                      {t('buttons.modifyAddress')}
+                    </Button>
+                  </div>
                 </div>
               )}
             </>

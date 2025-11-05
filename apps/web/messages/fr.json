@@ -265,7 +265,8 @@
       "saveAndQuit": "Sauvegarder et quitter",
       "back": "Retour",
       "next": "Suivant",
-      "preview": "Aperçu"
+      "preview": "Aperçu",
+      "publish": "Publier l'annonce"
     }
   },
   "LocationForm": {
@@ -308,6 +309,7 @@
       "selectAddress": "Veuillez sélectionner une adresse sur la carte",
       "invalidCoordinates": "Coordonnées invalides, veuillez sélectionner une nouvelle adresse",
       "positionUpdated": "Position mise à jour",
+      "addressUpdated": "Adresse mise à jour automatiquement",
       "addressSaved": "Adresse enregistrée avec succès !",
       "updateError": "Erreur lors de la mise à jour",
       "selectedLocation": "Emplacement sélectionné",

@@ -10,6 +10,10 @@ type AddPropertyStore = Partial<AddPropertySchema> & {
   isOpen?: boolean;
   hasShownHelpDrawer?: boolean;
   setHasShownHelpDrawer?: (hasShown: boolean) => void;
+  canProceed?: boolean;
+  setCanProceed?: (canProceed: boolean) => void;
+  handleNext?: () => void;
+  setHandleNext?: (handler: (() => void) | undefined) => void;
 };
 
 export const useAddPropertyStore = create<AddPropertyStore>()(
@@ -20,6 +24,10 @@ export const useAddPropertyStore = create<AddPropertyStore>()(
       setIsOpen: (isOpen) => set({ isOpen }),
       setHasShownHelpDrawer: (hasShown) =>
         set({ hasShownHelpDrawer: hasShown }),
+      canProceed: false,
+      setCanProceed: (canProceed) => set({ canProceed }),
+      handleNext: undefined,
+      setHandleNext: (handler) => set({ handleNext: handler }),
     }),
     {
       name: 'add-property-storage', // unique name for your storage item

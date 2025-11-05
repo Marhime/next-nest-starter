@@ -2,30 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { useAddPropertyStore } from '../../store';
-import { PhotosPageClient } from './PhotosPageClient';
 import { Loader2 } from 'lucide-react';
-
-interface Photo {
-  id: number;
-  url: string;
-  thumbnailUrl?: string;
-  order: number;
-  isPrimary: boolean;
-}
+import { PhotosPageClient } from './PhotosPageClientSimple';
+import type { Photo } from '@/types/photo';
 
 const PhotosPage = () => {
-  const { propertyId, locale } = useParams<{
+  const { propertyId } = useParams<{
     propertyId: string;
-    locale: string;
   }>();
-  const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setCurrentStep?.(3);
-  }, [setCurrentStep]);
 
   useEffect(() => {
     const fetchPhotos = async () => {
@@ -63,27 +49,10 @@ const PhotosPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container max-w-4xl mx-auto py-8 px-4">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Add Photos</h1>
-          <p className="text-muted-foreground">
-            Upload high-quality photos of your property. The first photo will be
-            your cover photo.
-          </p>
-          <p className="text-sm text-muted-foreground mt-2">
-            Minimum 5 photos required • Maximum 20 photos
-          </p>
-        </div>
-
-        <PhotosPageClient
-          propertyId={parseInt(propertyId)}
-          initialPhotos={photos}
-          locale={locale}
-        />
-      </div>
-    </div>
+    <PhotosPageClient
+      propertyId={parseInt(propertyId)}
+      initialPhotos={photos}
+    />
   );
 };
 
