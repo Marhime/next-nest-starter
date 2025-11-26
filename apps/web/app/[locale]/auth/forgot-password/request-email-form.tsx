@@ -42,26 +42,32 @@ const PasswordChangeForm = ({
       onSubmit: EmailRequestSchema,
     },
     onSubmit: async ({ value }) => {
-      try {
-        const { data, error } = await authClient.requestPasswordReset({
+      const resetPromise = authClient
+        .requestPasswordReset({
           email: value.email,
+        })
+        .then(({ data, error }) => {
+          if (error) {
+            setErrorMessage(error.message || tErrors('requestFailed'));
+            throw new Error(error.message || tErrors('requestFailed'));
+          }
+
+          // Sauvegarder l'email dans le store pour une meilleure UX
+          setPasswordResetEmail?.(value.email);
+          setSuccess(true);
+          return data;
         });
 
-        if (error) {
-          setErrorMessage(error.message || tErrors('requestFailed'));
-          toast.error(error.message || tErrors('requestFailed'));
-          return;
-        }
+      try {
+        const data = await toast.promise(resetPromise, {
+          loading: tErrors('sendingEmail') || 'Envoi...',
+          success: tErrors('passwordResetSuccess'),
+          error: (err) => err?.message || tErrors('requestFailed'),
+        });
 
-        // Sauvegarder l'email dans le store pour une meilleure UX
-        setPasswordResetEmail?.(value.email);
-
-        toast.success(tErrors('passwordResetSuccess'));
-        setSuccess(true);
         return data;
       } catch (err) {
         console.error('Request error:', err);
-        toast.error(tErrors('serverError'));
       }
     },
   });

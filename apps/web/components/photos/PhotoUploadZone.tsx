@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { useTranslations } from 'next-intl';
 import { Upload, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -18,6 +19,7 @@ export function PhotoUploadZone({
   maxFiles = 10,
   disabled = false,
 }: PhotoUploadZoneProps) {
+  const t = useTranslations('PhotoUpload');
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -26,18 +28,17 @@ export function PhotoUploadZone({
       setError(null);
 
       if (acceptedFiles.length > maxFiles) {
-        setError(
-          `Vous ne pouvez télécharger que ${maxFiles} photos à la fois.`,
-        );
+        setError(t('maxFilesError', { count: maxFiles }));
         return;
       }
 
       setUploading(true);
       try {
+        const plural = acceptedFiles.length > 1 ? 's' : '';
         await toast.promise(onUpload(acceptedFiles), {
-          loading: `Upload de ${acceptedFiles.length} photo${acceptedFiles.length > 1 ? 's' : ''}...`,
-          success: `${acceptedFiles.length} photo${acceptedFiles.length > 1 ? 's' : ''} ajoutée${acceptedFiles.length > 1 ? 's' : ''}`,
-          error: "Erreur lors de l'upload",
+          loading: t('uploadingCount', { count: acceptedFiles.length, plural }),
+          success: t('uploadedCount', { count: acceptedFiles.length, plural }),
+          error: t('uploadError'),
         });
       } catch (err) {
         console.error('Upload error:', err);
@@ -45,7 +46,7 @@ export function PhotoUploadZone({
         setUploading(false);
       }
     },
-    [maxFiles, onUpload],
+    [maxFiles, onUpload, t],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -80,14 +81,13 @@ export function PhotoUploadZone({
           <div>
             <p className="text-sm font-medium">
               {uploading
-                ? 'Upload en cours...'
+                ? t('uploading')
                 : isDragActive
-                  ? 'Déposez vos photos ici...'
-                  : 'Glissez-déposez des photos ou cliquez pour sélectionner'}
+                  ? t('dropHere')
+                  : t('dropOrClick')}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              JPEG, PNG ou WebP • Max 10 Mo par fichier • Jusqu&apos;à{' '}
-              {maxFiles} photos
+              {t('fileInfo', { max: maxFiles })}
             </p>
           </div>
         </div>

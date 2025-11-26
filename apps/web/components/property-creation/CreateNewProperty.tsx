@@ -158,28 +158,34 @@ export function DuplicateProperty({
     try {
       const API_URL =
         process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-      // TODO: Implémenter l'endpoint de duplication dans le backend
-      const response = await fetch(
-        `${API_URL}/properties/${propertyId}/duplicate`,
-        {
-          method: 'POST',
-          credentials: 'include',
-        },
-      );
 
-      if (!response.ok) throw new Error('Failed to duplicate');
+      const duplicatePromise = async () => {
+        const response = await fetch(
+          `${API_URL}/properties/${propertyId}/duplicate`,
+          {
+            method: 'POST',
+            credentials: 'include',
+          },
+        );
 
-      const newProperty = await response.json();
+        if (!response.ok) throw new Error('Failed to duplicate');
+        return response.json();
+      };
 
-      toast.success(t('success'));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const newProperty: any = await toast.promise(duplicatePromise(), {
+        loading: t('duplicating') || 'Duplication...',
+        success: t('success'),
+        error: t('error'),
+      });
 
       if (onSuccess) {
         onSuccess(newProperty.id);
       } else {
         router.push(`/hosting/${newProperty.id}`);
       }
-    } catch {
-      toast.error(t('error'));
+    } catch (error) {
+      console.error(error);
     } finally {
       setIsDuplicating(false);
     }

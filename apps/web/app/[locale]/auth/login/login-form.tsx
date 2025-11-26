@@ -48,27 +48,33 @@ export function LoginForm({
       onSubmit: LoginFormSchema,
     },
     onSubmit: async ({ value }) => {
-      try {
-        const { error: authError, data } = await authClient.signIn.email({
+      const loginPromise = authClient.signIn
+        .email({
           email: value.email,
           password: value.password,
           rememberMe: true,
+        })
+        .then(({ error: authError, data }) => {
+          if (authError) {
+            setErrorMessage(authError.message || tErrors('loginFailed'));
+            throw new Error(authError.message || tErrors('loginFailed'));
+          }
+
+          // Nettoyer l'email du store après une connexion réussie
+          clearPasswordResetEmail?.();
+          return data;
         });
 
-        if (authError) {
-          setErrorMessage(authError.message || tErrors('loginFailed'));
-          toast.error(authError.message || tErrors('loginFailed'));
-          return;
-        }
+      try {
+        const data = await toast.promise(loginPromise, {
+          loading: tErrors('loggingIn') || 'Connexion...',
+          success: tErrors('loginSuccess'),
+          error: (err) => err?.message || tErrors('loginFailed'),
+        });
 
-        // Nettoyer l'email du store après une connexion réussie
-        clearPasswordResetEmail?.();
-
-        toast.success(tErrors('loginSuccess'));
         return data;
       } catch (err) {
         console.error('Login error:', err);
-        toast.error(tErrors('serverError'));
       }
     },
   });

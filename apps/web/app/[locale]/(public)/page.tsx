@@ -1,4 +1,4 @@
-import SearchBarHome from '@/components/SearchBarHome';
+import { ModernSearchBar } from '@/components/search/ModernSearchBar';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 
@@ -17,14 +17,12 @@ export default function Home() {
           priority
         />
         <div className="relative text-white p-4 xl:py-10 xl:px-12 z-20 max-w-[1824px] mx-auto ">
-          <div className="grid grid-cols-12 items-end">
-            <div className="col-span-12 lg:col-span-8">
-              <h1 className="text-8xl pr-20 font-semibold">{t('title')}</h1>
-            </div>
-            <div className="col-span-12 lg:col-span-4 flex flex-col gap-6 mt-6 lg:mt-0">
-              <SearchBarHome />
-              <p className="text-lg">{t('subtitle')}</p>
-            </div>
+          <div className="col-span-12 lg:col-span-8">
+            <h1 className="text-8xl pr-20 font-semibold">{t('title')}</h1>
+          </div>
+          <div className="">
+            <ModernSearchBar />
+            {/* <p className="text-lg">{t('subtitle')}</p> */}
           </div>
         </div>
       </div>

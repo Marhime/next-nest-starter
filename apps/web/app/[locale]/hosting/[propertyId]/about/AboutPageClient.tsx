@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAddPropertyStore } from '../../store';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -108,9 +109,13 @@ const STATUS_OPTIONS = [
 
 export function AboutPageClient({ property }: AboutPageClientProps) {
   const router = useRouter();
+  const t = useTranslations('AboutPage');
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
   const setCanProceed = useAddPropertyStore((state) => state.setCanProceed);
   const setHandleNext = useAddPropertyStore((state) => state.setHandleNext);
+  const setPropertyProgress = useAddPropertyStore(
+    (state) => state.setPropertyProgress,
+  );
 
   const [formData, setFormData] = useState({
     title: property.title || '',
@@ -119,7 +124,7 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
     bathrooms: property.bathrooms || 0,
     capacity: property.capacity || 1,
     floor: property.floor || 0,
-    area: property.area || 0,
+    area: property.area || undefined, // Don't default to 0, use undefined
     amenities: property.amenities || [],
     status: property.status || 'DRAFT',
   });
@@ -127,58 +132,76 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
   useEffect(() => {
-    setCurrentStep?.(4);
+    setCurrentStep?.(3);
   }, [setCurrentStep]);
 
-  // Validation: all required fields
+  // Validate form whenever formData changes
   useEffect(() => {
     const isValid =
       formData.title.trim().length > 0 &&
       formData.description &&
       formData.description.trim().length > 0 &&
       formData.bedrooms > 0 &&
-      formData.bathrooms > 0;
+      formData.bathrooms > 0 &&
+      formData.area !== undefined &&
+      formData.area > 0; // Add area validation
 
     setCanProceed?.(isValid as boolean);
-  }, [formData, setCanProceed]);
 
-  // Save and publish handler
+    // Mark step as complete when form is valid
+    if (isValid) {
+      setPropertyProgress?.(property.id, 3, true);
+    }
+  }, [formData, setCanProceed, property.id, setPropertyProgress]); // Save and publish handler
   const handleSave = useCallback(async () => {
-    try {
-      // Save all changes and set status to ACTIVE to publish
-      const dataToSave = {
-        ...formData,
-        status: 'ACTIVE', // Force publication
-      };
+    // Validate area before publishing
+    if (!formData.area || formData.area <= 0) {
+      toast.error(t('areaRequired'));
+      return;
+    }
 
-      const response = await fetch(`${API_URL}/properties/${property.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(dataToSave),
+    // Save all changes and set status to ACTIVE to publish
+    const dataToSave = {
+      ...formData,
+      status: 'ACTIVE', // Force publication
+    };
+
+    const publishPromise = fetch(`${API_URL}/properties/${property.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(dataToSave),
+    }).then(async (response) => {
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.message
+          ? Array.isArray(errorData.message)
+            ? errorData.message.join(', ')
+            : errorData.message
+          : t('publishError');
+        throw new Error(errorMessage);
+      }
+      return response.json();
+    });
+
+    try {
+      await toast.promise(publishPromise, {
+        loading: t('publishing'),
+        success: t('publishSuccess'),
+        error: (err) => err.message || t('publishError'),
       });
 
-      if (!response.ok) {
-        throw new Error('Échec de la publication');
-      }
-
-      toast.success('🎉 Annonce publiée avec succès !');
-
-      // Redirect to public property page
+      // Redirect to public property page only after success
       setTimeout(() => {
         router.push(`/property/${property.id}`);
       }, 1000);
     } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : 'Erreur lors de la publication',
-      );
-      throw error;
+      // Don't redirect on error
+      console.error('Publication failed:', error);
     }
-  }, [API_URL, property.id, formData, router]);
+  }, [API_URL, property.id, formData, router, t]);
 
   // Configure navigation
   useEffect(() => {
@@ -276,7 +299,7 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
           <Maximize2 className="h-8 w-8 text-muted-foreground" />
           <div className="flex-1">
             <Label htmlFor="area" className="text-base font-medium">
-              Surface habitable (m²)
+              Surface habitable (m²) <span className="text-red-500">*</span>
             </Label>
             <Input
               id="area"
@@ -287,10 +310,16 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
                 updateField('area', value === '' ? 0 : parseFloat(value));
               }}
               placeholder="Ex: 85"
-              className="mt-2 text-base h-12"
-              min="0"
+              className={`mt-2 text-base h-12 ${!formData.area || formData.area <= 0 ? 'border-red-500' : ''}`}
+              min="1"
               step="1"
+              required
             />
+            {(!formData.area || formData.area <= 0) && (
+              <p className="text-sm text-red-500 mt-1">
+                La surface est obligatoire
+              </p>
+            )}
           </div>
         </div>
       </Card>
@@ -524,7 +553,7 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
                 {formData.bedrooms > 1 ? 's' : ''} · {formData.bathrooms} salle
                 {formData.bathrooms > 1 ? 's' : ''} de bain ·{' '}
                 {formData.capacity} personne{formData.capacity > 1 ? 's' : ''}
-                {formData.area > 0 && ` · ${formData.area} m²`}
+                {formData.area && formData.area > 0 && ` · ${formData.area} m²`}
               </p>
               <p>
                 <strong>Équipements:</strong> {formData.amenities?.length || 0}{' '}

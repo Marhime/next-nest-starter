@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { getPhotoUrl } from '@/lib/utils';
 
 interface Property {
   id: number;
@@ -116,52 +117,55 @@ function PropertyCard({
     try {
       const API_URL =
         process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-      const response = await fetch(
+
+      const publishPromise = fetch(
         `${API_URL}/properties/${property.id}/publish`,
         {
           method: 'POST',
           credentials: 'include',
         },
-      );
+      ).then(async (response) => {
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to publish');
+        }
+        return response.json();
+      });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to publish');
-      }
+      await toast.promise(publishPromise, {
+        loading: t('publishing') || 'Publication...',
+        success: t('publishSuccess'),
+        error: (err) => err.message || 'Erreur lors de la publication',
+      });
 
-      toast.success(t('publishSuccess'));
       // Recharger la liste des propriétés
       window.location.reload();
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Erreur lors de la publication';
-      toast.error(message);
     } finally {
       setIsPublishing(false);
     }
   };
 
   const handleUnpublish = async () => {
-    try {
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-      const response = await fetch(
-        `${API_URL}/properties/${property.id}/unpublish`,
-        {
-          method: 'POST',
-          credentials: 'include',
-        },
-      );
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+    const unpublishPromise = fetch(
+      `${API_URL}/properties/${property.id}/unpublish`,
+      {
+        method: 'POST',
+        credentials: 'include',
+      },
+    ).then(async (response) => {
       if (!response.ok) throw new Error('Failed to unpublish');
+      return response.json();
+    });
 
-      toast.success(t('draftSuccess'));
-      window.location.reload();
-    } catch {
-      toast.error(t('updateError'));
-    }
+    await toast.promise(unpublishPromise, {
+      loading: 'Mise en brouillon...',
+      success: t('draftSuccess'),
+      error: t('updateError'),
+    });
+
+    window.location.reload();
   };
 
   const getPrice = () => {
@@ -182,11 +186,11 @@ function PropertyCard({
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+    <Card className="overflow-hidden pt-0 hover:shadow-lg transition-shadow">
       <div className="relative aspect-video w-full bg-muted">
         {primaryPhoto ? (
           <Image
-            src={primaryPhoto.url}
+            src={getPhotoUrl(primaryPhoto.url)}
             alt={property.title}
             fill
             className="object-cover"
@@ -370,22 +374,30 @@ export function PropertyList() {
   };
 
   const handleDuplicate = async (id: number) => {
-    try {
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+    const duplicatePromise = async () => {
       const response = await fetch(`${API_URL}/properties/${id}/duplicate`, {
         method: 'POST',
         credentials: 'include',
       });
 
       if (!response.ok) throw new Error('Failed to duplicate');
+      return response.json();
+    };
 
-      const newProperty = await response.json();
-      toast.success(t('duplicateSuccess'));
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const newProperty: any = await toast.promise(duplicatePromise(), {
+        loading: t('duplicating') || 'Duplication...',
+        success: t('duplicateSuccess'),
+        error: (err) => err?.message || t('duplicateError'),
+      });
+
       mutate(); // Rafraîchir la liste
       router.push(`/hosting/${newProperty.id}`);
-    } catch {
-      toast.error(t('duplicateError'));
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -394,20 +406,27 @@ export function PropertyList() {
       return;
     }
 
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+    const deletePromise = fetch(`${API_URL}/properties/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    }).then(async (response) => {
+      if (!response.ok) throw new Error('Failed to delete');
+      return response;
+    });
+
     try {
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-      const response = await fetch(`${API_URL}/properties/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
+      await toast.promise(deletePromise, {
+        loading: t('deleting') || 'Suppression...',
+        success: t('deleteSuccess'),
+        error: t('deleteError') || 'Erreur lors de la suppression',
       });
 
-      if (!response.ok) throw new Error('Failed to delete');
-
-      toast.success(t('deleteSuccess'));
       mutate(); // Rafraîchir la liste
-    } catch {
-      toast.error(t('duplicateError'));
+    } catch (error) {
+      // Error already handled by toast.promise
+      console.error(error);
     }
   };
 

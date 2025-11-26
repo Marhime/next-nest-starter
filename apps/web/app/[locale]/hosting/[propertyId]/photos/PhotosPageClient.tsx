@@ -1,35 +1,55 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
+import Image from 'next/image';
+import { useTranslations } from 'next-intl';
+import { useAddPropertyStore } from '../../store';
 import { PhotoUploadZone } from '@/components/photos/PhotoUploadZone';
-import { PhotoGallery } from '@/components/photos/PhotoGallery';
-
-interface Photo {
-  id: number;
-  url: string;
-  thumbnailUrl?: string;
-  order: number;
-  isPrimary: boolean;
-}
+import { getPhotoUrl } from '@/lib/utils';
+import type { Photo } from '@/types/photo';
 
 interface PhotosPageClientProps {
   propertyId: number;
   initialPhotos: Photo[];
-  locale: string;
 }
 
 export function PhotosPageClient({
   propertyId,
   initialPhotos,
-  locale,
 }: PhotosPageClientProps) {
-  const router = useRouter();
+  const t = useTranslations('PhotoUpload');
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
   const [loading, setLoading] = useState(false);
+  const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
+  const setCanProceed = useAddPropertyStore((state) => state.setCanProceed);
+  const setHandleNext = useAddPropertyStore((state) => state.setHandleNext);
+  const setPropertyProgress = useAddPropertyStore(
+    (state) => state.setPropertyProgress,
+  );
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+  useEffect(() => {
+    setCurrentStep?.(2); // Index 2 = 'photos' dans le tableau steps
+  }, [setCurrentStep]);
+
+  // Validation: minimum 5 photos
+  useEffect(() => {
+    const isValid = photos.length >= 5;
+    setCanProceed?.(isValid);
+
+    // Mark step as complete when we have at least 5 photos
+    if (isValid) {
+      setPropertyProgress?.(propertyId, 2, true);
+    }
+  }, [photos.length, setCanProceed, propertyId, setPropertyProgress]);
+
+  // Configure navigation - pas de handler, le layout gère la navigation
+  useEffect(() => {
+    setHandleNext?.(undefined);
+    return () => setHandleNext?.(undefined);
+  }, [setHandleNext]);
 
   // Upload photos
   const handleUpload = async (files: File[]) => {
@@ -41,7 +61,7 @@ export function PhotosPageClient({
         formData.append('file', file);
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/photos/property/${propertyId}`,
+          `${API_URL}/photos/property/${propertyId}`,
           {
             method: 'POST',
             body: formData,
@@ -50,77 +70,59 @@ export function PhotosPageClient({
         );
 
         if (!response.ok) {
-          throw new Error(`Failed to upload ${file.name}`);
+          throw new Error(`Échec de l'upload de ${file.name}`);
         }
 
-        return response.json();
+        const uploadedPhoto = await response.json();
+        console.log('Photo uploadée:', uploadedPhoto);
+        return uploadedPhoto;
       });
 
       const uploadedPhotos = await Promise.all(uploadPromises);
       setPhotos((prev) => [...prev, ...uploadedPhotos]);
-      toast.success(`${files.length} photo(s) uploaded successfully`);
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to upload photos',
-      );
-      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // Reorder photos
-  const handleReorder = async (
-    reorderedPhotos: { photoId: number; order: number }[],
-  ) => {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/photos/property/${propertyId}/reorder`,
-      {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photos: reorderedPhotos }),
-        credentials: 'include',
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to reorder photos');
-    }
-
-    toast.success('Photos reordered');
-  };
-
   // Delete photo
   const handleDelete = async (photoId: number) => {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/photos/${photoId}`,
-      {
-        method: 'DELETE',
-        credentials: 'include',
-      },
-    );
+    const deletePromise = fetch(`${API_URL}/photos/${photoId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    }).then(async (response) => {
+      if (!response.ok) {
+        throw new Error(t('deleteError'));
+      }
+      return response;
+    });
 
-    if (!response.ok) {
-      throw new Error('Failed to delete photo');
-    }
+    await toast.promise(deletePromise, {
+      loading: t('deleting'),
+      success: t('deleted'),
+      error: (err) => err.message || t('deleteError'),
+    });
 
     setPhotos((prev) => prev.filter((p) => p.id !== photoId));
-    toast.success('Photo deleted');
   };
 
   // Set primary photo
   const handleSetPrimary = async (photoId: number) => {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/photos/${photoId}/primary`,
-      {
-        method: 'PATCH',
-        credentials: 'include',
-      },
-    );
+    const setPrimaryPromise = fetch(`${API_URL}/photos/${photoId}/primary`, {
+      method: 'PATCH',
+      credentials: 'include',
+    }).then(async (response) => {
+      if (!response.ok) {
+        throw new Error(t('updateError'));
+      }
+      return response;
+    });
 
-    if (!response.ok) {
-      throw new Error('Failed to set primary photo');
-    }
+    await toast.promise(setPrimaryPromise, {
+      loading: t('updating'),
+      success: t('coverUpdated'),
+      error: (err) => err.message || t('updateError'),
+    });
 
     setPhotos((prev) =>
       prev.map((p) => ({
@@ -128,26 +130,31 @@ export function PhotosPageClient({
         isPrimary: p.id === photoId,
       })),
     );
-    toast.success('Cover photo updated');
-  };
-
-  const handleNext = () => {
-    if (photos.length < 5) {
-      toast.error('Please upload at least 5 photos before continuing');
-      return;
-    }
-    router.push(`/${locale}/hosting/${propertyId}/about`);
-  };
-
-  const handleBack = () => {
-    router.push(`/${locale}/hosting/${propertyId}/location`);
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-6xl mx-auto">
+      {/* Status */}
+      <div className="bg-card border rounded-lg p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">{t('title')}</h2>
+            <p className="text-muted-foreground mt-1">{t('subtitle')}</p>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold">{photos.length}/20</div>
+            <div className="text-sm text-muted-foreground">
+              {photos.length >= 5
+                ? t('ready')
+                : `${5 - photos.length} ${t('remaining')}`}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Upload Zone */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Upload Photos</h2>
+      <div className="bg-card border rounded-lg p-6">
+        <h3 className="text-lg font-semibold mb-4">{t('uploadTitle')}</h3>
         <PhotoUploadZone
           onUpload={handleUpload}
           maxFiles={20 - photos.length}
@@ -155,51 +162,84 @@ export function PhotosPageClient({
         />
       </div>
 
-      {/* Photo Gallery */}
+      {/* Gallery */}
       {photos.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold mb-4">
-            Your Photos ({photos.length}/20)
-          </h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Drag photos to reorder them. The first photo will be your cover
-            photo.
+        <div className="bg-card border rounded-lg p-6">
+          <h3 className="text-lg font-semibold mb-4">
+            {t('yourPhotos')} ({photos.length})
+          </h3>
+          <p className="text-sm text-muted-foreground mb-6">
+            {t('coverPhotoInfo')}
           </p>
-          <PhotoGallery
-            photos={photos}
-            onReorder={handleReorder}
-            onDelete={handleDelete}
-            onSetPrimary={handleSetPrimary}
-          />
-        </div>
-      )}
 
-      {/* Navigation */}
-      <div className="flex justify-between pt-6 border-t">
-        <Button variant="outline" onClick={handleBack} disabled={loading}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-        <Button onClick={handleNext} disabled={loading || photos.length < 5}>
-          {loading ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              Next
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </>
-          )}
-        </Button>
-      </div>
+          {/* Grid Layout - Airbnb Style */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 auto-rows-fr">
+            {photos
+              .sort((a, b) => {
+                // Primary photo first
+                if (a.isPrimary && !b.isPrimary) return -1;
+                if (!a.isPrimary && b.isPrimary) return 1;
+                // Then by order
+                return a.order - b.order;
+              })
+              .map((photo, index) => {
+                const isCover = index === 0; // First photo is always cover
 
-      {/* Photo Counter Info */}
-      {photos.length < 5 && (
-        <div className="text-center text-sm text-muted-foreground">
-          You need {5 - photos.length} more photo
-          {5 - photos.length > 1 ? 's' : ''} to continue
+                return (
+                  <div
+                    key={photo.id}
+                    className={`relative group rounded-lg overflow-hidden border-2 hover:border-primary transition-colors ${
+                      isCover ? 'md:col-span-2 md:row-span-2' : 'aspect-square'
+                    }`}
+                  >
+                    <div
+                      className={
+                        isCover ? 'h-full min-h-[400px]' : 'aspect-square'
+                      }
+                    >
+                      <Image
+                        src={getPhotoUrl(photo.url)}
+                        alt={`Photo ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        sizes={
+                          isCover
+                            ? '(max-width: 768px) 100vw, 50vw'
+                            : '(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw'
+                        }
+                        priority={isCover}
+                        unoptimized
+                      />
+                    </div>
+
+                    {/* Cover badge */}
+                    {isCover && (
+                      <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs px-3 py-1.5 rounded font-semibold shadow-lg">
+                        {t('coverBadge')}
+                      </div>
+                    )}
+
+                    {/* Actions overlay */}
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 flex-wrap p-4">
+                      {!isCover && (
+                        <button
+                          onClick={() => handleSetPrimary(photo.id)}
+                          className="px-3 py-2 bg-white text-black rounded text-sm hover:bg-gray-100 font-medium shadow-lg"
+                        >
+                          {t('setCoverButton')}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDelete(photo.id)}
+                        className="px-3 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600 font-medium shadow-lg"
+                      >
+                        {t('deleteButton')}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
         </div>
       )}
     </div>

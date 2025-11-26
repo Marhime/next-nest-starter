@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Copy, Home as HomeIcon } from 'lucide-react';
+import { Plus, Home as HomeIcon } from 'lucide-react';
 import { PropertyList } from '@/components/property-creation/PropertyList';
 import { CreateNewProperty } from '@/components/property-creation/CreateNewProperty';
 import { useUserProperties } from '@/hooks/use-properties';
@@ -85,54 +85,6 @@ export default function AddPropertyPage() {
       {/* Main Content */}
       <div className="container mx-auto py-12 px-4 max-w-6xl">
         {/* Quick Actions */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-semibold mb-6">{t('getStarted')}</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card
-              className="cursor-pointer hover:shadow-lg transition-all hover:border-primary"
-              onClick={() => setShowCreateForm(true)}
-            >
-              <CardHeader>
-                <div className="flex items-center space-x-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                    <Plus className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <CardTitle>{t('createNew')}</CardTitle>
-                    <CardDescription>
-                      {t('createNewDescription')}
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-
-            <Card
-              className={`cursor-pointer hover:shadow-lg transition-all hover:border-primary ${
-                properties.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-              onClick={() =>
-                properties.length > 0 && setShowDuplicateFrom(true)
-              }
-            >
-              <CardHeader>
-                <div className="flex items-center space-x-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
-                    <Copy className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <CardTitle>{t('duplicateListing')}</CardTitle>
-                    <CardDescription>
-                      {t('duplicateDescription')}
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-          </div>
-        </div>
-
-        <Separator className="my-12" />
 
         {/* Properties List */}
         <div className="mb-12">

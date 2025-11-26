@@ -1,7 +1,8 @@
 'use client';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useAddPropertyStore } from '../../store';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useProperty } from '@/hooks/use-properties';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -64,6 +65,9 @@ const LocationPage = () => {
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
   const setCanProceed = useAddPropertyStore((state) => state.setCanProceed);
   const setHandleNext = useAddPropertyStore((state) => state.setHandleNext);
+  const setPropertyProgress = useAddPropertyStore(
+    (state) => state.setPropertyProgress,
+  );
   const {
     property,
     isLoading: isLoadingProperty,
@@ -90,7 +94,7 @@ const LocationPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    setCurrentStep?.(2);
+    setCurrentStep?.(1);
   }, [setCurrentStep]);
 
   // Validation: activer Next seulement si on a les données nécessaires pour chaque phase
@@ -121,7 +125,19 @@ const LocationPage = () => {
     });
 
     setCanProceed?.(isValid);
-  }, [currentPhase, coordinates, addressForm, setCanProceed]);
+
+    // Mark step as complete when address is validated (confirm phase with valid data)
+    if (currentPhase === 'confirm' && isValid && propertyId) {
+      setPropertyProgress?.(Number(propertyId), 1, true);
+    }
+  }, [
+    currentPhase,
+    coordinates,
+    addressForm,
+    setCanProceed,
+    propertyId,
+    setPropertyProgress,
+  ]);
 
   // Load existing property data
   useEffect(() => {
@@ -276,29 +292,31 @@ const LocationPage = () => {
 
         console.log('Sending location data:', payload);
 
-        const response = await fetch(`${API_URL}/properties/${propertyId}`, {
+        const updatePromise = fetch(`${API_URL}/properties/${propertyId}`, {
           method: 'PATCH',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(payload),
+        }).then(async (response) => {
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to update property');
+          }
+          return response.json();
         });
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || 'Failed to update property');
-        }
+        await toast.promise(updatePromise, {
+          loading: t('messages.saving') || 'Sauvegarde...',
+          success: t('messages.addressSaved'),
+          error: (err) => err.message || t('messages.updateError'),
+        });
 
-        toast.success(t('messages.addressSaved'));
         mutate(); // Refresh data
 
         // Navigate to next step
         router.push(`/hosting/${propertyId}/photos`);
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : t('messages.updateError');
-        toast.error(message);
       } finally {
         setIsSubmitting(false);
       }
@@ -369,9 +387,9 @@ const LocationPage = () => {
 
   return (
     <div className="flex w-full h-full justify-center items-center p-4">
-      <Card className="w-full max-w-4xl">
+      <Card className="w-full max-w-4xl border-0 shadow-none">
         <CardHeader>
-          <CardTitle>
+          <CardTitle className="text-4xl">
             {currentPhase === 'search' && t('titles.search')}
             {currentPhase === 'form' && t('titles.form')}
             {currentPhase === 'confirm' && t('titles.confirm')}
@@ -399,8 +417,8 @@ const LocationPage = () => {
               {/* Carte - affiche toujours Puerto Escondido par défaut ou les coordonnées si elles existent */}
               <div className="rounded-lg overflow-hidden border">
                 <MapView
-                  latitude={coordinates?.lat || 15.865}
-                  longitude={coordinates?.lng || -97.0681}
+                  latitude={coordinates?.lat || 15.5143}
+                  longitude={coordinates?.lng || 97.0418}
                   zoom={coordinates ? 15 : 12}
                   className="h-[900px] w-full"
                   markerTitle={

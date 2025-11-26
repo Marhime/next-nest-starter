@@ -30,6 +30,7 @@
   ],
   "dependencies": {
     "@thallesp/nestjs-better-auth": "^2.1.0",
+    "embla-carousel-react": "^8.6.0",
     "jose": "^6.1.0",
     "leaflet": "^1.9.4",
     "react-leaflet": "^5.0.0",

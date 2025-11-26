@@ -14,7 +14,7 @@ import {
   ListingType,
   PropertyStatus,
   PropertyType,
-} from '@/generated/prisma';
+} from '../../../generated/prisma/client';
 
 export class CreatePropertyDto {
   @ApiProperty({ description: 'Owner ID' })

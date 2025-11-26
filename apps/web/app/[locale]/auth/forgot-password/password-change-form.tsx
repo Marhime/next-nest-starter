@@ -48,28 +48,38 @@ const PasswordChangeForm = ({
       onSubmit: ResetPasswordFormSchema,
     },
     onSubmit: async ({ value }) => {
-      try {
-        const { error: authError, data } = await authClient.resetPassword({
+      const resetPromise = authClient
+        .resetPassword({
           newPassword: value.password,
           token: token || '',
+        })
+        .then(({ error: authError, data }) => {
+          if (authError) {
+            setErrorMessage(
+              authError.message || tErrors('passwordResetFailed'),
+            );
+            throw new Error(
+              authError.message || tErrors('passwordResetFailed'),
+            );
+          }
+
+          // Nettoyer l'email du store après un reset réussi
+          clearPasswordResetEmail?.();
+          setSuccess(true);
+          return data;
         });
 
-        if (authError) {
-          setErrorMessage(authError.message || tErrors('passwordResetFailed'));
-          toast.error(authError.message || tErrors('passwordResetFailed'));
-          return;
-        }
+      try {
+        const data = await toast.promise(resetPromise, {
+          loading: tErrors('resettingPassword') || 'Réinitialisation...',
+          success: tErrors('passwordChangeSuccess'),
+          error: (err) => err?.message || tErrors('passwordResetFailed'),
+        });
 
-        // Nettoyer l'email du store après un reset réussi
-        clearPasswordResetEmail?.();
-
-        toast.success(tErrors('passwordChangeSuccess'));
-        setSuccess(true);
         return data;
       } catch (err) {
         console.error('Password reset error:', err);
         setErrorMessage(tErrors('unexpectedError'));
-        toast.error(tErrors('unexpectedError'));
       }
     },
   });

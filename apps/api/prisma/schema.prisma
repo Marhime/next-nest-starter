@@ -5,13 +5,12 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
   output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -210,19 +209,36 @@ enum AccountType {
 }
 
 enum PropertyType {
-  HOTEL
-  HOSTEL
-  GUESTHOUSE
-  HOUSE
-  APARTMENT
-  LAND
-  ROOM
+  // Residential - Vente/Location longue durée (SeLoger style)
+  APARTMENT // Appartement
+  HOUSE // Maison
+  VILLA // Villa
+  TOWNHOUSE // Maison de ville
+  DUPLEX // Duplex
+  PENTHOUSE // Penthouse
+  STUDIO // Studio
+  LOFT // Loft
+
+  // Terrain
+  LAND // Terrain à bâtir
+
+  // Commercial
+  OFFICE // Bureau
+  RETAIL // Commerce
+  WAREHOUSE // Entrepôt
+  BUILDING // Immeuble
+
+  // Autres (conservés pour compatibilité)
+  ROOM // Chambre
+  GUESTHOUSE // Maison d'hôtes
+  HOTEL // Hôtel
+  HOSTEL // Auberge
 }
 
 enum ListingType {
-  SHORT_TERM
-  LONG_TERM
-  SALE
+  SALE // Vente
+  RENT // Location longue durée (mois/années)
+  SHORT_TERM // Location courte durée (jours/semaines) - Airbnb style
 }
 
 enum Currency {

@@ -14,11 +14,25 @@ type AddPropertyStore = Partial<AddPropertySchema> & {
   setCanProceed?: (canProceed: boolean) => void;
   handleNext?: () => void;
   setHandleNext?: (handler: (() => void) | undefined) => void;
+  // Track completion state per property
+  propertyProgress: Record<
+    number,
+    {
+      completedSteps: number[];
+      currentStep: number;
+    }
+  >;
+  setPropertyProgress: (
+    propertyId: number,
+    step: number,
+    completed: boolean,
+  ) => void;
+  getCurrentPropertyStep: (propertyId: number) => number;
 };
 
 export const useAddPropertyStore = create<AddPropertyStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       setData: (data) => set((state) => ({ ...state, ...data })),
       setCurrentStep: (step) => set({ currentStep: step }),
       setIsOpen: (isOpen) => set({ isOpen }),
@@ -28,6 +42,42 @@ export const useAddPropertyStore = create<AddPropertyStore>()(
       setCanProceed: (canProceed) => set({ canProceed }),
       handleNext: undefined,
       setHandleNext: (handler) => set({ handleNext: handler }),
+      propertyProgress: {},
+      setPropertyProgress: (propertyId, step, completed) =>
+        set((state) => {
+          const progress = state.propertyProgress[propertyId] || {
+            completedSteps: [],
+            currentStep: 0,
+          };
+
+          const completedSteps = completed
+            ? [...new Set([...progress.completedSteps, step])]
+            : progress.completedSteps.filter((s) => s !== step);
+
+          return {
+            propertyProgress: {
+              ...state.propertyProgress,
+              [propertyId]: {
+                completedSteps,
+                currentStep: step,
+              },
+            },
+          };
+        }),
+      getCurrentPropertyStep: (propertyId) => {
+        const progress = get().propertyProgress[propertyId];
+        if (!progress) return 0;
+
+        // Find first incomplete step (0=type, 1=location, 2=photos, 3=about)
+        const steps = [0, 1, 2, 3];
+        for (const step of steps) {
+          if (!progress.completedSteps.includes(step)) {
+            return step;
+          }
+        }
+        // All steps completed, return last step
+        return 3;
+      },
     }),
     {
       name: 'add-property-storage', // unique name for your storage item

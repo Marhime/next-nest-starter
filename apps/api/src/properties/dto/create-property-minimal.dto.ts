@@ -1,6 +1,6 @@
 import { IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { PropertyType } from '@/generated/prisma';
+import { PropertyType } from '../../../generated/prisma/client';
 
 /**
  * DTO minimal pour créer une propriété avec uniquement le type

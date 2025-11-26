@@ -43,23 +43,29 @@ export function SignupForm({
       onSubmit: SignupFormSchema,
     },
     onSubmit: async ({ value }) => {
-      try {
-        const { error: authError } = await authClient.signUp.email({
+      const signupPromise = authClient.signUp
+        .email({
           email: value.email,
           password: value.password,
           name: value.name,
+        })
+        .then(({ error: authError }) => {
+          if (authError) {
+            throw new Error(authError.message || tErrors('registrationFailed'));
+          }
+          return true;
         });
 
-        if (authError) {
-          toast.error(authError.message || tErrors('registrationFailed'));
-          return;
-        }
+      try {
+        await toast.promise(signupPromise, {
+          loading: tErrors('registering') || 'Inscription...',
+          success: tErrors('registrationSuccess'),
+          error: (err) => err?.message || tErrors('registrationFailed'),
+        });
 
-        toast.success(tErrors('registrationSuccess'));
         router.push('/auth/verify-email');
       } catch (err) {
         console.error('Registration error:', err);
-        toast.error(tErrors('serverError'));
       }
     },
   });

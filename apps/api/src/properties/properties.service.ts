@@ -5,7 +5,11 @@ import { UpdatePropertyDto } from '@/src/properties/dto/update-property.dto';
 import { QueryPropertyDto } from '@/src/properties/dto/query-property.dto';
 import { CreatePropertyMinimalDto } from '@/src/properties/dto/create-property-minimal.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, PropertyStatus, Currency } from '@/generated/prisma';
+import {
+  Prisma,
+  PropertyStatus,
+  Currency,
+} from '../../generated/prisma/client';
 
 @Injectable()
 export class PropertiesService {
@@ -120,26 +124,32 @@ export class PropertiesService {
       ...(listingType && { listingType }),
       ...(city && { city: { contains: city, mode: 'insensitive' } }),
       ...(state && { state: { contains: state, mode: 'insensitive' } }),
-      ...(status && { status }),
+      // Default to ACTIVE if no status specified (for public searches)
+      status: status || PropertyStatus.ACTIVE,
       ...(minBedrooms && { bedrooms: { gte: minBedrooms } }),
     };
 
     // Price filtering based on listing type
-    if (minPrice || maxPrice) {
+    if (minPrice !== undefined || maxPrice !== undefined) {
       const priceFilter: any = {};
 
+      // Convert to Decimal for Prisma
+      if (minPrice !== undefined) priceFilter.gte = String(minPrice);
+      if (maxPrice !== undefined) priceFilter.lte = String(maxPrice);
+
       if (listingType === 'SHORT_TERM') {
-        if (minPrice) priceFilter.gte = minPrice;
-        if (maxPrice) priceFilter.lte = maxPrice;
         where.nightlyPrice = priceFilter;
-      } else if (listingType === 'LONG_TERM') {
-        if (minPrice) priceFilter.gte = minPrice;
-        if (maxPrice) priceFilter.lte = maxPrice;
+      } else if (listingType === 'RENT') {
         where.monthlyPrice = priceFilter;
       } else if (listingType === 'SALE') {
-        if (minPrice) priceFilter.gte = minPrice;
-        if (maxPrice) priceFilter.lte = maxPrice;
         where.salePrice = priceFilter;
+      } else {
+        // If no listingType specified, search across all price types (OR condition)
+        where.OR = [
+          { nightlyPrice: priceFilter },
+          { monthlyPrice: priceFilter },
+          { salePrice: priceFilter },
+        ];
       }
     }
 
@@ -454,5 +464,66 @@ export class PropertiesService {
         },
       },
     });
+  }
+
+  /**
+   * Search properties within map bounds + radius extension
+   * Optimized for map-based search with debouncing
+   */
+  async searchInBounds(
+    bounds: {
+      north: number;
+      south: number;
+      east: number;
+      west: number;
+    },
+    radiusKm: number = 100,
+  ) {
+    // Extend bounds by radius
+    const latDelta = radiusKm / 111; // 1 degree latitude ≈ 111 km
+    const centerLat = (bounds.north + bounds.south) / 2;
+    const lonDelta = radiusKm / (111 * Math.cos((centerLat * Math.PI) / 180));
+
+    const extendedBounds = {
+      north: bounds.north + latDelta,
+      south: bounds.south - latDelta,
+      east: bounds.east + lonDelta,
+      west: bounds.west - lonDelta,
+    };
+
+    const properties = await this.prisma.property.findMany({
+      where: {
+        latitude: {
+          gte: extendedBounds.south,
+          lte: extendedBounds.north,
+        },
+        longitude: {
+          gte: extendedBounds.west,
+          lte: extendedBounds.east,
+        },
+        status: 'ACTIVE',
+      },
+      include: {
+        photos: true,
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 100, // Limit results for performance
+    });
+
+    return {
+      data: properties,
+      total: properties.length,
+      bounds: extendedBounds,
+    };
   }
 }

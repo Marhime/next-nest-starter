@@ -36,6 +36,9 @@ const TypePage = () => {
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
   const setCanProceed = useAddPropertyStore((state) => state.setCanProceed);
   const setHandleNext = useAddPropertyStore((state) => state.setHandleNext);
+  const setPropertyProgress = useAddPropertyStore(
+    (state) => state.setPropertyProgress,
+  );
   const {
     property,
     isLoading: isLoadingProperty,
@@ -97,7 +100,7 @@ const TypePage = () => {
   console.log('Current formData:', formData);
 
   useEffect(() => {
-    setCurrentStep?.(1);
+    setCurrentStep?.(0); // Type is now step 0 (was step 1)
   }, [setCurrentStep]);
 
   // Validation du formulaire
@@ -111,7 +114,12 @@ const TypePage = () => {
         (formData.listingType === 'SALE' && formData.salePrice !== ''));
 
     setCanProceed?.(isValid);
-  }, [formData, setCanProceed]);
+
+    // Mark step as completed when valid
+    if (isValid && propertyId) {
+      setPropertyProgress(Number(propertyId), 0, true);
+    }
+  }, [formData, setCanProceed, setPropertyProgress, propertyId]);
 
   // Charger les données existantes
   useEffect(() => {
@@ -215,7 +223,8 @@ const TypePage = () => {
       try {
         const API_URL =
           process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-        const response = await fetch(`${API_URL}/properties/${propertyId}`, {
+
+        const updatePromise = fetch(`${API_URL}/properties/${propertyId}`, {
           method: 'PATCH',
           credentials: 'include',
           headers: {
@@ -235,22 +244,24 @@ const TypePage = () => {
               : null,
             currency: 'MXN',
           }),
+        }).then(async (response) => {
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to update property');
+          }
+          return response.json();
         });
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || 'Failed to update property');
-        }
+        await toast.promise(updatePromise, {
+          loading: t('messages.updating') || 'Mise à jour...',
+          success: t('messages.updateSuccess'),
+          error: (err) => err.message || t('messages.updateError'),
+        });
 
-        toast.success(t('messages.updateSuccess'));
         mutate(); // Rafraîchir les données
 
         // Rediriger vers la prochaine étape
         router.push(`/hosting/${propertyId}/location`);
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : t('messages.updateError');
-        toast.error(message);
       } finally {
         setIsSubmitting(false);
       }

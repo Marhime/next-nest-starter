@@ -6,12 +6,15 @@ import { useTranslations } from 'next-intl';
 const SearchBarHome = () => {
   const t = useTranslations('Home');
   return (
-    <InputGroup className="bg-white text-black p-4 xl:py-8 rounded">
-      <InputGroupInput placeholder={t('searchPlaceholder')} />
-      <InputGroupAddon align="inline-end">
-        <Button className="rounded-full px-6 py-4">{t('search')}</Button>
-      </InputGroupAddon>
-    </InputGroup>
+    <div className="flex flex-col">
+      <p className="mb-4 text-lg font-medium">{t('searchPrompt')}</p>
+      <InputGroup className="bg-white text-black p-4 xl:py-8 rounded">
+        <InputGroupInput placeholder={t('searchPlaceholder')} />
+        <InputGroupAddon align="inline-end">
+          <Button className="rounded-full px-6 py-4">{t('search')}</Button>
+        </InputGroupAddon>
+      </InputGroup>
+    </div>
   );
 };
 

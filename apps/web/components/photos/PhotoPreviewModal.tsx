@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -20,7 +20,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import Image from 'next/image';
-import { cn } from '@/lib/utils';
+import { cn, getPhotoUrl } from '@/lib/utils';
 import type { Photo } from '@/types/photo';
 
 interface PhotoPreviewModalProps {
@@ -155,6 +155,9 @@ export function PhotoPreviewModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-screen-2xl w-full h-[90vh] p-0 gap-0 bg-black/95">
+        <DialogTitle className="sr-only">
+          Photo Preview - {currentPhoto.order + 1} of {photos.length}
+        </DialogTitle>
         {/* Header */}
         <div className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent">
           <div className="flex items-center gap-3">
@@ -190,7 +193,7 @@ export function PhotoPreviewModal({
             }}
           >
             <Image
-              src={currentPhoto.url}
+              src={getPhotoUrl(currentPhoto.url)}
               alt={`Photo ${currentPhoto.order}`}
               fill
               className="object-contain"
@@ -309,7 +312,7 @@ export function PhotoPreviewModal({
                 )}
               >
                 <Image
-                  src={photo.thumbnailUrl || photo.url}
+                  src={getPhotoUrl(photo.thumbnailUrl || photo.url)}
                   alt={`Thumbnail ${index + 1}`}
                   fill
                   className="object-cover"

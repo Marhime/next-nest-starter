@@ -2,10 +2,10 @@
 
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
+import { JAWG_TILE_URL, JAWG_ATTRIBUTION } from '@/lib/constants';
 import 'leaflet/dist/leaflet.css';
 
 // Fix Leaflet default icon issue with Next.js
-// This is a known issue with webpack and leaflet
 const iconRetinaUrl =
   'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png';
 const iconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
@@ -60,11 +60,10 @@ export function MapView({
         scrollWheelZoom: true,
       });
 
-      // Add OpenStreetMap tiles
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19,
+      // Add Jawg Maps tiles (Sunny style) - consistent with PropertyMap
+      L.tileLayer(JAWG_TILE_URL, {
+        attribution: JAWG_ATTRIBUTION,
+        maxZoom: 22,
       }).addTo(map);
 
       // Add marker only if showMarker is true

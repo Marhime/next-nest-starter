@@ -63,21 +63,90 @@ export class PropertiesController {
 
   @Get('nearby')
   @AllowAnonymous()
-  @ApiOperation({ summary: 'Search properties nearby a location' })
-  @ApiQuery({ name: 'latitude', type: Number })
-  @ApiQuery({ name: 'longitude', type: Number })
+  @ApiOperation({
+    summary: 'Search properties within map bounds',
+    description:
+      'Fetches properties within map bounds + optional radius extension',
+  })
+  @ApiQuery({
+    name: 'north',
+    type: Number,
+    required: false,
+    description: 'North bound latitude',
+  })
+  @ApiQuery({
+    name: 'south',
+    type: Number,
+    required: false,
+    description: 'South bound latitude',
+  })
+  @ApiQuery({
+    name: 'east',
+    type: Number,
+    required: false,
+    description: 'East bound longitude',
+  })
+  @ApiQuery({
+    name: 'west',
+    type: Number,
+    required: false,
+    description: 'West bound longitude',
+  })
   @ApiQuery({
     name: 'radius',
     type: Number,
     required: false,
-    description: 'Radius in km (default: 10)',
+    description: 'Additional radius extension in km (default: 100)',
+  })
+  @ApiQuery({
+    name: 'latitude',
+    type: Number,
+    required: false,
+    description: 'Fallback: center latitude',
+  })
+  @ApiQuery({
+    name: 'longitude',
+    type: Number,
+    required: false,
+    description: 'Fallback: center longitude',
   })
   searchNearby(
-    @Query('latitude', ParseIntPipe) latitude: number,
-    @Query('longitude', ParseIntPipe) longitude: number,
-    @Query('radius') radius?: number,
+    @Query('north') northStr?: string,
+    @Query('south') southStr?: string,
+    @Query('east') eastStr?: string,
+    @Query('west') westStr?: string,
+    @Query('radius') radiusStr?: string,
+    @Query('latitude') latStr?: string,
+    @Query('longitude') lonStr?: string,
   ) {
-    return this.propertiesService.searchNearby(latitude, longitude, radius);
+    // Parse query params to numbers
+    const north = northStr ? parseFloat(northStr) : undefined;
+    const south = southStr ? parseFloat(southStr) : undefined;
+    const east = eastStr ? parseFloat(eastStr) : undefined;
+    const west = westStr ? parseFloat(westStr) : undefined;
+    const radius = radiusStr ? parseFloat(radiusStr) : undefined;
+    const latitude = latStr ? parseFloat(latStr) : undefined;
+    const longitude = lonStr ? parseFloat(lonStr) : undefined;
+
+    // If bounds provided, use bounds-based search
+    if (north && south && east && west) {
+      return this.propertiesService.searchInBounds(
+        { north, south, east, west },
+        radius || 100,
+      );
+    }
+
+    // Fallback to point-based search
+    if (latitude && longitude) {
+      return this.propertiesService.searchNearby(
+        latitude,
+        longitude,
+        radius || 10,
+      );
+    }
+
+    // Default: return all active properties
+    return this.propertiesService.findAll({ status: 'ACTIVE' });
   }
 
   @Get('user/me')

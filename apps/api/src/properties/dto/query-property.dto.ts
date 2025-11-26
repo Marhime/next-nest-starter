@@ -2,7 +2,11 @@
 import { IsOptional, IsEnum, IsString, IsNumber, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { ListingType, PropertyStatus, PropertyType } from '@/generated/prisma';
+import {
+  ListingType,
+  PropertyStatus,
+  PropertyType,
+} from '../../../generated/prisma/client';
 
 export class QueryPropertyDto {
   @ApiPropertyOptional({ enum: PropertyType })
