@@ -44,27 +44,19 @@ export function PropertyCard({ property }: PropertyCardProps) {
         ? 'par nuit'
         : '';
 
-  const handleCardClick = () => {
-    selectProperty(property.id);
-    if (property.latitude && property.longitude) {
-      setMapCenter([property.latitude, property.longitude]);
-    }
-  };
-
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsFavorite(!isFavorite);
   };
 
   return (
-    <div>
+    <Link target="_blank" href={`/property/${property.id}`}>
       <Card
         className={cn(
           'group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl w-full max-w-[480px] mx-auto',
           isSelected && 'ring-2 ring-primary shadow-xl scale-[1.02]',
           isHovered && 'shadow-lg',
         )}
-        onClick={handleCardClick}
         onMouseEnter={() => hoverProperty(property.id)}
         onMouseLeave={() => hoverProperty(null)}
       >
@@ -194,6 +186,6 @@ export function PropertyCard({ property }: PropertyCardProps) {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </Link>
   );
 }

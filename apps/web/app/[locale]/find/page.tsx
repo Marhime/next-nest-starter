@@ -38,14 +38,14 @@ function PropertySearchContent() {
   usePropertyData();
 
   return (
-    <div className="relative md:flex min-h-[calc(100vh-69px)]">
-      {/* Map Container - Fixed behind on mobile, flexible on desktop */}
-      <div className="fixed inset-0 top-[69px] md:flex-1 md:relative md:top-0 h-[calc(100vh-69px)] z-0">
-        <PropertyMap className="w-full h-full" />
-      </div>
-
+    <div className="relative md:flex h-full">
       {/* PropertySidebar - Renders as drawer on mobile, sidebar on desktop */}
       <PropertySidebar />
+
+      {/* Map Container - Fixed behind on mobile, flexible on desktop */}
+      <div className="fixed right-0 top-[69px] md:flex-1 md:sticky h-[calc(100vh-69px)] z-2 overflow-hidden">
+        <PropertyMap className="md:4 xl:p-10 w-full h-full" />
+      </div>
 
       {/* Mobile floating button to open drawer */}
       <MobileListButton />

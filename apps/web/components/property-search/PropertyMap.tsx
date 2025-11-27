@@ -155,7 +155,7 @@ export function PropertyMap({ className }: { className?: string }) {
 
   return (
     <div ref={containerRef} className={className}>
-      <div className="relative h-full z-10">
+      <div className="relative h-full z-10 rounded-2xl overflow-hidden">
         <MapContainer
           center={mapCenter}
           zoom={mapZoom}

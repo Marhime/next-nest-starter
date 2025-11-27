@@ -125,54 +125,21 @@ export function PropertySidebar() {
   return (
     <div
       ref={sidebarRef}
-      className={cn(
-        'hidden md:flex md:absolute md:left-0 md:top-0 md:bottom-0 z-10',
-        'relative bg-background border-r transition-all duration-300 flex-col',
-        isSidebarCollapsed && 'md:w-16',
-      )}
+      className={cn('relative flex flex-col  bg-white border-l transition-all')}
       style={
         {
           width: isSidebarCollapsed ? '4rem' : `${sidebarWidth}%`,
         } as React.CSSProperties
       }
     >
-      {/* Header */}
-      <div className="flex-shrink-0 p-4 border-b space-y-4">
-        <div className="flex items-center justify-between">
-          <h1
-            className={cn(
-              'text-xl font-bold transition-opacity',
-              isSidebarCollapsed && 'opacity-0',
-            )}
-          >
-            Recherche de propriétés
-          </h1>
-        </div>
-
-        {!isSidebarCollapsed && (
-          <div className="flex items-center gap-2">
-            {filteredProperties && (
-              <p className="text-sm text-muted-foreground">
-                {filteredProperties.length} propriété
-                {filteredProperties.length !== 1 ? 's' : ''} trouvée
-                {filteredProperties.length !== 1 ? 's' : ''}
-              </p>
-            )}
-            {isFetching && (
-              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-            )}
-          </div>
-        )}
-      </div>
-
       {/* Property List */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1">
         <PropertyListContent
           isFetching={isFetching}
           isError={isError}
           error={error}
           filteredProperties={filteredProperties}
-          className={cn('p-4 pb-8', isSidebarCollapsed && 'hidden')}
+          className={cn('p-4 md:p-10 md:pr-0', isSidebarCollapsed && 'hidden')}
         />
       </div>
 
@@ -180,13 +147,11 @@ export function PropertySidebar() {
       {!isSidebarCollapsed && (
         <div
           className={cn(
-            'absolute top-0 right-0 w-1 h-full cursor-col-resize group hover:bg-primary transition-colors',
+            'absolute top-0 right-0 w-10 translate-x-full h-full cursor-col-resize group z-10 transition-colors',
             isResizing && 'bg-primary',
           )}
           onMouseDown={handleResizeStart}
-        >
-          <div className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/2 w-3 h-12 bg-border rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-        </div>
+        ></div>
       )}
     </div>
   );
@@ -212,21 +177,24 @@ function PropertyListContent({
     <div className={cn('overflow-y-auto h-full', className)}>
       {/* Loading State */}
       {isFetching && (
-        <div
-          className="grid gap-4 auto-rows-max"
-          style={{
-            gridTemplateColumns:
-              'repeat(auto-fill, minmax(min(50%, 300px), 1fr))',
-          }}
-        >
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="space-y-3 w-full max-w-[480px] mx-auto">
-              <Skeleton className="h-48 w-full rounded-lg" />
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-            </div>
-          ))}
-        </div>
+        <>
+          <Skeleton className="h-4 w-48 mb-4 font-semibold" />
+          <div
+            className="grid gap-4 auto-rows-max"
+            style={{
+              gridTemplateColumns:
+                'repeat(auto-fill, minmax(min(50%, 300px), 1fr))',
+            }}
+          >
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="space-y-3 w-full max-w-[480px] mx-auto">
+                <Skeleton className="h-48 w-full rounded-lg" />
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Error State */}
@@ -259,27 +227,35 @@ function PropertyListContent({
         !isError &&
         filteredProperties &&
         filteredProperties.length > 0 && (
-          <div
-            className="grid gap-4 auto-rows-max animate-in fade-in-0 duration-500"
-            style={{
-              gridTemplateColumns:
-                'repeat(auto-fill, minmax(min(50%, 300px), 1fr))',
-            }}
-          >
-            {filteredProperties.map((property: Property, index) => (
-              <div
-                key={property.id}
-                className="animate-in fade-in-0 slide-in-from-bottom-4"
-                style={{
-                  animationDelay: `${index * 50}ms`,
-                  animationDuration: '400ms',
-                  animationFillMode: 'backwards',
-                }}
-              >
-                <PropertyCard property={property} />
-              </div>
-            ))}
-          </div>
+          <>
+            <p className="text-sm mb-4">
+              {filteredProperties.length} propriété
+              {filteredProperties.length !== 1 ? 's' : ''} trouvée
+              {filteredProperties.length !== 1 ? 's' : ''} dans la zone de la
+              carte
+            </p>
+            <div
+              className="grid gap-4 auto-rows-max animate-in fade-in-0 duration-500"
+              style={{
+                gridTemplateColumns:
+                  'repeat(auto-fill, minmax(min(50%, 300px), 1fr))',
+              }}
+            >
+              {filteredProperties.map((property: Property, index) => (
+                <div
+                  key={property.id}
+                  className="animate-in fade-in-0 slide-in-from-bottom-4"
+                  style={{
+                    animationDelay: `${index * 50}ms`,
+                    animationDuration: '400ms',
+                    animationFillMode: 'backwards',
+                  }}
+                >
+                  <PropertyCard property={property} />
+                </div>
+              ))}
+            </div>
+          </>
         )}
     </div>
   );
