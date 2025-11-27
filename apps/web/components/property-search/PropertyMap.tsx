@@ -25,7 +25,7 @@ import { PropertyDetailsModal } from './PropertyDetailsModal';
 // Fix for default marker icons in Next.js
 const icon = L.icon({
   iconUrl: '/marker-icon.svg',
-  iconRetinaUrl: '/marker-icon-2x.png',
+  iconRetinaUrl: '/marker-icon.svg',
   shadowUrl: '/marker-shadow.png',
   iconSize: [44, 44],
   iconAnchor: [22, 44],
@@ -130,7 +130,7 @@ function PropertyMarker({ property }: { property: Property }) {
   );
 }
 
-export function PropertyMap() {
+export function PropertyMap({ className }: { className?: string }) {
   const {
     mapCenter,
     mapZoom,
@@ -154,8 +154,8 @@ export function PropertyMap() {
   );
 
   return (
-    <div ref={containerRef} className="w-full h-[200vh]">
-      <div className="sticky top-[61px] right-0 h-full z-10">
+    <div ref={containerRef} className={className}>
+      <div className="relative h-full z-10">
         <MapContainer
           center={mapCenter}
           zoom={mapZoom}

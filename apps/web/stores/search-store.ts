@@ -97,6 +97,7 @@ export interface SearchState extends SearchFilters {
   isFiltersOpen: boolean;
   sidebarWidth: number;
   isSidebarCollapsed: boolean;
+  isMobileDrawerOpen: boolean;
 
   // Filter Actions
   setListingType: (type: ListingType) => void;
@@ -127,6 +128,7 @@ export interface SearchState extends SearchFilters {
   toggleFilters: () => void;
   setSidebarWidth: (width: number) => void;
   toggleSidebar: () => void;
+  setMobileDrawerOpen: (open: boolean) => void;
   resetFilters: () => void;
 
   // URL Sync
@@ -180,6 +182,7 @@ export const useSearchStore = create<SearchState>()(
         isFiltersOpen: false,
         sidebarWidth: INITIAL_SIDEBAR_WIDTH,
         isSidebarCollapsed: false,
+        isMobileDrawerOpen: true,
 
         // Filter actions
         setListingType: (type) => set({ listingType: type }),
@@ -244,6 +247,8 @@ export const useSearchStore = create<SearchState>()(
               ? MIN_SIDEBAR_WIDTH
               : INITIAL_SIDEBAR_WIDTH,
           })),
+
+        setMobileDrawerOpen: (open) => set({ isMobileDrawerOpen: open }),
 
         resetFilters: () =>
           set({

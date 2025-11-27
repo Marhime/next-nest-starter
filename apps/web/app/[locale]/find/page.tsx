@@ -7,6 +7,7 @@
 
 import dynamic from 'next/dynamic';
 import { PropertySidebar } from '@/components/property-search/PropertySidebar';
+import { MobileListButton } from '@/components/property-search/MobileListButton';
 import { usePropertyData } from '@/hooks/use-property-data';
 import '@/app/leaflet-clusters.css';
 
@@ -37,14 +38,17 @@ function PropertySearchContent() {
   usePropertyData();
 
   return (
-    <div className="flex min-h-full min-w-full relative">
-      {/* Sidebar */}
+    <div className="relative md:flex min-h-[calc(100vh-69px)]">
+      {/* Map Container - Fixed behind on mobile, flexible on desktop */}
+      <div className="fixed inset-0 top-[69px] md:flex-1 md:relative md:top-0 h-[calc(100vh-69px)] z-0">
+        <PropertyMap className="w-full h-full" />
+      </div>
+
+      {/* PropertySidebar - Renders as drawer on mobile, sidebar on desktop */}
       <PropertySidebar />
 
-      {/* Map Container - Prend tout l'espace restant */}
-      <div className="flex-1 h-screen transition-all duration-300 z-40">
-        <PropertyMap />
-      </div>
+      {/* Mobile floating button to open drawer */}
+      <MobileListButton />
     </div>
   );
 }

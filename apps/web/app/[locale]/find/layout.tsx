@@ -121,7 +121,7 @@ const FindLayout = ({ children }: { children: React.ReactNode }) => {
     <>
       <QueryProvider>
         {/* Header with Search + Filters */}
-        <header className="fixed top-0 z-[200] border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <header className="sticky top-0 z-[200] border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center gap-3">
               {/* Location Search */}
@@ -160,10 +160,10 @@ const FindLayout = ({ children }: { children: React.ReactNode }) => {
         {/* Active Filters Summary */}
         {/* <FiltersSummary /> */}
 
-        <SidebarProvider>
-          {/* Main Content */}
-          <div className="w-full">{children}</div>
+        {/* Main Content */}
+        {children}
 
+        <SidebarProvider>
           {/* Advanced Filters Sheet */}
           <Sheet open={isFiltersOpen} onOpenChange={toggleFilters}>
             <DialogTitle></DialogTitle>

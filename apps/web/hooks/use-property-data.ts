@@ -31,8 +31,13 @@ interface FetchPropertiesParams {
   };
 }
 
+// ✅ Minimum delay for smooth UX (like Airbnb/Apple)
+const MIN_LOADING_TIME = 600; // 600ms minimum
+
 // Fetch properties with filters
 async function fetchProperties(params: FetchPropertiesParams) {
+  const startTime = Date.now();
+
   const queryParams = new URLSearchParams();
 
   // Add filters to query
@@ -78,9 +83,26 @@ async function fetchProperties(params: FetchPropertiesParams) {
     }
 
     const data = await response.json();
+
+    // ✅ Ensure minimum loading time for smooth UX
+    const elapsedTime = Date.now() - startTime;
+    const remainingTime = MIN_LOADING_TIME - elapsedTime;
+
+    if (remainingTime > 0) {
+      await new Promise((resolve) => setTimeout(resolve, remainingTime));
+    }
     return (data?.data || data) as Property[];
   } catch (error) {
     console.error('Error fetching properties:', error);
+
+    // ✅ Also apply minimum delay on error for consistency
+    const elapsedTime = Date.now() - startTime;
+    const remainingTime = MIN_LOADING_TIME - elapsedTime;
+
+    if (remainingTime > 0) {
+      await new Promise((resolve) => setTimeout(resolve, remainingTime));
+    }
+
     return [] as Property[];
   }
 }
