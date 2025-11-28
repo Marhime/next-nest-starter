@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import ProfileDropdown from '@/components/layout/ProfileDropdown';
 import Link from 'next/link';
+import Footer from '@/components/layout/Footer';
 
 const FindLayout = ({ children }: { children: React.ReactNode }) => {
   const searchParams = useSearchParams();
@@ -199,6 +200,8 @@ const FindLayout = ({ children }: { children: React.ReactNode }) => {
 
         {/* Main Content */}
         {children}
+
+        <Footer />
       </QueryProvider>
     </>
   );

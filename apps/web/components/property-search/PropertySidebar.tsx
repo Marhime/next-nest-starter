@@ -89,6 +89,34 @@ export function PropertySidebar() {
   // Note: Page reset is now handled in the store actions when filters change
   // This avoids resetting the page when loading from URL with a specific page number
 
+  // Scroll to top when properties change (refetch after filter/map change)
+  // Skip initial mount to avoid scrolling on page load
+  const isInitialMountRef = useRef(true);
+  const previousPropertiesRef = useRef<Property[]>(properties);
+
+  useEffect(() => {
+    // Skip on initial mount
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      previousPropertiesRef.current = properties;
+      return;
+    }
+
+    // Only scroll if properties actually changed (not just a re-render)
+    if (isFetching) {
+      // Scroll to top of the list container
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({ top: 0 });
+      }
+      // Also scroll window on desktop
+      if (typeof window !== 'undefined' && isDesktop) {
+        window.scrollTo({ top: 0 });
+      }
+
+      previousPropertiesRef.current = properties;
+    }
+  }, [isFetching, isDesktop]);
+
   // Handle resize for desktop
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {

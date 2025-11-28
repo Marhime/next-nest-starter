@@ -53,7 +53,6 @@ export default async function LocaleLayout({
           <PropertyTypeModal />
         </NextIntlClientProvider>
         <Toaster position="top-center" />
-        <Footer />
       </body>
     </html>
   );

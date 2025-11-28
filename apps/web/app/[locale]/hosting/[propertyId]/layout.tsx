@@ -9,6 +9,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useProperty } from '@/hooks/use-properties';
 import { usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
+import { QueryProvider } from '@/components/providers/QueryProvider';
 
 export default function AddPropertyLayout({
   children,
@@ -55,7 +56,7 @@ export default function AddPropertyLayout({
   const maxSteps = steps.length - 1;
 
   return (
-    <>
+    <QueryProvider>
       <section className="min-h-screen flex flex-col relative">
         <div className="flex w-full justify-between p-4 xl:py-10 xl:px-12">
           <Link href="/">Logo</Link>
@@ -119,6 +120,6 @@ export default function AddPropertyLayout({
           </div>
         </div>
       </section>
-    </>
+    </QueryProvider>
   );
 }
