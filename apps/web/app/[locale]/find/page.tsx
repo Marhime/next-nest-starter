@@ -8,7 +8,6 @@
 import dynamic from 'next/dynamic';
 import { PropertySidebar } from '@/components/property-search/PropertySidebar';
 import { MobileListButton } from '@/components/property-search/MobileListButton';
-import { usePropertyData } from '@/hooks/use-property-data';
 import '@/app/leaflet-clusters.css';
 
 // Dynamic import for map to avoid SSR issues with Leaflet
@@ -33,9 +32,8 @@ const PropertyMap = dynamic(
 );
 
 function PropertySearchContent() {
-  // Fetch properties based on unified store filters
-  // React Query will automatically refetch when filters change
-  usePropertyData();
+  // PropertySidebar now handles data fetching with infinite scroll
+  // No need to call usePropertyData here
 
   return (
     <div className="relative md:flex h-full">
@@ -43,7 +41,7 @@ function PropertySearchContent() {
       <PropertySidebar />
 
       {/* Map Container - Fixed behind on mobile, flexible on desktop */}
-      <div className="fixed right-0 top-[69px] md:flex-1 md:sticky h-[calc(100vh-69px)] z-2 overflow-hidden">
+      <div className="fixed right-0 max-md:left-0 top-[69px] md:flex-1 md:sticky h-[calc(100vh-69px)] z-2 overflow-hidden">
         <PropertyMap className="md:4 xl:p-10 w-full h-full" />
       </div>
 

@@ -64,89 +64,117 @@ export class PropertiesController {
   @Get('nearby')
   @AllowAnonymous()
   @ApiOperation({
-    summary: 'Search properties within map bounds',
+    summary: 'Search properties within exact map bounds with pagination',
     description:
-      'Fetches properties within map bounds + optional radius extension',
+      'Fetches properties within exact map bounds (no radius extension) with pagination for infinite scroll',
   })
   @ApiQuery({
     name: 'north',
     type: Number,
-    required: false,
+    required: true,
     description: 'North bound latitude',
   })
   @ApiQuery({
     name: 'south',
     type: Number,
-    required: false,
+    required: true,
     description: 'South bound latitude',
   })
   @ApiQuery({
     name: 'east',
     type: Number,
-    required: false,
+    required: true,
     description: 'East bound longitude',
   })
   @ApiQuery({
     name: 'west',
     type: Number,
-    required: false,
+    required: true,
     description: 'West bound longitude',
   })
   @ApiQuery({
-    name: 'radius',
+    name: 'page',
     type: Number,
     required: false,
-    description: 'Additional radius extension in km (default: 100)',
+    description: 'Page number (default: 1)',
   })
   @ApiQuery({
-    name: 'latitude',
+    name: 'limit',
     type: Number,
     required: false,
-    description: 'Fallback: center latitude',
-  })
-  @ApiQuery({
-    name: 'longitude',
-    type: Number,
-    required: false,
-    description: 'Fallback: center longitude',
+    description: 'Items per page (default: 20)',
   })
   searchNearby(
-    @Query('north') northStr?: string,
-    @Query('south') southStr?: string,
-    @Query('east') eastStr?: string,
-    @Query('west') westStr?: string,
-    @Query('radius') radiusStr?: string,
-    @Query('latitude') latStr?: string,
-    @Query('longitude') lonStr?: string,
+    @Query('north') northStr: string,
+    @Query('south') southStr: string,
+    @Query('east') eastStr: string,
+    @Query('west') westStr: string,
+    @Query('page') pageStr?: string,
+    @Query('limit') limitStr?: string,
   ) {
     // Parse query params to numbers
-    const north = northStr ? parseFloat(northStr) : undefined;
-    const south = southStr ? parseFloat(southStr) : undefined;
-    const east = eastStr ? parseFloat(eastStr) : undefined;
-    const west = westStr ? parseFloat(westStr) : undefined;
-    const radius = radiusStr ? parseFloat(radiusStr) : undefined;
-    const latitude = latStr ? parseFloat(latStr) : undefined;
-    const longitude = lonStr ? parseFloat(lonStr) : undefined;
+    const north = parseFloat(northStr);
+    const south = parseFloat(southStr);
+    const east = parseFloat(eastStr);
+    const west = parseFloat(westStr);
+    const page = pageStr ? parseInt(pageStr) : 1;
+    const limit = limitStr ? parseInt(limitStr) : 20;
 
-    // If bounds provided, use bounds-based search
-    if (north && south && east && west) {
-      return this.propertiesService.searchInBounds(
-        { north, south, east, west },
-        radius || 100,
-      );
-    }
+    return this.propertiesService.searchInBounds(
+      { north, south, east, west },
+      page,
+      limit,
+    );
+  }
 
-    // Fallback to point-based search
-    if (latitude && longitude) {
-      return this.propertiesService.searchNearby(
-        latitude,
-        longitude,
-        radius || 10,
-      );
-    }
+  @Get('map-markers')
+  @AllowAnonymous()
+  @ApiOperation({
+    summary: 'Get all property markers within map bounds',
+    description:
+      'Returns lightweight property data (id, coordinates, price) for map display without pagination',
+  })
+  @ApiQuery({
+    name: 'north',
+    type: Number,
+    required: true,
+    description: 'North bound latitude',
+  })
+  @ApiQuery({
+    name: 'south',
+    type: Number,
+    required: true,
+    description: 'South bound latitude',
+  })
+  @ApiQuery({
+    name: 'east',
+    type: Number,
+    required: true,
+    description: 'East bound longitude',
+  })
+  @ApiQuery({
+    name: 'west',
+    type: Number,
+    required: true,
+    description: 'West bound longitude',
+  })
+  getMapMarkers(
+    @Query('north') northStr: string,
+    @Query('south') southStr: string,
+    @Query('east') eastStr: string,
+    @Query('west') westStr: string,
+  ) {
+    const north = parseFloat(northStr);
+    const south = parseFloat(southStr);
+    const east = parseFloat(eastStr);
+    const west = parseFloat(westStr);
 
-    // Default: return all active properties
-    return this.propertiesService.findAll({ status: 'ACTIVE' });
+    return this.propertiesService.getMapMarkers({
+      north,
+      south,
+      east,
+      west,
+    });
   }
 
   @Get('user/me')

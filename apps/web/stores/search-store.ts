@@ -77,13 +77,32 @@ export interface SearchFilters {
   mapBounds: MapBounds | null;
 }
 
+// Lightweight marker data for map
+export interface PropertyMarker {
+  id: number;
+  latitude: number;
+  longitude: number;
+  salePrice?: string;
+  monthlyPrice?: string;
+  nightlyPrice?: string;
+  listingType?: string;
+  propertyType: string;
+}
+
 // Main store state
 export interface SearchState extends SearchFilters {
-  // Properties data
+  // Properties data (for list with pagination)
   properties: Property[];
   isLoading: boolean;
   isFetching: boolean; // ✅ True during any fetch (initial or refetch)
   error: Error | null;
+  currentPage: number; // ✅ Current page number
+  totalPages: number; // ✅ Total number of pages
+  totalResults: number; // ✅ Total number of results
+
+  // Map markers (lightweight data, no pagination)
+  mapMarkers: PropertyMarker[];
+  isMarkersLoading: boolean;
 
   // Map state
   mapCenter: [number, number];
@@ -115,6 +134,14 @@ export interface SearchState extends SearchFilters {
   setLoading: (loading: boolean) => void;
   setFetching: (fetching: boolean) => void;
   setError: (error: Error | null) => void;
+  setCurrentPage: (page: number) => void;
+  setTotalPages: (totalPages: number) => void;
+  setTotalResults: (totalResults: number) => void;
+  resetProperties: () => void; // ✅ Reset list when filters change
+
+  // Map Markers Actions
+  setMapMarkers: (markers: PropertyMarker[]) => void;
+  setMarkersLoading: (loading: boolean) => void;
 
   // Map Actions
   setMapCenter: (center: [number, number]) => void;
@@ -164,11 +191,18 @@ export const useSearchStore = create<SearchState>()(
         // Initial state - Filters
         ...initialFilters,
 
-        // Initial state - Properties
+        // Initial state - Properties (list with pagination)
         properties: [],
         isLoading: false,
         isFetching: false,
         error: null,
+        currentPage: 1,
+        totalPages: 0,
+        totalResults: 0,
+
+        // Initial state - Map markers (lightweight, no pagination)
+        mapMarkers: [],
+        isMarkersLoading: false,
 
         // Initial state - Map (Puerto Escondido, Mexico)
         mapCenter: [15.8651, -97.0737], // Puerto Escondido by default
@@ -184,41 +218,97 @@ export const useSearchStore = create<SearchState>()(
         isSidebarCollapsed: false,
         isMobileDrawerOpen: true,
 
-        // Filter actions
-        setListingType: (type) => set({ listingType: type }),
+        // Filter actions (reset to page 1 when filters change)
+        setListingType: (type) => set({ listingType: type, currentPage: 1 }),
 
         setLocation: (location, lat, lng) =>
           set({
             location,
             latitude: lat ?? null,
             longitude: lng ?? null,
+            currentPage: 1,
           }),
 
-        setPriceRange: (min, max) => set({ minPrice: min, maxPrice: max }),
+        setPriceRange: (min, max) =>
+          set({ minPrice: min, maxPrice: max, currentPage: 1 }),
 
-        setPropertyType: (type) => set({ propertyType: type }),
+        setPropertyType: (type) => set({ propertyType: type, currentPage: 1 }),
 
         setBedroomsRange: (min, max) =>
-          set({ minBedrooms: min, maxBedrooms: max }),
+          set({ minBedrooms: min, maxBedrooms: max, currentPage: 1 }),
 
-        setBathroomsMin: (min) => set({ minBathrooms: min }),
+        setBathroomsMin: (min) => set({ minBathrooms: min, currentPage: 1 }),
 
-        setAreaRange: (min, max) => set({ minArea: min, maxArea: max }),
+        setAreaRange: (min, max) =>
+          set({ minArea: min, maxArea: max, currentPage: 1 }),
 
         toggleAmenity: (amenity) =>
           set((state) => ({
             amenities: state.amenities.includes(amenity)
               ? state.amenities.filter((a) => a !== amenity)
               : [...state.amenities, amenity],
+            currentPage: 1,
           })),
 
-        setMapBounds: (bounds) => set({ mapBounds: bounds }),
+        // setMapBounds resets page to 1 when map moves significantly (new search area)
+        // BUT NOT for minor adjustments or initial load from URL
+        setMapBounds: (bounds) => {
+          const currentBounds = get().mapBounds;
+
+          if (!currentBounds || !bounds) {
+            // First time setting bounds (initial load)
+            set({ mapBounds: bounds });
+            return;
+          }
+
+          // Calculate if bounds changed significantly (>10% center movement or >20% zoom change)
+          const latDiff = Math.abs(currentBounds.north - currentBounds.south);
+          const lngDiff = Math.abs(currentBounds.east - currentBounds.west);
+
+          const newLatDiff = Math.abs(bounds.north - bounds.south);
+
+          const latChange = Math.abs(
+            (currentBounds.north + currentBounds.south) / 2 -
+              (bounds.north + bounds.south) / 2,
+          );
+          const lngChange = Math.abs(
+            (currentBounds.east + currentBounds.west) / 2 -
+              (bounds.east + bounds.west) / 2,
+          );
+
+          // Reset page if:
+          // 1. Center moved significantly (>10% of current span)
+          // 2. Zoom level changed significantly (>20% difference in span)
+          const centerMoved =
+            latChange > latDiff * 0.1 || lngChange > lngDiff * 0.1;
+          const zoomChanged = Math.abs(newLatDiff - latDiff) > latDiff * 0.2;
+
+          if (centerMoved || zoomChanged) {
+            set({ mapBounds: bounds, currentPage: 1 });
+          } else {
+            set({ mapBounds: bounds });
+          }
+        },
 
         // Properties actions
         setProperties: (properties) => set({ properties }),
         setLoading: (isLoading) => set({ isLoading }),
         setFetching: (isFetching: boolean) => set({ isFetching }),
         setError: (error) => set({ error }),
+        setCurrentPage: (page) => set({ currentPage: page }),
+        setTotalPages: (totalPages) => set({ totalPages }),
+        setTotalResults: (totalResults) => set({ totalResults }),
+        resetProperties: () =>
+          set({
+            properties: [],
+            currentPage: 1,
+            totalPages: 0,
+            totalResults: 0,
+          }),
+
+        // Map markers actions
+        setMapMarkers: (markers) => set({ mapMarkers: markers }),
+        setMarkersLoading: (loading) => set({ isMarkersLoading: loading }),
 
         // Map actions
         setMapCenter: (center) => set({ mapCenter: center }),
@@ -258,7 +348,7 @@ export const useSearchStore = create<SearchState>()(
 
         // URL Sync
         setFiltersFromURL: (params) => {
-          const updates: Partial<SearchFilters> = {};
+          const updates: Partial<SearchFilters> & { currentPage?: number } = {};
 
           // Parse listing type
           const listingType = params.get('type');
@@ -308,6 +398,29 @@ export const useSearchStore = create<SearchState>()(
             updates.amenities = amenities.split(',').filter(Boolean);
           }
 
+          // Parse page number
+          const page = params.get('page');
+          if (page) {
+            updates.currentPage = parseInt(page);
+          }
+
+          // Parse map zoom
+          const zoom = params.get('zoom');
+          if (zoom) {
+            set({ mapZoom: parseFloat(zoom) });
+          }
+
+          // Parse map bounds
+          const bounds = params.get('bounds');
+          if (bounds) {
+            try {
+              const parsedBounds = JSON.parse(bounds) as MapBounds;
+              updates.mapBounds = parsedBounds;
+            } catch (e) {
+              console.error('Failed to parse bounds from URL:', e);
+            }
+          }
+
           set(updates);
         },
 
@@ -340,6 +453,18 @@ export const useSearchStore = create<SearchState>()(
           if (state.maxArea) params.set('maxArea', state.maxArea.toString());
           if (state.amenities.length > 0) {
             params.set('amenities', state.amenities.join(','));
+          }
+          // Add page if not 1
+          if (state.currentPage > 1) {
+            params.set('page', state.currentPage.toString());
+          }
+          // Add map zoom
+          if (state.mapZoom) {
+            params.set('zoom', state.mapZoom.toString());
+          }
+          // Add map bounds if available
+          if (state.mapBounds) {
+            params.set('bounds', JSON.stringify(state.mapBounds));
           }
 
           return params;

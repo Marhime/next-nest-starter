@@ -3,6 +3,7 @@
  * Resizable sidebar with property list (filters managed by unified store)
  * On mobile: Drawer that overlays the map
  * On desktop: Resizable sidebar
+ * Features pagination for the property list
  */
 
 'use client';
@@ -15,6 +16,16 @@ import { Home, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useRef, useEffect } from 'react';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { usePropertyData } from '@/hooks/use-property-data';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import {
   Drawer,
   DrawerClose,
@@ -29,6 +40,8 @@ export function PropertySidebar() {
     properties,
     isFetching,
     error,
+    currentPage,
+    setCurrentPage,
     sidebarWidth,
     setSidebarWidth,
     isSidebarCollapsed,
@@ -36,12 +49,45 @@ export function PropertySidebar() {
     setMobileDrawerOpen,
   } = useSearchStore();
 
+  // Fetch properties data
+  usePropertyData();
+
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const isError = error !== null;
-  const filteredProperties = properties || [];
+  const allProperties = properties || [];
+
+  // Client-side pagination (20 items per page)
+  const ITEMS_PER_PAGE = 20;
+  const totalResults = allProperties.length;
+  const totalPages = Math.ceil(totalResults / ITEMS_PER_PAGE);
+
+  // Calculate paginated properties
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedProperties = allProperties.slice(startIndex, endIndex);
+
+  // Handle page change with scroll to top
+  const handlePageChange = (newPage: number) => {
+    // Scroll to top of the page
+    if (typeof window !== 'undefined' && isDesktop) {
+      window.scrollTo({ top: 0 });
+    } else if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0 });
+    }
+
+    // Update page in store
+    setCurrentPage(newPage);
+
+    // The URL will be updated automatically by the layout's useEffect
+    // No need to manually update here to avoid conflicts
+  };
+
+  // Note: Page reset is now handled in the store actions when filters change
+  // This avoids resetting the page when loading from URL with a specific page number
 
   // Handle resize for desktop
   useEffect(() => {
@@ -90,13 +136,6 @@ export function PropertySidebar() {
           <DrawerHeader>
             <DrawerTitle>Recherche de propriétés</DrawerTitle>
             <div className="flex items-center gap-2 pt-2">
-              {filteredProperties && (
-                <p className="text-sm text-muted-foreground">
-                  {filteredProperties.length} propriété
-                  {filteredProperties.length !== 1 ? 's' : ''} trouvée
-                  {filteredProperties.length !== 1 ? 's' : ''}
-                </p>
-              )}
               {isFetching && (
                 <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
               )}
@@ -107,8 +146,13 @@ export function PropertySidebar() {
             isFetching={isFetching}
             isError={isError}
             error={error}
-            filteredProperties={filteredProperties}
-            className="px-4 overflow-y-auto"
+            filteredProperties={paginatedProperties}
+            className="px-4 pt-2 max-md:overflow-y-auto"
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalResults={totalResults}
+            onPageChange={handlePageChange}
+            scrollContainerRef={scrollContainerRef}
           />
 
           <DrawerFooter>
@@ -138,8 +182,13 @@ export function PropertySidebar() {
           isFetching={isFetching}
           isError={isError}
           error={error}
-          filteredProperties={filteredProperties}
+          filteredProperties={paginatedProperties}
           className={cn('p-4 md:p-10 md:pr-0', isSidebarCollapsed && 'hidden')}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalResults={totalResults}
+          onPageChange={handlePageChange}
+          scrollContainerRef={scrollContainerRef}
         />
       </div>
 
@@ -164,6 +213,11 @@ interface PropertyListContentProps {
   error: Error | null;
   filteredProperties: Property[];
   className?: string;
+  currentPage: number;
+  totalPages: number;
+  totalResults: number;
+  onPageChange: (page: number) => void;
+  scrollContainerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 function PropertyListContent({
@@ -172,23 +226,28 @@ function PropertyListContent({
   error,
   filteredProperties,
   className,
+  currentPage,
+  totalPages,
+  totalResults,
+  onPageChange,
+  scrollContainerRef,
 }: PropertyListContentProps) {
   return (
-    <div className={cn('overflow-y-auto h-full', className)}>
+    <div ref={scrollContainerRef} className={cn(' h-full', className)}>
       {/* Loading State */}
       {isFetching && (
         <>
           <Skeleton className="h-4 w-48 mb-4 font-semibold" />
           <div
-            className="grid gap-4 auto-rows-max"
+            className="grid gap-4 md:gap-y-10 md:gap-x-6 auto-rows-max"
             style={{
               gridTemplateColumns:
                 'repeat(auto-fill, minmax(min(50%, 300px), 1fr))',
             }}
           >
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="space-y-3 w-full max-w-[480px] mx-auto">
-                <Skeleton className="h-48 w-full rounded-lg" />
+              <div key={i} className="space-y-3 w-full max-w-[480px] mx-auto ">
+                <Skeleton className="h-64 w-full rounded-lg" />
                 <Skeleton className="h-6 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
               </div>
@@ -229,13 +288,11 @@ function PropertyListContent({
         filteredProperties.length > 0 && (
           <>
             <p className="text-sm mb-4">
-              {filteredProperties.length} propriété
-              {filteredProperties.length !== 1 ? 's' : ''} trouvée
-              {filteredProperties.length !== 1 ? 's' : ''} dans la zone de la
-              carte
+              {totalResults} propriété{totalResults !== 1 ? 's' : ''} trouvée
+              {totalResults !== 1 ? 's' : ''} dans la zone de la carte
             </p>
             <div
-              className="grid gap-4 auto-rows-max animate-in fade-in-0 duration-500"
+              className="grid gap-4 md:gap-y-10 md:gap-x-6 auto-rows-max"
               style={{
                 gridTemplateColumns:
                   'repeat(auto-fill, minmax(min(50%, 300px), 1fr))',
@@ -244,7 +301,7 @@ function PropertyListContent({
               {filteredProperties.map((property: Property, index) => (
                 <div
                   key={property.id}
-                  className="animate-in fade-in-0 slide-in-from-bottom-4"
+                  className="animate-in fade-in-0 slide-in-from-bottom-10"
                   style={{
                     animationDelay: `${index * 50}ms`,
                     animationDuration: '400ms',
@@ -255,6 +312,118 @@ function PropertyListContent({
                 </div>
               ))}
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex justify-center">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage > 1) {
+                            onPageChange(currentPage - 1);
+                          }
+                        }}
+                        className={
+                          currentPage === 1
+                            ? 'pointer-events-none opacity-50'
+                            : ''
+                        }
+                      />
+                    </PaginationItem>
+
+                    {/* First page */}
+                    {currentPage > 3 && (
+                      <>
+                        <PaginationItem>
+                          <PaginationLink
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              onPageChange(1);
+                            }}
+                          >
+                            1
+                          </PaginationLink>
+                        </PaginationItem>
+                        {currentPage > 4 && (
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        )}
+                      </>
+                    )}
+
+                    {/* Pages around current page */}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter(
+                        (page) =>
+                          page === currentPage ||
+                          page === currentPage - 1 ||
+                          page === currentPage - 2 ||
+                          page === currentPage + 1 ||
+                          page === currentPage + 2,
+                      )
+                      .map((page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              onPageChange(page);
+                            }}
+                            isActive={currentPage === page}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+
+                    {/* Last page */}
+                    {currentPage < totalPages - 2 && (
+                      <>
+                        {currentPage < totalPages - 3 && (
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        )}
+                        <PaginationItem>
+                          <PaginationLink
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              onPageChange(totalPages);
+                            }}
+                          >
+                            {totalPages}
+                          </PaginationLink>
+                        </PaginationItem>
+                      </>
+                    )}
+
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage < totalPages) {
+                            onPageChange(currentPage + 1);
+                          }
+                        }}
+                        className={
+                          currentPage === totalPages
+                            ? 'pointer-events-none opacity-50'
+                            : ''
+                        }
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
           </>
         )}
     </div>

@@ -8,6 +8,7 @@ import '../globals.css';
 import { HelpModal } from '@/components/HelpModal';
 import { PropertyTypeModal } from '@/components/PropertyTypeModal';
 import { Toaster } from '@/components/ui/sonner';
+import Footer from '@/components/layout/Footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -52,6 +53,7 @@ export default async function LocaleLayout({
           <PropertyTypeModal />
         </NextIntlClientProvider>
         <Toaster position="top-center" />
+        <Footer />
       </body>
     </html>
   );

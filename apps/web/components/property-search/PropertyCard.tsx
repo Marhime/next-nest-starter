@@ -54,7 +54,6 @@ export function PropertyCard({ property }: PropertyCardProps) {
       <Card
         className={cn(
           'group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl w-full max-w-[480px] mx-auto',
-          isSelected && 'ring-2 ring-primary shadow-xl scale-[1.02]',
           isHovered && 'shadow-lg',
         )}
         onMouseEnter={() => hoverProperty(property.id)}
@@ -62,13 +61,13 @@ export function PropertyCard({ property }: PropertyCardProps) {
       >
         <CardContent className="p-0">
           {/* Image Section */}
-          <div className="relative w-full h-48 overflow-hidden bg-muted">
+          <div className="relative w-full h-64 overflow-hidden bg-muted">
             {primaryPhoto ? (
               <Image
                 src={getPhotoUrl(primaryPhoto.url)}
                 alt={property.title}
                 fill
-                className="object-cover transition-transform duration-300 group-hover:scale-110"
+                className="object-cover transition-transform duration-300 group-hover:scale-110 h-full"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             ) : (

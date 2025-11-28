@@ -12,9 +12,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { LocationSearchBar } from '@/components/shared/LocationSearchBar';
 import { AdvancedFilters } from '@/components/search/AdvancedFilters';
-import { FiltersSummary } from '@/components/search/FiltersSummary';
 import { useSearchStore } from '@/stores/search-store';
-import { PropertyDetailsModal } from '@/components/property-search/PropertyDetailsModal';
 import type { GeocodingResult } from '@/hooks/use-geocoding';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { SlidersHorizontal } from 'lucide-react';
@@ -27,6 +25,7 @@ const FindLayout = ({ children }: { children: React.ReactNode }) => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const hasInitializedRef = useRef(false);
+  const urlUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     isFiltersOpen,
@@ -50,6 +49,8 @@ const FindLayout = ({ children }: { children: React.ReactNode }) => {
     minArea,
     maxArea,
     amenities,
+    mapZoom,
+    mapBounds,
   } = useSearchStore();
 
   // 1. Initial sync: URL → Store (only once on mount)
@@ -60,29 +61,48 @@ const FindLayout = ({ children }: { children: React.ReactNode }) => {
       // If location in URL, center map
       const lat = searchParams.get('lat');
       const lng = searchParams.get('lng');
+      const zoom = searchParams.get('zoom');
+
       if (lat && lng) {
         setMapCenter([parseFloat(lat), parseFloat(lng)]);
-        setMapZoom(13);
+        // Use zoom from URL if available, otherwise default to 13
+        setMapZoom(zoom ? parseFloat(zoom) : 13);
       }
 
       hasInitializedRef.current = true;
     }
   }, [searchParams, setFiltersFromURL, setMapCenter, setMapZoom]);
 
+  // Get currentPage from store for URL sync
+  const currentPage = useSearchStore((state) => state.currentPage);
+
   // 2. Continuous sync: Store → URL (when filters change)
   useEffect(() => {
     // Skip first render to avoid overwriting initial URL state
     if (!hasInitializedRef.current) return;
 
-    const params = toURLParams();
-    const newSearch = params.toString();
-    const currentSearch = window.location.search.replace('?', '');
-
-    // Only update if URL actually changed (prevents loops)
-    if (newSearch !== currentSearch) {
-      const newUrl = `${window.location.pathname}${newSearch ? `?${newSearch}` : ''}`;
-      window.history.replaceState({}, '', newUrl);
+    // Debounce URL updates for map bounds (to avoid too many history entries)
+    if (urlUpdateTimeoutRef.current) {
+      clearTimeout(urlUpdateTimeoutRef.current);
     }
+
+    urlUpdateTimeoutRef.current = setTimeout(() => {
+      const params = toURLParams();
+      const newSearch = params.toString();
+      const currentSearch = window.location.search.replace('?', '');
+
+      // Only update if URL actually changed (prevents loops)
+      if (newSearch !== currentSearch) {
+        const newUrl = `${window.location.pathname}${newSearch ? `?${newSearch}` : ''}`;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }, 800); // 800ms debounce for URL updates
+
+    return () => {
+      if (urlUpdateTimeoutRef.current) {
+        clearTimeout(urlUpdateTimeoutRef.current);
+      }
+    };
   }, [
     listingType,
     location,
@@ -97,6 +117,9 @@ const FindLayout = ({ children }: { children: React.ReactNode }) => {
     minArea,
     maxArea,
     amenities,
+    currentPage,
+    mapZoom,
+    mapBounds,
     toURLParams,
   ]);
 
@@ -176,18 +199,6 @@ const FindLayout = ({ children }: { children: React.ReactNode }) => {
 
         {/* Main Content */}
         {children}
-
-        <SidebarProvider>
-          {/* Advanced Filters Sheet */}
-          <Sheet open={isFiltersOpen} onOpenChange={toggleFilters}>
-            <DialogTitle></DialogTitle>
-            <SheetContent side="right" className="w-full sm:max-w-md p-0">
-              <AdvancedFilters onClose={toggleFilters} />
-            </SheetContent>
-          </Sheet>
-
-          {/* Property Details Modal */}
-        </SidebarProvider>
       </QueryProvider>
     </>
   );

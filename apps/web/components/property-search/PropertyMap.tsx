@@ -16,7 +16,11 @@ import {
 } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
-import { useSearchStore, type Property } from '@/stores/search-store';
+import {
+  useSearchStore,
+  type Property,
+  type PropertyMarker as PropertyMarkerType,
+} from '@/stores/search-store';
 import { JAWG_TILE_URL, JAWG_ATTRIBUTION } from '@/lib/constants';
 import { PropertyCardFloating } from './PropertyCardFloating';
 import 'leaflet/dist/leaflet.css';
@@ -101,30 +105,22 @@ function MapEventHandler() {
   return null;
 }
 
-// Property marker component
-function PropertyMarker({ property }: { property: Property }) {
-  const {
-    selectedPropertyId,
-    hoveredPropertyId,
-    selectProperty,
-    hoverProperty,
-  } = useSearchStore();
+// Property marker component (now uses PropertyMarkerType)
+function PropertyMarkerComponent({ marker }: { marker: PropertyMarkerType }) {
+  const { selectProperty } = useSearchStore();
 
-  const isSelected = selectedPropertyId === property.id;
-  const isHovered = hoveredPropertyId === property.id;
-
-  if (!property.latitude || !property.longitude) {
+  if (!marker.latitude || !marker.longitude) {
     return null;
   }
 
-  const position: [number, number] = [property.latitude, property.longitude];
+  const position: [number, number] = [marker.latitude, marker.longitude];
 
   return (
     <Marker
       position={position}
       icon={icon}
       eventHandlers={{
-        click: () => selectProperty(property.id),
+        click: () => selectProperty(marker.id),
       }}
     />
   );
@@ -135,22 +131,22 @@ export function PropertyMap({ className }: { className?: string }) {
     mapCenter,
     mapZoom,
     properties,
+    mapMarkers,
     selectedPropertyId,
     selectProperty,
-    isLoading,
   } = useSearchStore();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Get selected property for floating card
+  // Get selected property for floating card (from full properties list)
   const selectedProperty = useMemo(
     () => properties.find((p: Property) => p.id === selectedPropertyId),
     [properties, selectedPropertyId],
   );
 
-  // Filter properties with valid coordinates
-  const validProperties = useMemo(
-    () => properties.filter((p: Property) => p.latitude && p.longitude),
-    [properties],
+  // Use mapMarkers for displaying all points on the map (lightweight)
+  const validMarkers = useMemo(
+    () => mapMarkers.filter((m) => m.latitude !== null && m.longitude !== null),
+    [mapMarkers],
   );
 
   return (
@@ -179,8 +175,8 @@ export function PropertyMap({ className }: { className?: string }) {
             spiderfyOnMaxZoom={true}
             maxClusterRadius={50}
           >
-            {validProperties.map((property) => (
-              <PropertyMarker key={property.id} property={property} />
+            {validMarkers.map((marker) => (
+              <PropertyMarkerComponent key={marker.id} marker={marker} />
             ))}
           </MarkerClusterGroup>
         </MapContainer>

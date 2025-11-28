@@ -467,7 +467,7 @@ export class PropertiesService {
   }
 
   /**
-   * Search properties within map bounds + radius extension
+   * Search properties within exact map bounds (no radius extension)
    * Optimized for map-based search with debouncing
    */
   async searchInBounds(
@@ -477,53 +477,92 @@ export class PropertiesService {
       east: number;
       west: number;
     },
-    radiusKm: number = 100,
+    page: number = 1,
+    limit: number = 20,
   ) {
-    // Extend bounds by radius
-    const latDelta = radiusKm / 111; // 1 degree latitude ≈ 111 km
-    const centerLat = (bounds.north + bounds.south) / 2;
-    const lonDelta = radiusKm / (111 * Math.cos((centerLat * Math.PI) / 180));
+    const skip = (page - 1) * limit;
 
-    const extendedBounds = {
-      north: bounds.north + latDelta,
-      south: bounds.south - latDelta,
-      east: bounds.east + lonDelta,
-      west: bounds.west - lonDelta,
+    const where: Prisma.PropertyWhereInput = {
+      latitude: {
+        gte: bounds.south,
+        lte: bounds.north,
+      },
+      longitude: {
+        gte: bounds.west,
+        lte: bounds.east,
+      },
+      status: 'ACTIVE',
     };
 
-    const properties = await this.prisma.property.findMany({
-      where: {
-        latitude: {
-          gte: extendedBounds.south,
-          lte: extendedBounds.north,
-        },
-        longitude: {
-          gte: extendedBounds.west,
-          lte: extendedBounds.east,
-        },
-        status: 'ACTIVE',
-      },
-      include: {
-        photos: true,
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
+    const [properties, total] = await Promise.all([
+      this.prisma.property.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          photos: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
           },
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 100, // Limit results for performance
-    });
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      this.prisma.property.count({ where }),
+    ]);
 
     return {
       data: properties,
-      total: properties.length,
-      bounds: extendedBounds,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        hasMore: page < Math.ceil(total / limit),
+      },
     };
+  }
+
+  /**
+   * Get all property markers (id, lat, lng, price) within bounds for map display
+   * Returns lightweight data for all properties (no pagination)
+   */
+  async getMapMarkers(bounds: {
+    north: number;
+    south: number;
+    east: number;
+    west: number;
+  }) {
+    const properties = await this.prisma.property.findMany({
+      where: {
+        latitude: {
+          gte: bounds.south,
+          lte: bounds.north,
+        },
+        longitude: {
+          gte: bounds.west,
+          lte: bounds.east,
+        },
+        status: 'ACTIVE',
+      },
+      select: {
+        id: true,
+        latitude: true,
+        longitude: true,
+        salePrice: true,
+        monthlyPrice: true,
+        nightlyPrice: true,
+        listingType: true,
+        propertyType: true,
+      },
+    });
+
+    return properties;
   }
 }
