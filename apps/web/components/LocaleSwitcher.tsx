@@ -14,7 +14,7 @@ import {
 import { routing } from '@/i18n/routing';
 import Image from 'next/image';
 
-const LocaleSwitcher = () => {
+const LocaleSwitcher = ({ className }: { className?: string }) => {
   const t = useTranslations('LocaleLayout');
   const locale = useLocale();
   const router = useRouter();
@@ -33,33 +33,35 @@ const LocaleSwitcher = () => {
   };
 
   return (
-    <Select defaultValue={locale} onValueChange={onSelectChange}>
-      <SelectTrigger className="bg-white text-black">
-        <SelectValue>
-          <Image
-            src={`/${locale}.svg`}
-            alt={t(`locales.${locale}`)}
-            width={24}
-            height={24}
-          />
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          {routing.locales.map((loc) => (
-            <SelectItem key={loc} value={loc} className="cursor-pointer">
-              <Image
-                src={`/${loc}.svg`}
-                alt={t(`locales.${loc}`)}
-                width={24}
-                height={24}
-              />
-              {t(`locales.${loc}`)}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+    <div className={className}>
+      <Select defaultValue={locale} onValueChange={onSelectChange}>
+        <SelectTrigger className="bg-white text-black">
+          <SelectValue>
+            <Image
+              src={`/${locale}.svg`}
+              alt={t(`locales.${locale}`)}
+              width={24}
+              height={24}
+            />
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {routing.locales.map((loc) => (
+              <SelectItem key={loc} value={loc} className="cursor-pointer">
+                <Image
+                  src={`/${loc}.svg`}
+                  alt={t(`locales.${loc}`)}
+                  width={24}
+                  height={24}
+                />
+                {t(`locales.${loc}`)}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </div>
   );
 };
 

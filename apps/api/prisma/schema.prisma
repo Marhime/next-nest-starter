@@ -138,7 +138,16 @@ model Property {
   @@index([propertyType])
   @@index([listingType])
   @@index([city])
+  @@index([state])
+  @@index([status])
   @@index([monthlyPrice, nightlyPrice])
+  @@index([salePrice])
+  @@index([bedrooms])
+  @@index([bathrooms])
+  @@index([area])
+  @@index([latitude, longitude]) // Geo index for map searches
+  @@index([userId])
+  @@index([createdAt])
   @@map("properties")
 }
 

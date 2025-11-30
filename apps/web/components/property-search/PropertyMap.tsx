@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -95,7 +95,7 @@ function MapEventHandler() {
           east: bounds.getEast(),
           west: bounds.getWest(),
         });
-      }, 500);
+      }, 1000); // ✅ 1000ms: Réduit les appels API pendant navigation carte
     },
     zoomend: () => {
       setMapZoom(map.getZoom());
@@ -106,8 +106,16 @@ function MapEventHandler() {
 }
 
 // Property marker component (now uses PropertyMarkerType)
-function PropertyMarkerComponent({ marker }: { marker: PropertyMarkerType }) {
+const PropertyMarkerComponent = React.memo(function PropertyMarkerComponent({
+  marker,
+}: {
+  marker: PropertyMarkerType;
+}) {
   const { selectProperty } = useSearchStore();
+
+  const handleClick = useCallback(() => {
+    selectProperty(marker.id);
+  }, [marker.id, selectProperty]);
 
   if (!marker.latitude || !marker.longitude) {
     return null;
@@ -120,11 +128,11 @@ function PropertyMarkerComponent({ marker }: { marker: PropertyMarkerType }) {
       position={position}
       icon={icon}
       eventHandlers={{
-        click: () => selectProperty(marker.id),
+        click: handleClick,
       }}
     />
   );
-}
+});
 
 export function PropertyMap({ className }: { className?: string }) {
   const {

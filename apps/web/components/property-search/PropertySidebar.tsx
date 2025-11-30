@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Home, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { usePropertyData } from '@/hooks/use-property-data';
 import {
@@ -58,17 +58,22 @@ export function PropertySidebar() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const isError = error !== null;
-  const allProperties = properties || [];
 
-  // Client-side pagination (20 items per page)
+  // Client-side pagination (20 items per page) - Memoized for performance
   const ITEMS_PER_PAGE = 20;
-  const totalResults = allProperties.length;
-  const totalPages = Math.ceil(totalResults / ITEMS_PER_PAGE);
 
-  // Calculate paginated properties
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedProperties = allProperties.slice(startIndex, endIndex);
+  const paginationData = useMemo(() => {
+    const allProperties = properties || [];
+    const totalResults = allProperties.length;
+    const totalPages = Math.ceil(totalResults / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const paginatedProperties = allProperties.slice(startIndex, endIndex);
+
+    return { totalResults, totalPages, paginatedProperties };
+  }, [properties, currentPage]);
+
+  const { totalResults, totalPages, paginatedProperties } = paginationData;
 
   // Handle page change with scroll to top
   const handlePageChange = (newPage: number) => {
@@ -92,17 +97,15 @@ export function PropertySidebar() {
   // Scroll to top when properties change (refetch after filter/map change)
   // Skip initial mount to avoid scrolling on page load
   const isInitialMountRef = useRef(true);
-  const previousPropertiesRef = useRef<Property[]>(properties);
 
   useEffect(() => {
     // Skip on initial mount
     if (isInitialMountRef.current) {
       isInitialMountRef.current = false;
-      previousPropertiesRef.current = properties;
       return;
     }
 
-    // Only scroll if properties actually changed (not just a re-render)
+    // Only scroll if fetching (loading new data)
     if (isFetching) {
       // Scroll to top of the list container
       if (scrollContainerRef.current) {
@@ -112,8 +115,6 @@ export function PropertySidebar() {
       if (typeof window !== 'undefined' && isDesktop) {
         window.scrollTo({ top: 0 });
       }
-
-      previousPropertiesRef.current = properties;
     }
   }, [isFetching, isDesktop]);
 
@@ -323,7 +324,7 @@ function PropertyListContent({
               className="grid gap-4 md:gap-y-10 md:gap-x-6 auto-rows-max"
               style={{
                 gridTemplateColumns:
-                  'repeat(auto-fill, minmax(min(50%, 300px), 1fr))',
+                  'repeat(auto-fill, minmax(min(50%, 264px), 1fr))',
               }}
             >
               {filteredProperties.map((property: Property, index) => (

@@ -24,10 +24,11 @@ import {
   Session,
   UserSession,
 } from '@thallesp/nestjs-better-auth';
+import { RateLimitGuard } from '@/src/common/guards/rate-limit.guard';
 
 @ApiTags('properties')
 @Controller('properties')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RateLimitGuard)
 export class PropertiesController {
   constructor(private readonly propertiesService: PropertiesService) {}
 

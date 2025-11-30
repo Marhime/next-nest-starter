@@ -193,7 +193,8 @@ export function usePropertyData() {
   } = useSearchStore();
 
   // Build query params from store filters
-  // Note: We fetch ALL results (limit: 100) for client-side pagination
+  // Fetch ALL results (no pagination) for client-side pagination in sidebar
+  // This allows for instant page switching without server requests
   const queryParams = useMemo<FetchPropertiesParams>(
     () => ({
       listingType: listingType || undefined,
@@ -207,8 +208,8 @@ export function usePropertyData() {
       maxArea: maxArea || undefined,
       amenities: amenities.length > 0 ? amenities : undefined,
       mapBounds: mapBounds || undefined,
-      page: 1, // Always fetch first page
-      limit: 100, // Fetch all results (max 100) for client-side pagination
+      page: 1,
+      limit: 100, // Fetch up to 100 results for client-side pagination
     }),
     [
       listingType,
@@ -229,8 +230,10 @@ export function usePropertyData() {
   const propertiesQuery = useQuery({
     queryKey: ['properties', queryParams],
     queryFn: () => fetchPropertiesPaginated(queryParams),
-    staleTime: 0,
-    gcTime: 5 * 60 * 1000,
+    staleTime: 60 * 1000, // ✅ 60s: Évite refetch pendant navigation
+    gcTime: 10 * 60 * 1000, // 10 min en cache
+    refetchOnWindowFocus: false, // ✅ Pas de refetch au retour de l'onglet
+    refetchOnMount: false, // ✅ Utilise le cache si disponible
   });
 
   // Separate query for map markers (lightweight, no pagination)
@@ -238,8 +241,10 @@ export function usePropertyData() {
     queryKey: ['map-markers', mapBounds],
     queryFn: () => fetchMapMarkers(mapBounds),
     enabled: !!mapBounds, // Only fetch when bounds exist
-    staleTime: 30 * 1000, // 30 seconds
-    gcTime: 5 * 60 * 1000,
+    staleTime: 60 * 1000, // ✅ 60s: Évite refetch pendant déplacement carte
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   // Sync properties query state with Zustand store

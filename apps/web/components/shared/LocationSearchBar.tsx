@@ -1,12 +1,20 @@
 /**
- * Universal Location Search Bar
- * Reusable component for location search with autocomplete
- * Uses React Query for optimized caching
+ * Modern Location Search Bar (shadcn style)
+ *
+ * A clean search input with dropdown results - no button required
+ * Features:
+ * - Direct input field with icon
+ * - Auto-opening dropdown on focus/typing
+ * - Real-time search with React Query caching
+ * - Keyboard navigation (arrows, enter, escape)
+ * - Optional geolocation button
+ *
+ * Built with shadcn/ui components and following project best practices
  */
 
 'use client';
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MapPin, Loader2, Navigation, X } from 'lucide-react';
@@ -25,7 +33,6 @@ interface LocationSearchBarProps {
   className?: string;
   showCurrentLocationButton?: boolean;
   countryCodes?: string;
-  autoFocus?: boolean;
 }
 
 export function LocationSearchBar({
@@ -35,13 +42,12 @@ export function LocationSearchBar({
   className,
   showCurrentLocationButton = true,
   countryCodes,
-  autoFocus = false,
 }: LocationSearchBarProps) {
   const [query, setQuery] = useState(defaultValue);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Debounced search with React Query
@@ -55,31 +61,35 @@ export function LocationSearchBar({
   const currentLocation = useCurrentLocation();
   const reverseGeocode = useReverseGeocode();
 
-  // Show results when available
+  // Auto-open dropdown when results available
   useEffect(() => {
     if (results.length > 0 && query.length >= 3) {
       setIsOpen(true);
       setSelectedIndex(-1);
-    } else {
+    } else if (query.length < 3) {
       setIsOpen(false);
     }
   }, [results, query]);
-
-  // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setQuery(value);
-  };
 
   // Handle location selection
   const handleSelectLocation = useCallback(
     (location: GeocodingResult) => {
       setQuery(location.display_name);
       setIsOpen(false);
+      setSelectedIndex(-1);
       onLocationSelect(location);
     },
     [onLocationSelect],
   );
+
+  // Handle input change
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setQuery(value);
+    if (value.length >= 3) {
+      setIsOpen(true);
+    }
+  };
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -103,6 +113,7 @@ export function LocationSearchBar({
         }
         break;
       case 'Escape':
+        e.preventDefault();
         setIsOpen(false);
         setSelectedIndex(-1);
         break;
@@ -124,6 +135,7 @@ export function LocationSearchBar({
   const handleClear = () => {
     setQuery('');
     setIsOpen(false);
+    setSelectedIndex(-1);
     inputRef.current?.focus();
   };
 
@@ -131,10 +143,11 @@ export function LocationSearchBar({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
+        setSelectedIndex(-1);
       }
     };
 
@@ -146,40 +159,100 @@ export function LocationSearchBar({
     isSearching || currentLocation.isPending || reverseGeocode.isPending;
 
   return (
-    <div className={cn('relative w-full', className)} ref={dropdownRef}>
-      <div className="relative flex gap-2">
-        <div className="relative flex-1">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none z-10" />
-          <Input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onFocus={() => results.length > 0 && setIsOpen(true)}
-            placeholder={placeholder}
-            className="pl-10 pr-10"
-            autoFocus={autoFocus}
-            aria-label={placeholder}
-            aria-autocomplete="list"
-            aria-controls="location-results"
-            aria-expanded={isOpen}
-          />
-          {query && !isLoading && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={handleClear}
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+    <div className={cn('w-full', className)}>
+      <div className="flex gap-2">
+        {/* Search Input */}
+        <div className="relative flex-1" ref={containerRef}>
+          <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onFocus={() => {
+                if (results.length > 0 && query.length >= 3) {
+                  setIsOpen(true);
+                }
+              }}
+              placeholder={placeholder}
+              className="pl-9 pr-9 max-md:h-12"
+              aria-label={placeholder}
+              aria-autocomplete="list"
+              aria-controls="location-results"
+              aria-expanded={isOpen}
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              {isLoading && (
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              )}
+              {query && !isLoading && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleClear}
+                  className="h-6 w-6"
+                >
+                  <X className="h-3 w-3" />
+                  <span className="sr-only">Effacer</span>
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Dropdown Results */}
+          {isOpen && (
+            <div
+              id="location-results"
+              className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-[300px] overflow-y-auto"
+              role="listbox"
             >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-          {isLoading && (
-            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+              {query.length < 3 ? (
+                <div className="px-4 py-3 text-sm text-muted-foreground">
+                  Tapez au moins 3 caractères...
+                </div>
+              ) : isSearching ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : results.length === 0 ? (
+                <div className="px-4 py-3 text-sm text-muted-foreground">
+                  Aucune adresse trouvée
+                </div>
+              ) : (
+                <>
+                  <div className="px-3 py-2 text-xs font-medium text-muted-foreground border-b">
+                    Résultats
+                  </div>
+                  <div className="py-1">
+                    {results.map((result, index) => (
+                      <button
+                        key={result.place_id}
+                        type="button"
+                        className={cn(
+                          'w-full text-left px-4 py-3 hover:bg-accent transition-colors flex items-start gap-3',
+                          selectedIndex === index && 'bg-accent',
+                        )}
+                        onClick={() => handleSelectLocation(result)}
+                        role="option"
+                        aria-selected={selectedIndex === index}
+                      >
+                        <MapPin className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                        <span className="text-sm line-clamp-2">
+                          {result.display_name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           )}
         </div>
+
+        {/* Current Location Button */}
         {showCurrentLocationButton && (
           <Button
             type="button"
@@ -188,48 +261,24 @@ export function LocationSearchBar({
             onClick={handleUseCurrentLocation}
             disabled={isLoading}
             title="Utiliser ma position actuelle"
+            className="shrink-0"
           >
             <Navigation className="h-4 w-4" />
+            <span className="sr-only">Position actuelle</span>
           </Button>
         )}
       </div>
 
       {/* Error messages */}
       {currentLocation.isError && (
-        <p className="text-sm text-destructive mt-1" role="alert">
+        <p className="text-sm text-destructive mt-2" role="alert">
           Impossible d&apos;accéder à votre position
         </p>
       )}
       {reverseGeocode.isError && (
-        <p className="text-sm text-destructive mt-1" role="alert">
+        <p className="text-sm text-destructive mt-2" role="alert">
           Impossible de récupérer l&apos;adresse
         </p>
-      )}
-
-      {/* Dropdown Results */}
-      {isOpen && results.length > 0 && (
-        <div
-          id="location-results"
-          className="absolute z-50 w-full mt-1 bg-background border rounded-lg shadow-lg max-h-[300px] overflow-y-auto"
-          role="listbox"
-        >
-          {results.map((result, index) => (
-            <button
-              key={result.place_id}
-              type="button"
-              className={cn(
-                'w-full text-left px-4 py-3 hover:bg-accent transition-colors flex items-start gap-3 border-b last:border-b-0',
-                selectedIndex === index && 'bg-accent',
-              )}
-              onClick={() => handleSelectLocation(result)}
-              role="option"
-              aria-selected={selectedIndex === index}
-            >
-              <MapPin className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-              <span className="text-sm">{result.display_name}</span>
-            </button>
-          ))}
-        </div>
       )}
     </div>
   );

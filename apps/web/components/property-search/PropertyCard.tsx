@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Heart, MapPin, Bed, Bath, Square } from 'lucide-react';
 import { useSearchStore, type Property } from '@/stores/search-store';
 import { cn, getPhotoUrl } from '@/lib/utils';
-import { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -19,17 +19,12 @@ interface PropertyCardProps {
   property: Property;
 }
 
-export function PropertyCard({ property }: PropertyCardProps) {
-  const {
-    selectedPropertyId,
-    hoveredPropertyId,
-    selectProperty,
-    hoverProperty,
-    setMapCenter,
-  } = useSearchStore();
+export const PropertyCard = React.memo(function PropertyCard({
+  property,
+}: PropertyCardProps) {
+  const { hoveredPropertyId, hoverProperty } = useSearchStore();
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const isSelected = selectedPropertyId === property.id;
   const isHovered = hoveredPropertyId === property.id;
 
   const primaryPhoto =
@@ -44,10 +39,10 @@ export function PropertyCard({ property }: PropertyCardProps) {
         ? 'par nuit'
         : '';
 
-  const handleFavoriteClick = (e: React.MouseEvent) => {
+  const handleFavoriteClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsFavorite(!isFavorite);
-  };
+    setIsFavorite((prev) => !prev);
+  }, []);
 
   return (
     <Link target="_blank" href={`/property/${property.id}`}>
@@ -115,14 +110,14 @@ export function PropertyCard({ property }: PropertyCardProps) {
             {/* Price */}
             {price && (
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-primary">
+                <span className="text-md font-bold text-primary">
                   {price}
                   {property.currency === 'EUR'
                     ? ' €'
                     : ` ${property.currency || '€'}`}
                 </span>
                 {priceLabel && (
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {priceLabel}
                   </span>
                 )}
@@ -130,13 +125,13 @@ export function PropertyCard({ property }: PropertyCardProps) {
             )}
 
             {/* Title */}
-            <h3 className="font-semibold text-lg line-clamp-1">
+            <h3 className="font-semibold text-md line-clamp-1">
               {property.title}
             </h3>
 
             {/* Location */}
             {(property.city || property.address) && (
-              <div className="flex items-start gap-1.5 text-sm text-muted-foreground">
+              <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
                 <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
                 <span className="line-clamp-1">
                   {property.address || property.city}
@@ -187,4 +182,4 @@ export function PropertyCard({ property }: PropertyCardProps) {
       </Card>
     </Link>
   );
-}
+});

@@ -186,7 +186,7 @@ function PropertyCard({
   };
 
   return (
-    <Card className="overflow-hidden pt-0 hover:shadow-lg transition-shadow">
+    <Card className="overflow-hidden pt-0 pb-0 hover:shadow-lg transition-shadow">
       <div className="relative aspect-video w-full bg-muted">
         {primaryPhoto ? (
           <Image

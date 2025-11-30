@@ -114,6 +114,11 @@ export class PropertiesService {
       minPrice,
       maxPrice,
       minBedrooms,
+      maxBedrooms,
+      minBathrooms,
+      minArea,
+      maxArea,
+      amenities,
       status,
       page = 1,
       limit = 20,
@@ -126,8 +131,37 @@ export class PropertiesService {
       ...(state && { state: { contains: state, mode: 'insensitive' } }),
       // Default to ACTIVE if no status specified (for public searches)
       status: status || PropertyStatus.ACTIVE,
-      ...(minBedrooms && { bedrooms: { gte: minBedrooms } }),
     };
+
+    // Bedrooms filtering
+    if (minBedrooms !== undefined || maxBedrooms !== undefined) {
+      where.bedrooms = {};
+      if (minBedrooms !== undefined) where.bedrooms.gte = minBedrooms;
+      if (maxBedrooms !== undefined) where.bedrooms.lte = maxBedrooms;
+    }
+
+    // Bathrooms filtering
+    if (minBathrooms !== undefined) {
+      where.bathrooms = { gte: minBathrooms };
+    }
+
+    // Area filtering
+    if (minArea !== undefined || maxArea !== undefined) {
+      where.area = {};
+      if (minArea !== undefined) where.area.gte = String(minArea);
+      if (maxArea !== undefined) where.area.lte = String(maxArea);
+    }
+
+    // Amenities filtering (property must have ALL specified amenities)
+    if (amenities && amenities.length > 0) {
+      // Use AND to ensure property has all amenities
+      where.AND = amenities.map((amenity) => ({
+        amenities: {
+          path: '$',
+          array_contains: [amenity],
+        },
+      }));
+    }
 
     // Price filtering based on listing type
     if (minPrice !== undefined || maxPrice !== undefined) {
