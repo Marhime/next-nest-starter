@@ -91,7 +91,7 @@ const Footer = () => {
                 Careers
               </a>{' '}
               <span className="inline text-blue-600 dark:text-blue-500">
-                — We're hiring
+                — We&apos;re hiring
               </span>
             </p>
             <p>
@@ -157,7 +157,7 @@ const Footer = () => {
                 className="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200"
                 href="#"
               >
-                What's New
+                What&apos;s New
               </a>
             </p>
             <p>

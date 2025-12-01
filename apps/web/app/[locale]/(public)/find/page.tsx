@@ -10,7 +10,6 @@ import { PropertySidebar } from '@/components/property-search/PropertySidebar';
 import { MobileListButton } from '@/components/property-search/MobileListButton';
 import { MobileSearchBar } from '@/components/property-search/MobileSearchBar';
 import '@/app/leaflet-clusters.css';
-import { QueryProvider } from '@/components/providers/QueryProvider';
 
 // Dynamic import for map to avoid SSR issues with Leaflet
 const PropertyMap = dynamic(
@@ -34,27 +33,22 @@ const PropertyMap = dynamic(
 );
 
 function PropertySearchContent() {
-  // PropertySidebar now handles data fetching with infinite scroll
-  // No need to call usePropertyData here
-
   return (
-    <QueryProvider>
-      <div className="relative md:flex min-h-screen">
-        {/* PropertySidebar - Renders as drawer on mobile, sidebar on desktop */}
-        <PropertySidebar />
+    <div className="relative md:flex min-h-screen">
+      {/* PropertySidebar - Renders as drawer on mobile, sidebar on desktop */}
+      <PropertySidebar />
 
-        {/* Mobile Search Bar - Fixed at top on mobile only */}
-        <MobileSearchBar />
+      {/* Mobile Search Bar - Fixed at top on mobile only */}
+      <MobileSearchBar />
 
-        {/* Map Container - Fixed behind on mobile, flexible on desktop */}
-        <div className="fixed right-0 max-md:left-0 top-[69px] md:flex-1 md:sticky h-[calc(100vh-69px)] z-2 overflow-hidden">
-          <PropertyMap className="md:4 xl:p-10 w-full h-full" />
-        </div>
-
-        {/* Mobile floating button to open drawer */}
-        <MobileListButton />
+      {/* Map Container - Fixed behind on mobile, flexible on desktop */}
+      <div className="fixed right-0 max-md:left-0 top-[69px] md:flex-1 md:sticky h-[calc(100vh-69px)] z-2 overflow-hidden">
+        <PropertyMap className="md:4 xl:p-10 w-full h-full" />
       </div>
-    </QueryProvider>
+
+      {/* Mobile floating button to open drawer */}
+      <MobileListButton />
+    </div>
   );
 }
 

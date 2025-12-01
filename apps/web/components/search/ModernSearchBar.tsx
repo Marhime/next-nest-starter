@@ -11,7 +11,11 @@ import { Button } from '@/components/ui/button';
 import { LocationSearchBar } from '@/components/shared/LocationSearchBar';
 import { Home, Building2, Hotel } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useSearchStore, type ListingType } from '@/stores/search-store';
+import {
+  useSearchStore,
+  type ListingType,
+  type PropertyType,
+} from '@/stores/search-store';
 import type { GeocodingResult } from '@/hooks/use-geocoding';
 import { QueryProvider } from '../providers/QueryProvider';
 import {
@@ -23,6 +27,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import { Input } from '../ui/input';
 
 const LISTING_TYPES = [
@@ -35,6 +48,7 @@ export function ModernSearchBar({ className }: { className?: string }) {
   const router = useRouter();
   const { listingType, location, setListingType, setLocation, toURLParams } =
     useSearchStore();
+  const [drawerIsOpen, setDrawerIsOpen] = useState(false);
 
   const [selectedType, setSelectedType] = useState<ListingType>(
     listingType || 'SALE',
@@ -134,12 +148,12 @@ export function ModernSearchBar({ className }: { className?: string }) {
               <p className="md:block font-bold text-sm">Lieu</p>
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <LocationSearchBar
-                    onLocationSelect={handleLocationSelect}
-                    placeholder="Ville, quartier, adresse..."
-                    defaultValue={searchLocation}
-                    showCurrentLocationButton={false}
-                    className=""
+                  <Input
+                    onClick={() => {
+                      setDrawerIsOpen(true);
+                    }}
+                    type="text"
+                    placeholder="Paris, Lyon, Marseille..."
                   />
                 </div>
               </div>
@@ -159,6 +173,183 @@ export function ModernSearchBar({ className }: { className?: string }) {
           </Button>
         </div>
       </div>
+      <Drawer open={drawerIsOpen} onOpenChange={setDrawerIsOpen}>
+        <DrawerContent className="max-h-[85vh]">
+          <DrawerHeader>
+            <DrawerTitle>Rechercher un logement</DrawerTitle>
+            <DrawerDescription>
+              Affinez votre recherche pour trouver le bien idéal
+            </DrawerDescription>
+          </DrawerHeader>
+
+          <div className="overflow-y-auto px-4 pb-4 space-y-6">
+            {/* Type de transaction */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold">Je cherche à</label>
+              <div className="grid grid-cols-3 gap-2">
+                {LISTING_TYPES.map(({ value, label, icon: Icon }) => (
+                  <Button
+                    key={value}
+                    type="button"
+                    variant={selectedType === value ? 'default' : 'outline'}
+                    className="flex flex-col gap-1 h-auto py-3"
+                    onClick={() => setSelectedType(value)}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="text-xs">{label}</span>
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Localisation */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold">Localisation</label>
+              <LocationSearchBar
+                onLocationSelect={handleLocationSelect}
+                placeholder="Paris, Lyon, Marseille..."
+                defaultValue={searchLocation}
+                showCurrentLocationButton={true}
+              />
+            </div>
+
+            {/* Prix */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold">Budget</label>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Input
+                    type="number"
+                    placeholder="Prix min"
+                    value={useSearchStore.getState().minPrice || ''}
+                    onChange={(e) => {
+                      const value = e.target.value
+                        ? parseFloat(e.target.value)
+                        : null;
+                      useSearchStore
+                        .getState()
+                        .setPriceRange(
+                          value,
+                          useSearchStore.getState().maxPrice,
+                        );
+                    }}
+                  />
+                </div>
+                <div>
+                  <Input
+                    type="number"
+                    placeholder="Prix max"
+                    value={useSearchStore.getState().maxPrice || ''}
+                    onChange={(e) => {
+                      const value = e.target.value
+                        ? parseFloat(e.target.value)
+                        : null;
+                      useSearchStore
+                        .getState()
+                        .setPriceRange(
+                          useSearchStore.getState().minPrice,
+                          value,
+                        );
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Type de propriété */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold">Type de bien</label>
+              <Select
+                value={useSearchStore.getState().propertyType || 'all'}
+                onValueChange={(value) => {
+                  const propertyType =
+                    value === 'all' ? null : (value as PropertyType);
+                  useSearchStore.getState().setPropertyType(propertyType);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Tous les types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les types</SelectItem>
+                  <SelectItem value="APARTMENT">Appartement</SelectItem>
+                  <SelectItem value="HOUSE">Maison</SelectItem>
+                  <SelectItem value="STUDIO">Studio</SelectItem>
+                  <SelectItem value="VILLA">Villa</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Chambres et Salles de bain */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Chambres</label>
+                <Select
+                  value={
+                    useSearchStore.getState().minBedrooms?.toString() || 'all'
+                  }
+                  onValueChange={(value) => {
+                    const min = value === 'all' ? null : parseInt(value);
+                    useSearchStore.getState().setBedroomsRange(min, null);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Toutes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes</SelectItem>
+                    <SelectItem value="1">1+</SelectItem>
+                    <SelectItem value="2">2+</SelectItem>
+                    <SelectItem value="3">3+</SelectItem>
+                    <SelectItem value="4">4+</SelectItem>
+                    <SelectItem value="5">5+</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Salles de bain</label>
+                <Select
+                  value={
+                    useSearchStore.getState().minBathrooms?.toString() || 'all'
+                  }
+                  onValueChange={(value) => {
+                    const min = value === 'all' ? null : parseInt(value);
+                    useSearchStore.getState().setBathroomsMin(min);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Toutes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes</SelectItem>
+                    <SelectItem value="1">1+</SelectItem>
+                    <SelectItem value="2">2+</SelectItem>
+                    <SelectItem value="3">3+</SelectItem>
+                    <SelectItem value="4">4+</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          <DrawerFooter className="pt-4 border-t">
+            <Button
+              className="w-full h-12"
+              size="lg"
+              onClick={() => {
+                handleSearch();
+                setDrawerIsOpen(false);
+              }}
+            >
+              Rechercher
+            </Button>
+            <DrawerClose asChild>
+              <Button variant="outline">Annuler</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </QueryProvider>
   );
 }
