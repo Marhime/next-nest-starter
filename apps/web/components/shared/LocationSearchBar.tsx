@@ -46,6 +46,7 @@ export function LocationSearchBar({
   const [query, setQuery] = useState(defaultValue);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [hasSelectedLocation, setHasSelectedLocation] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -61,15 +62,17 @@ export function LocationSearchBar({
   const currentLocation = useCurrentLocation();
   const reverseGeocode = useReverseGeocode();
 
-  // Auto-open dropdown when results available
+  // Auto-open dropdown when results available (but not if user already selected something)
   useEffect(() => {
+    if (hasSelectedLocation) return;
+
     if (results.length > 0 && query.length >= 3) {
       setIsOpen(true);
       setSelectedIndex(-1);
     } else if (query.length < 3) {
       setIsOpen(false);
     }
-  }, [results, query]);
+  }, [results, query, hasSelectedLocation]);
 
   // Handle location selection
   const handleSelectLocation = useCallback(
@@ -77,6 +80,7 @@ export function LocationSearchBar({
       setQuery(location.display_name);
       setIsOpen(false);
       setSelectedIndex(-1);
+      setHasSelectedLocation(true);
       onLocationSelect(location);
     },
     [onLocationSelect],
@@ -86,6 +90,7 @@ export function LocationSearchBar({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuery(value);
+    setHasSelectedLocation(false); // User is typing again, allow dropdown
     if (value.length >= 3) {
       setIsOpen(true);
     }
@@ -136,6 +141,7 @@ export function LocationSearchBar({
     setQuery('');
     setIsOpen(false);
     setSelectedIndex(-1);
+    setHasSelectedLocation(false);
     inputRef.current?.focus();
   };
 
@@ -172,7 +178,11 @@ export function LocationSearchBar({
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               onFocus={() => {
-                if (results.length > 0 && query.length >= 3) {
+                if (
+                  !hasSelectedLocation &&
+                  results.length > 0 &&
+                  query.length >= 3
+                ) {
                   setIsOpen(true);
                 }
               }}

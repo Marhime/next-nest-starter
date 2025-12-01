@@ -21,7 +21,7 @@ export default function Home() {
             <h1 className="text-white text-3xl md:text-6xl pr-12 md:pr-20 font-semibold md:col-span-7 lg:col-span-6 ">
               {t('title')}
             </h1>
-            <ModernSearchBar className="md:order-2 md:col-span-12" />
+            <ModernSearchBar className="md:order-2 md:col-span-12 md:hidden" />
             <p className="text-white md:block md:text-lg md:col-start-8 md:col-span-5 self-end">
               {t('subtitle')}
             </p>

@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { LocationSearchBar } from '@/components/shared/LocationSearchBar';
-import { Search, Home, Building2, Hotel } from 'lucide-react';
+import { Home, Building2, Hotel } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSearchStore, type ListingType } from '@/stores/search-store';
 import type { GeocodingResult } from '@/hooks/use-geocoding';
