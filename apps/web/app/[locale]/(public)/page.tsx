@@ -22,9 +22,9 @@ export default function Home() {
               {t('title')}
             </h1>
             <ModernSearchBar className="md:order-2 md:col-span-12 md:hidden" />
-            <p className="text-white md:block md:text-lg md:col-start-8 md:col-span-5 self-end">
+            {/* <p className="text-white md:block md:text-lg md:col-start-8 md:col-span-5 self-end">
               {t('subtitle')}
-            </p>
+            </p> */}
           </div>
         </div>
       </div>

@@ -131,7 +131,7 @@ export function ModernSearchBar({ className }: { className?: string }) {
             </div>
             {/* Search Input Group */}
             <div className=" flex flex-col gap-2">
-              <p className="hidden md:block font-bold text-sm">Lieu</p>
+              <p className="md:block font-bold text-sm">Lieu</p>
               <div className="flex gap-2">
                 <div className="flex-1">
                   <LocationSearchBar
@@ -145,8 +145,8 @@ export function ModernSearchBar({ className }: { className?: string }) {
               </div>
             </div>
             {/* Listing Price Selector desktop */}
-            <div className="hidden md:flex md:flex-col gap-2 ">
-              <p className="hidden md:block font-bold text-sm">Prix</p>
+            <div className="flex flex-col gap-2 ">
+              <p className="md:block font-bold text-sm">Prix</p>
               <Input type="number" placeholder="2000" />
             </div>
           </div>
