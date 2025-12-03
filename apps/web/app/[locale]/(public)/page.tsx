@@ -1,4 +1,4 @@
-import { ModernSearchBar } from '@/components/search/ModernSearchBar';
+import { SearchFiltersButton } from '@/components/search/SearchFiltersButton';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 
@@ -18,13 +18,15 @@ export default function Home() {
         />
         <div className="relative p-4 md:pb-8 xl:px-12 z-20 max-w-[1824px]">
           <div className="flex flex-col gap-4 md:grid md:grid-cols-12 md:gap-8">
-            <h1 className="text-white text-3xl md:text-6xl pr-12 md:pr-20 font-semibold md:col-span-7 lg:col-span-6 ">
-              {t('title')}
-            </h1>
-            <ModernSearchBar className="md:order-2 md:col-span-12 md:hidden" />
-            {/* <p className="text-white md:block md:text-lg md:col-start-8 md:col-span-5 self-end">
-              {t('subtitle')}
-            </p> */}
+            <div className="md:col-span-7 lg:col-span-6">
+              <h1 className="text-white text-3xl leading-normal md:text-6xl pr-12 md:pr-20 font-semibold">
+                {t('title')}
+              </h1>
+            </div>
+
+            <div className="md:col-start-8 md:col-span-5 self-end">
+              <p className="text-white md:text-lg">{t('subtitle')}</p>
+            </div>
           </div>
         </div>
       </div>

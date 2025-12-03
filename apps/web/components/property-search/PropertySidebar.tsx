@@ -212,7 +212,10 @@ export function PropertySidebar() {
           isError={isError}
           error={error}
           filteredProperties={paginatedProperties}
-          className={cn('p-4 md:p-10 md:pr-0', isSidebarCollapsed && 'hidden')}
+          className={cn(
+            'p-4 md:p-10 md:pr-0 mt-[84px]',
+            isSidebarCollapsed && 'hidden',
+          )}
           currentPage={currentPage}
           totalPages={totalPages}
           totalResults={totalResults}

@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { LocationSearchBar } from '@/components/shared/LocationSearchBar';
-import { Home, Building2, Hotel } from 'lucide-react';
+import { Home, Key } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   useSearchStore,
@@ -38,10 +38,23 @@ import {
 } from '@/components/ui/drawer';
 import { Input } from '../ui/input';
 
+// SeLoger-style: Only SALE and RENT (no SHORT_TERM/Airbnb)
 const LISTING_TYPES = [
   { value: 'SALE' as ListingType, label: 'Acheter', icon: Home },
-  { value: 'RENT' as ListingType, label: 'Louer', icon: Building2 },
-  { value: 'SHORT_TERM' as ListingType, label: 'Vacances', icon: Hotel },
+  { value: 'RENT' as ListingType, label: 'Louer', icon: Key },
+];
+
+// Property types with French labels
+const PROPERTY_TYPES = [
+  { value: 'APARTMENT', label: 'Appartement' },
+  { value: 'HOUSE', label: 'Maison' },
+  { value: 'STUDIO', label: 'Studio' },
+  { value: 'VILLA', label: 'Villa' },
+  { value: 'LAND', label: 'Terrain' },
+  { value: 'TOWNHOUSE', label: 'Maison de ville' },
+  { value: 'DUPLEX', label: 'Duplex' },
+  { value: 'PENTHOUSE', label: 'Penthouse' },
+  { value: 'LOFT', label: 'Loft' },
 ];
 
 export function ModernSearchBar({ className }: { className?: string }) {
@@ -186,17 +199,17 @@ export function ModernSearchBar({ className }: { className?: string }) {
             {/* Type de transaction */}
             <div className="space-y-2">
               <label className="text-sm font-semibold">Je cherche à</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {LISTING_TYPES.map(({ value, label, icon: Icon }) => (
                   <Button
                     key={value}
                     type="button"
                     variant={selectedType === value ? 'default' : 'outline'}
-                    className="flex flex-col gap-1 h-auto py-3"
+                    className="flex items-center justify-center gap-2 h-12"
                     onClick={() => setSelectedType(value)}
                   >
                     <Icon className="h-5 w-5" />
-                    <span className="text-xs">{label}</span>
+                    <span className="text-sm font-medium">{label}</span>
                   </Button>
                 ))}
               </div>
@@ -213,14 +226,18 @@ export function ModernSearchBar({ className }: { className?: string }) {
               />
             </div>
 
-            {/* Prix */}
+            {/* Prix adapté selon SALE ou RENT */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold">Budget</label>
+              <label className="text-sm font-semibold">
+                {selectedType === 'SALE' ? "Budget d'achat" : 'Budget mensuel'}
+              </label>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Input
                     type="number"
-                    placeholder="Prix min"
+                    placeholder={
+                      selectedType === 'SALE' ? '100 000 €' : '500 €'
+                    }
                     value={useSearchStore.getState().minPrice || ''}
                     onChange={(e) => {
                       const value = e.target.value
@@ -234,11 +251,16 @@ export function ModernSearchBar({ className }: { className?: string }) {
                         );
                     }}
                   />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {selectedType === 'SALE' ? 'Min' : 'Min/mois'}
+                  </p>
                 </div>
                 <div>
                   <Input
                     type="number"
-                    placeholder="Prix max"
+                    placeholder={
+                      selectedType === 'SALE' ? '500 000 €' : '2 000 €'
+                    }
                     value={useSearchStore.getState().maxPrice || ''}
                     onChange={(e) => {
                       const value = e.target.value
@@ -252,6 +274,9 @@ export function ModernSearchBar({ className }: { className?: string }) {
                         );
                     }}
                   />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {selectedType === 'SALE' ? 'Max' : 'Max/mois'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -272,65 +297,116 @@ export function ModernSearchBar({ className }: { className?: string }) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tous les types</SelectItem>
-                  <SelectItem value="APARTMENT">Appartement</SelectItem>
-                  <SelectItem value="HOUSE">Maison</SelectItem>
-                  <SelectItem value="STUDIO">Studio</SelectItem>
-                  <SelectItem value="VILLA">Villa</SelectItem>
+                  {PROPERTY_TYPES.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Chambres et Salles de bain */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold">Chambres</label>
-                <Select
-                  value={
-                    useSearchStore.getState().minBedrooms?.toString() || 'all'
-                  }
-                  onValueChange={(value) => {
-                    const min = value === 'all' ? null : parseInt(value);
-                    useSearchStore.getState().setBedroomsRange(min, null);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Toutes" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Toutes</SelectItem>
-                    <SelectItem value="1">1+</SelectItem>
-                    <SelectItem value="2">2+</SelectItem>
-                    <SelectItem value="3">3+</SelectItem>
-                    <SelectItem value="4">4+</SelectItem>
-                    <SelectItem value="5">5+</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            {/* Chambres et Salles de bain (sauf pour terrains) */}
+            {useSearchStore.getState().propertyType !== 'LAND' && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold">Chambres</label>
+                  <Select
+                    value={
+                      useSearchStore.getState().minBedrooms?.toString() || 'all'
+                    }
+                    onValueChange={(value) => {
+                      const min = value === 'all' ? null : parseInt(value);
+                      useSearchStore.getState().setBedroomsRange(min, null);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Toutes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes</SelectItem>
+                      <SelectItem value="1">1+</SelectItem>
+                      <SelectItem value="2">2+</SelectItem>
+                      <SelectItem value="3">3+</SelectItem>
+                      <SelectItem value="4">4+</SelectItem>
+                      <SelectItem value="5">5+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold">Salles de bain</label>
-                <Select
-                  value={
-                    useSearchStore.getState().minBathrooms?.toString() || 'all'
-                  }
-                  onValueChange={(value) => {
-                    const min = value === 'all' ? null : parseInt(value);
-                    useSearchStore.getState().setBathroomsMin(min);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Toutes" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Toutes</SelectItem>
-                    <SelectItem value="1">1+</SelectItem>
-                    <SelectItem value="2">2+</SelectItem>
-                    <SelectItem value="3">3+</SelectItem>
-                    <SelectItem value="4">4+</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold">
+                    Salles de bain
+                  </label>
+                  <Select
+                    value={
+                      useSearchStore.getState().minBathrooms?.toString() ||
+                      'all'
+                    }
+                    onValueChange={(value) => {
+                      const min = value === 'all' ? null : parseInt(value);
+                      useSearchStore.getState().setBathroomsMin(min);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Toutes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes</SelectItem>
+                      <SelectItem value="1">1+</SelectItem>
+                      <SelectItem value="2">2+</SelectItem>
+                      <SelectItem value="3">3+</SelectItem>
+                      <SelectItem value="4">4+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Surface pour les terrains */}
+            {useSearchStore.getState().propertyType === 'LAND' && (
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Surface</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Input
+                      type="number"
+                      placeholder="Min (m²)"
+                      value={useSearchStore.getState().minArea || ''}
+                      onChange={(e) => {
+                        const value = e.target.value
+                          ? parseFloat(e.target.value)
+                          : null;
+                        useSearchStore
+                          .getState()
+                          .setAreaRange(
+                            value,
+                            useSearchStore.getState().maxArea,
+                          );
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      type="number"
+                      placeholder="Max (m²)"
+                      value={useSearchStore.getState().maxArea || ''}
+                      onChange={(e) => {
+                        const value = e.target.value
+                          ? parseFloat(e.target.value)
+                          : null;
+                        useSearchStore
+                          .getState()
+                          .setAreaRange(
+                            useSearchStore.getState().minArea,
+                            value,
+                          );
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <DrawerFooter className="pt-4 border-t">

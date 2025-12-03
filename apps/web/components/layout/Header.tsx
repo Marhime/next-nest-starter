@@ -5,8 +5,7 @@ import { usePathname } from 'next/navigation';
 import ProfileDropdown from './ProfileDropdown';
 import LocaleSwitcher from '../LocaleSwitcher';
 import { Link } from '@/i18n/navigation';
-import SearchBarDesktop from '../search/SearchBarDesktop';
-import { SearchBarFind } from '../search/SearchBarFind';
+import { SearchFiltersButton } from '../search/SearchFiltersButton';
 
 const Header = () => {
   const pathname = usePathname();
@@ -20,9 +19,10 @@ const Header = () => {
           MyLogo
         </Link>
 
-        {/* Search Bar - Conditional based on page */}
-        <div className="hidden md:flex flex-1 justify-center items-center px-4">
-          {isFindPage ? <SearchBarFind /> : <SearchBarDesktop />}
+        {/* Search Button - Conditional based on page */}
+
+        <div className="flex flex-1 justify-center items-center px-4">
+          <SearchFiltersButton variant="outline" className="bg-white" />
         </div>
 
         {/* Right Actions */}

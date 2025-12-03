@@ -11,6 +11,11 @@ import { Badge } from '@/components/ui/badge';
 import { Heart, MapPin, Bed, Bath, Square } from 'lucide-react';
 import { useSearchStore, type Property } from '@/stores/search-store';
 import { cn, getPhotoUrl } from '@/lib/utils';
+import {
+  getListingTypeLabel,
+  getPropertyTypeLabel,
+  getPriceLabel,
+} from '@/lib/property-labels';
 import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -29,15 +34,14 @@ export const PropertyCard = React.memo(function PropertyCard({
 
   const primaryPhoto =
     property.photos.find((p) => p.isPrimary) || property.photos[0];
+
+  // SeLoger-style: Show salePrice for SALE, monthlyPrice for RENT
   const price =
-    property.salePrice || property.monthlyPrice || property.nightlyPrice;
-  const priceLabel = property.salePrice
-    ? 'Prix'
-    : property.monthlyPrice
-      ? 'par mois'
-      : property.nightlyPrice
-        ? 'par nuit'
-        : '';
+    property.listingType === 'SALE'
+      ? property.salePrice
+      : property.monthlyPrice;
+
+  const priceLabel = getPriceLabel(property.listingType);
 
   const handleFavoriteClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -78,7 +82,7 @@ export const PropertyCard = React.memo(function PropertyCard({
                   variant="secondary"
                   className="bg-background/90 backdrop-blur-sm"
                 >
-                  {property.listingType}
+                  {getListingTypeLabel(property.listingType)}
                 </Badge>
               )}
               {property.propertyType && (
@@ -86,7 +90,7 @@ export const PropertyCard = React.memo(function PropertyCard({
                   variant="secondary"
                   className="bg-background/90 backdrop-blur-sm"
                 >
-                  {property.propertyType}
+                  {getPropertyTypeLabel(property.propertyType)}
                 </Badge>
               )}
             </div>
