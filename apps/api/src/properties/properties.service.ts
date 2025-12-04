@@ -124,6 +124,16 @@ export class PropertiesService {
       limit = 20,
     } = query;
 
+    // 🔍 Debug: Log received filters
+    console.log('🔍 [findAll] Received filters:', {
+      propertyType,
+      listingType,
+      minPrice,
+      maxPrice,
+      minBedrooms,
+      minBathrooms,
+    });
+
     const where: Prisma.PropertyWhereInput = {
       ...(propertyType && { propertyType }),
       ...(listingType && { listingType }),
@@ -132,6 +142,9 @@ export class PropertiesService {
       // Default to ACTIVE if no status specified (for public searches)
       status: status || PropertyStatus.ACTIVE,
     };
+
+    // 🔍 Debug: Log constructed where clause
+    console.log('🔍 [findAll] Where clause:', JSON.stringify(where, null, 2));
 
     // Bedrooms filtering
     if (minBedrooms !== undefined || maxBedrooms !== undefined) {

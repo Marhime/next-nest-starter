@@ -111,26 +111,10 @@ export function ModernSearchBar({ className }: { className?: string }) {
         </div>
         {/* Modern Card Container */}
         <div className="md:flex md:items-end gap-4 md:gap-6">
-          <div className="flex flex-1 flex-col md:flex-row md:items-center gap-4 md:gap-6">
-            <div className="flex md:hidden md:flex-col md:gap-2">
-              {/* Listing Type Selector */}
-              <div className="flex md:hidden rounded-t-2xl w-full md:w-1/2 backdrop-blur-lg ">
-                {LISTING_TYPES.map(({ value, label, icon: Icon }) => (
-                  <Button
-                    key={value}
-                    variant={selectedType === value ? 'default' : 'link'}
-                    className={cn(
-                      'flex-1 not-visited: gap-2 transition-all duration-bold:text-sm',
-                      selectedType === value ? 'shadow-lg ' : 'hover:bg-muted',
-                    )}
-                    onClick={() => setSelectedType(value)}
-                  >
-                    <Icon className="block h-4 w-4" />
-                    <span className="block">{label}</span>
-                  </Button>
-                ))}
-              </div>
-            </div>
+          <div className="flex flex-1 flex-row md:items-center gap-4 md:gap-6">
+            <p className="text-sm capitalize">
+              {selectedType?.toLocaleLowerCase()}
+            </p>
             {/* Listing Type Selector desktop */}
             <div className="hidden md:flex md:flex-col gap-2 ">
               <p className="hidden md:block font-bold text-sm">Je cherche à</p>

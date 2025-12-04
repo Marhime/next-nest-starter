@@ -65,7 +65,7 @@ export function MobileBottomNav() {
     <>
       {/* Mobile Bottom Navigation - Hidden on desktop */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border">
-        <div className="flex items-center justify-around h-20 px-2">
+        <div className="flex items-center justify-around px-2 py-3">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href, item.exactMatch);

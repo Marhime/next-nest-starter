@@ -24,7 +24,7 @@ export function MobileListButton() {
   return (
     <Button
       onClick={() => setMobileDrawerOpen(true)}
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 shadow-lg gap-2"
+      className="fixed bottom-[calc(68px+20px)] left-1/2 -translate-x-1/2 z-50 shadow-lg gap-2"
       size="lg"
     >
       <List className="w-5 h-5" />

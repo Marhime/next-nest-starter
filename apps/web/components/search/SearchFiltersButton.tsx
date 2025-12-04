@@ -7,14 +7,16 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { SlidersHorizontal, Search } from 'lucide-react';
+import { SlidersHorizontal, Search, SearchIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SearchFiltersModal } from './SearchFiltersModal';
 import { useSearchStore } from '@/stores/search-store';
+import { IconMagnetFilled } from '@tabler/icons-react';
 
 interface SearchFiltersButtonProps {
-  variant?: 'default' | 'outline' | 'secondary' | 'compact';
+  variant?: 'default' | 'outline' | 'secondary' | 'compact' | 'home' | 'find';
   className?: string;
 }
 
@@ -22,59 +24,49 @@ export function SearchFiltersButton({
   variant = 'default',
   className,
 }: SearchFiltersButtonProps) {
+  const t = useTranslations('SearchFilters');
   const [isOpen, setIsOpen] = useState(false);
   const { location, listingType, minPrice, maxPrice } = useSearchStore();
+
+  const isHome = variant === 'home';
+  const isFind = variant === 'find';
 
   // Count active filters
   const activeFiltersCount = [location, listingType, minPrice, maxPrice].filter(
     Boolean,
   ).length;
 
-  // Compact variant for home page (mobile)
-  if (variant === 'compact') {
-    return (
-      <>
-        <Button
-          variant="secondary"
-          className={cn(
-            'w-full h-14 justify-start gap-3 bg-white hover:bg-white/90 text-foreground shadow-lg',
-            className,
-          )}
-          onClick={() => setIsOpen(true)}
-        >
-          <Search className="h-5 w-5 text-muted-foreground shrink-0" />
-          <div className="flex-1 min-w-0 text-left">
-            <p className="text-sm font-medium truncate">
-              {location || 'Où allez-vous ?'}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {listingType === 'SALE'
-                ? 'Acheter'
-                : listingType === 'RENT'
-                  ? 'Louer'
-                  : 'Type'}
-              {minPrice || maxPrice
-                ? ` · ${minPrice || 0} - ${maxPrice || '∞'} €`
-                : ''}
-            </p>
-          </div>
-        </Button>
+  // Default/Outline/Secondary variants
 
-        <SearchFiltersModal open={isOpen} onOpenChange={setIsOpen} />
-      </>
-    );
-  }
+  return (
+    <>
+      <Button
+        variant="default"
+        className={cn(
+          'flex gap-2 flex-1 text-black ',
+          className,
+          isHome && 'w-full py-6',
+        )}
+        onClick={() => setIsOpen(true)}
+      >
+        <SearchIcon className="block" />
+        <span className="block">Commencer ma recherche</span>
+      </Button>
+
+      <SearchFiltersModal open={isOpen} onOpenChange={setIsOpen} />
+    </>
+  );
 
   // Default/Outline/Secondary variants
   return (
     <>
       <Button
-        variant={variant === 'default' ? 'default' : variant}
-        className={cn('gap-2', className)}
+        variant="default"
+        className={cn('gap-2  py-2 text-black', className)}
         onClick={() => setIsOpen(true)}
       >
         <SlidersHorizontal className="h-4 w-4" />
-        <span>Filtres</span>
+        <span>{t('filters')}</span>
         {activeFiltersCount > 0 && (
           <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-primary-foreground text-primary">
             {activeFiltersCount}

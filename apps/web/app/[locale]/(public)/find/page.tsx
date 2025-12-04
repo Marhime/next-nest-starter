@@ -38,9 +38,6 @@ function PropertySearchContent() {
       {/* PropertySidebar - Renders as drawer on mobile, sidebar on desktop */}
       <PropertySidebar />
 
-      {/* Mobile Search Bar - Fixed at top on mobile only */}
-      <MobileSearchBar />
-
       {/* Map Container - Fixed behind on mobile, flexible on desktop */}
       <div className="fixed right-0 max-md:left-0 top-[69px] md:flex-1 md:sticky h-[calc(100vh-69px)] z-2 overflow-hidden">
         <PropertyMap className="md:4 xl:p-10 w-full h-full" />

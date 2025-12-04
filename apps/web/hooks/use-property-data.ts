@@ -195,8 +195,8 @@ export function usePropertyData() {
   // Build query params from store filters
   // Fetch ALL results (no pagination) for client-side pagination in sidebar
   // This allows for instant page switching without server requests
-  const queryParams = useMemo<FetchPropertiesParams>(
-    () => ({
+  const queryParams = useMemo<FetchPropertiesParams>(() => {
+    const params = {
       listingType: listingType || undefined,
       minPrice: minPrice || undefined,
       maxPrice: maxPrice || undefined,
@@ -210,21 +210,34 @@ export function usePropertyData() {
       mapBounds: mapBounds || undefined,
       page: 1,
       limit: 100, // Fetch up to 100 results for client-side pagination
-    }),
-    [
-      listingType,
-      minPrice,
-      maxPrice,
-      propertyType,
-      minBedrooms,
-      maxBedrooms,
-      minBathrooms,
-      minArea,
-      maxArea,
-      amenities,
-      mapBounds,
-    ],
-  );
+    };
+
+    // 🔍 Debug: Log active filters
+    console.log('🔍 [usePropertyData] Active filters:', {
+      listingType: params.listingType,
+      propertyType: params.propertyType,
+      priceRange:
+        params.minPrice || params.maxPrice
+          ? `${params.minPrice || 0} - ${params.maxPrice || '∞'}`
+          : 'None',
+      bedrooms: params.minBedrooms || 'All',
+      bathrooms: params.minBathrooms || 'All',
+    });
+
+    return params;
+  }, [
+    listingType,
+    minPrice,
+    maxPrice,
+    propertyType,
+    minBedrooms,
+    maxBedrooms,
+    minBathrooms,
+    minArea,
+    maxArea,
+    amenities,
+    mapBounds,
+  ]);
 
   // Query for properties list (with pagination)
   const propertiesQuery = useQuery({

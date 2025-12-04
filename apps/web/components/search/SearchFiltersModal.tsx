@@ -10,6 +10,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LocationSearchBar } from '@/components/shared/LocationSearchBar';
@@ -48,22 +49,22 @@ import {
 
 // SeLoger-style: Only SALE and RENT
 const LISTING_TYPES = [
-  { value: 'SALE' as ListingType, label: 'Acheter', icon: Home },
-  { value: 'RENT' as ListingType, label: 'Louer', icon: Key },
+  { value: 'SALE' as ListingType, icon: Home },
+  { value: 'RENT' as ListingType, icon: Key },
 ];
 
-// Property types with French labels
-const PROPERTY_TYPES = [
-  { value: 'APARTMENT', label: 'Appartement' },
-  { value: 'HOUSE', label: 'Maison' },
-  { value: 'STUDIO', label: 'Studio' },
-  { value: 'VILLA', label: 'Villa' },
-  { value: 'LAND', label: 'Terrain' },
-  { value: 'TOWNHOUSE', label: 'Maison de ville' },
-  { value: 'DUPLEX', label: 'Duplex' },
-  { value: 'PENTHOUSE', label: 'Penthouse' },
-  { value: 'LOFT', label: 'Loft' },
-];
+// Property types (keys only, labels from translations)
+const PROPERTY_TYPE_KEYS = [
+  'APARTMENT',
+  'HOUSE',
+  'STUDIO',
+  'VILLA',
+  'LAND',
+  'TOWNHOUSE',
+  'DUPLEX',
+  'PENTHOUSE',
+  'LOFT',
+] as const;
 
 interface SearchFiltersModalProps {
   open: boolean;
@@ -74,6 +75,7 @@ export function SearchFiltersModal({
   open,
   onOpenChange,
 }: SearchFiltersModalProps) {
+  const t = useTranslations('SearchFilters');
   const router = useRouter();
   const pathname = usePathname();
   const isDesktop = useMediaQuery('(min-width: 768px)');
@@ -213,12 +215,12 @@ export function SearchFiltersModal({
 
   // Shared content for both Drawer and Dialog
   const FiltersContent = () => (
-    <div className="overflow-y-auto px-4 pb-4 space-y-6">
+    <div className="overflow-y-auto p-4 space-y-6">
       {/* Type de transaction */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold">Je cherche à</label>
+        <label className="text-sm font-semibold">{t('lookingFor')}</label>
         <div className="grid grid-cols-2 gap-2">
-          {LISTING_TYPES.map(({ value, label, icon: Icon }) => (
+          {LISTING_TYPES.map(({ value, icon: Icon }) => (
             <Button
               key={value}
               type="button"
@@ -227,7 +229,9 @@ export function SearchFiltersModal({
               onClick={() => setSelectedType(value)}
             >
               <Icon className="h-5 w-5" />
-              <span className="text-sm font-medium">{label}</span>
+              <span className="text-sm font-medium">
+                {value === 'SALE' ? t('buy') : t('rent')}
+              </span>
             </Button>
           ))}
         </div>
@@ -235,10 +239,10 @@ export function SearchFiltersModal({
 
       {/* Localisation */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold">Localisation</label>
+        <label className="text-sm font-semibold">{t('location')}</label>
         <LocationSearchBar
           onLocationSelect={handleLocationSelect}
-          placeholder="Paris, Lyon, Marseille..."
+          placeholder={t('locationPlaceholder')}
           defaultValue={searchLocation}
           showCurrentLocationButton={true}
         />
@@ -247,29 +251,39 @@ export function SearchFiltersModal({
       {/* Prix adapté selon SALE ou RENT */}
       <div className="space-y-2">
         <label className="text-sm font-semibold">
-          {selectedType === 'SALE' ? "Budget d'achat" : 'Budget mensuel'}
+          {selectedType === 'SALE' ? t('budgetBuy') : t('budgetRent')}
         </label>
         <div className="grid grid-cols-2 gap-2">
           <div>
             <Input
               type="number"
-              placeholder={selectedType === 'SALE' ? '100 000 €' : '500 €'}
+              placeholder={
+                selectedType === 'SALE'
+                  ? t('minPricePlaceholderBuy')
+                  : t('minPricePlaceholderRent')
+              }
               value={localMinPrice}
               onChange={(e) => setLocalMinPrice(e.target.value)}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              {selectedType === 'SALE' ? 'Min' : 'Min/mois'}
+              {t('minPrice')}
+              {selectedType === 'RENT' ? t('perMonth') : ''}
             </p>
           </div>
           <div>
             <Input
               type="number"
-              placeholder={selectedType === 'SALE' ? '500 000 €' : '2 000 €'}
+              placeholder={
+                selectedType === 'SALE'
+                  ? t('maxPricePlaceholderBuy')
+                  : t('maxPricePlaceholderRent')
+              }
               value={localMaxPrice}
               onChange={(e) => setLocalMaxPrice(e.target.value)}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              {selectedType === 'SALE' ? 'Max' : 'Max/mois'}
+              {t('maxPrice')}
+              {selectedType === 'RENT' ? t('perMonth') : ''}
             </p>
           </div>
         </div>
@@ -277,7 +291,7 @@ export function SearchFiltersModal({
 
       {/* Type de propriété */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold">Type de bien</label>
+        <label className="text-sm font-semibold">{t('propertyType')}</label>
         <Select
           value={selectedPropertyType || 'all'}
           onValueChange={(value) =>
@@ -287,13 +301,13 @@ export function SearchFiltersModal({
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder="Tous les types" />
+            <SelectValue placeholder={t('allTypes')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tous les types</SelectItem>
-            {PROPERTY_TYPES.map(({ value, label }) => (
-              <SelectItem key={value} value={value}>
-                {label}
+            <SelectItem value="all">{t('allTypes')}</SelectItem>
+            {PROPERTY_TYPE_KEYS.map((key) => (
+              <SelectItem key={key} value={key}>
+                {t(`propertyTypes.${key}`)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -304,16 +318,16 @@ export function SearchFiltersModal({
       {selectedPropertyType !== 'LAND' && (
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="text-sm font-semibold">Chambres</label>
+            <label className="text-sm font-semibold">{t('bedrooms')}</label>
             <Select
               value={selectedMinBedrooms}
               onValueChange={setSelectedMinBedrooms}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Toutes" />
+                <SelectValue placeholder={t('all')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Toutes</SelectItem>
+                <SelectItem value="all">{t('all')}</SelectItem>
                 <SelectItem value="1">1+</SelectItem>
                 <SelectItem value="2">2+</SelectItem>
                 <SelectItem value="3">3+</SelectItem>
@@ -324,16 +338,16 @@ export function SearchFiltersModal({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold">Salles de bain</label>
+            <label className="text-sm font-semibold">{t('bathrooms')}</label>
             <Select
               value={selectedMinBathrooms}
               onValueChange={setSelectedMinBathrooms}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Toutes" />
+                <SelectValue placeholder={t('all')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Toutes</SelectItem>
+                <SelectItem value="all">{t('all')}</SelectItem>
                 <SelectItem value="1">1+</SelectItem>
                 <SelectItem value="2">2+</SelectItem>
                 <SelectItem value="3">3+</SelectItem>
@@ -347,12 +361,12 @@ export function SearchFiltersModal({
       {/* Surface pour les terrains */}
       {selectedPropertyType === 'LAND' && (
         <div className="space-y-2">
-          <label className="text-sm font-semibold">Surface</label>
+          <label className="text-sm font-semibold">{t('area')}</label>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <Input
                 type="number"
-                placeholder="Min (m²)"
+                placeholder={t('minArea')}
                 value={localMinArea}
                 onChange={(e) => setLocalMinArea(e.target.value)}
               />
@@ -360,7 +374,7 @@ export function SearchFiltersModal({
             <div>
               <Input
                 type="number"
-                placeholder="Max (m²)"
+                placeholder={t('maxArea')}
                 value={localMaxArea}
                 onChange={(e) => setLocalMaxArea(e.target.value)}
               />
@@ -377,20 +391,18 @@ export function SearchFiltersModal({
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent className="max-h-[90vh]">
           <DrawerHeader>
-            <DrawerTitle>Filtres de recherche</DrawerTitle>
-            <DrawerDescription>
-              Affinez votre recherche pour trouver le bien idéal
-            </DrawerDescription>
+            <DrawerTitle>{t('title')}</DrawerTitle>
+            <DrawerDescription>{t('description')}</DrawerDescription>
           </DrawerHeader>
 
           <FiltersContent />
 
           <DrawerFooter className="pt-4 border-t">
             <Button className="w-full h-12" size="lg" onClick={handleSearch}>
-              Rechercher
+              {t('search')}
             </Button>
             <DrawerClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t('cancel')}</Button>
             </DrawerClose>
           </DrawerFooter>
         </DrawerContent>
@@ -403,19 +415,17 @@ export function SearchFiltersModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Filtres de recherche</DialogTitle>
-          <DialogDescription>
-            Affinez votre recherche pour trouver le bien idéal
-          </DialogDescription>
+          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
         <FiltersContent />
 
         <DialogFooter className="pt-4 border-t">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Annuler
+            {t('cancel')}
           </Button>
-          <Button onClick={handleSearch}>Rechercher</Button>
+          <Button onClick={handleSearch}>{t('search')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

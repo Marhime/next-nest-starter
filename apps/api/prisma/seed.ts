@@ -27,7 +27,7 @@ async function main() {
   // Créer des utilisateurs
   console.log('👥 Création des utilisateurs...');
   const users = await Promise.all(
-    Array.from({ length: 50 }).map(async (_, i) => {
+    Array.from({ length: 50 }).map(async () => {
       const firstName = faker.person.firstName();
       const lastName = faker.person.lastName();
       return prisma.user.create({
@@ -62,34 +62,51 @@ async function main() {
   // Créer 1000 propriétés
   console.log('🏠 Création des propriétés...');
 
+  // SeLoger-style: Focus on residential real estate
   const propertyTypes: PropertyType[] = [
+    'APARTMENT', // Most common
     'APARTMENT',
+    'APARTMENT',
+    'HOUSE',
     'HOUSE',
     'VILLA',
     'TOWNHOUSE',
     'STUDIO',
     'LOFT',
-    'LAND',
-    'OFFICE',
-    'RETAIL',
+    'DUPLEX',
+    'PENTHOUSE',
+    'LAND', // Terrains
   ];
-  const listingTypes: ListingType[] = ['SHORT_TERM', 'RENT', 'SALE'];
+
+  // SeLoger-style: Only SALE and RENT (no SHORT_TERM/Airbnb)
+  const listingTypes: ListingType[] = [
+    'SALE',
+    'SALE', // More sale properties
+    'RENT',
+    'RENT', // Balanced with rentals
+  ];
+  // Mexican cities for Puerto Escondido area
   const cities = [
-    'Ciudad de México',
-    'Guadalajara',
-    'Monterrey',
-    'Cancún',
-    'Playa del Carmen',
-    'Tulum',
-    'Puerto Vallarta',
-    'Oaxaca',
+    'Puerto Escondido',
+    'Oaxaca de Juárez',
+    'Huatulco',
+    'Zipolite',
+    'Mazunte',
+    'San Agustinillo',
+    'Carrizalillo',
+    'La Punta',
+    'Zicatela',
+    'Bacocho',
   ];
   const states = [
-    'CDMX',
-    'Jalisco',
-    'Nuevo León',
-    'Quintana Roo',
-    'Jalisco',
+    'Oaxaca',
+    'Oaxaca',
+    'Oaxaca',
+    'Oaxaca',
+    'Oaxaca',
+    'Oaxaca',
+    'Oaxaca',
+    'Oaxaca',
     'Oaxaca',
   ];
 
@@ -106,19 +123,17 @@ async function main() {
         listingType,
         title: generatePropertyTitle(propertyType, city),
         description: faker.lorem.paragraphs(3),
+        // Mexican pesos pricing (MXN)
         monthlyPrice:
           listingType === 'RENT'
-            ? faker.number.float({ min: 5000, max: 50000, fractionDigits: 2 })
+            ? faker.number.float({ min: 3000, max: 25000, fractionDigits: 2 })
             : null,
-        nightlyPrice:
-          listingType === 'SHORT_TERM'
-            ? faker.number.float({ min: 500, max: 5000, fractionDigits: 2 })
-            : null,
+        nightlyPrice: null, // Not used in SeLoger-style
         salePrice:
           listingType === 'SALE'
             ? faker.number.float({
-                min: 500000,
-                max: 10000000,
+                min: 800000,
+                max: 15000000,
                 fractionDigits: 2,
               })
             : null,
@@ -128,14 +143,15 @@ async function main() {
         state: faker.helpers.arrayElement(states),
         postalCode: faker.location.zipCode('#####'),
         country: 'MX',
+        // Oaxaca Coast coordinates (latitude: 15-16.5, longitude: -97 to -96)
         latitude: Number(
-          faker.location.latitude({ min: 14, max: 32 }).toFixed(6),
+          faker.location.latitude({ min: 15, max: 16.5 }).toFixed(6),
         ),
         longitude: Number(
           faker.location
             .longitude({
-              min: -118,
-              max: -86,
+              min: -97,
+              max: -96,
             })
             .toFixed(6),
         ),
