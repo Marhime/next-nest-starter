@@ -271,7 +271,7 @@ export function LocationSearchBar({
             onClick={handleUseCurrentLocation}
             disabled={isLoading}
             title="Utiliser ma position actuelle"
-            className="shrink h-12 w-12"
+            className="shrink"
           >
             <Navigation className="h-4 w-4" />
             <span className="sr-only">Position actuelle</span>

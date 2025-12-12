@@ -8,6 +8,7 @@
 
 'use client';
 
+import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -70,6 +71,221 @@ interface SearchFiltersModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+interface FiltersContentProps {
+  t: ReturnType<typeof useTranslations>;
+  selectedType: ListingType;
+  setSelectedType: (v: ListingType) => void;
+  searchLocation: string;
+  handleLocationSelect: (r: GeocodingResult) => void;
+  localMinPrice: string;
+  setLocalMinPrice: (s: string) => void;
+  localMaxPrice: string;
+  setLocalMaxPrice: (s: string) => void;
+  selectedPropertyType: PropertyType;
+  setSelectedPropertyType: (v: PropertyType) => void;
+  selectedMinBedrooms: string;
+  setSelectedMinBedrooms: (s: string) => void;
+  selectedMinBathrooms: string;
+  setSelectedMinBathrooms: (s: string) => void;
+  localMinArea: string;
+  setLocalMinArea: (s: string) => void;
+  localMaxArea: string;
+  setLocalMaxArea: (s: string) => void;
+}
+
+export const FiltersContent: React.FC<FiltersContentProps> = ({
+  t,
+  selectedType,
+  setSelectedType,
+  searchLocation,
+  handleLocationSelect,
+  localMinPrice,
+  setLocalMinPrice,
+  localMaxPrice,
+  setLocalMaxPrice,
+  selectedPropertyType,
+  setSelectedPropertyType,
+  selectedMinBedrooms,
+  setSelectedMinBedrooms,
+  selectedMinBathrooms,
+  setSelectedMinBathrooms,
+  localMinArea,
+  setLocalMinArea,
+  localMaxArea,
+  setLocalMaxArea,
+}: FiltersContentProps) => {
+  return (
+    <div className="overflow-y-auto py-4 space-y-6">
+      {/* Type de transaction */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold">{t('lookingFor')}</label>
+        <div className="grid grid-cols-2 gap-2">
+          {LISTING_TYPES.map(({ value, icon: Icon }) => (
+            <Button
+              key={value}
+              type="button"
+              variant={selectedType === value ? 'default' : 'outline'}
+              className="flex items-center justify-center gap-2 h-12"
+              onClick={() => setSelectedType(value)}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-sm font-medium">
+                {value === 'SALE' ? t('buy') : t('rent')}
+              </span>
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Localisation */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold">{t('location')}</label>
+        <LocationSearchBar
+          onLocationSelect={handleLocationSelect}
+          placeholder={t('locationPlaceholder')}
+          defaultValue={searchLocation}
+          showCurrentLocationButton={true}
+        />
+      </div>
+
+      {/* Prix adapté selon SALE ou RENT */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold">
+          {selectedType === 'SALE' ? t('budgetBuy') : t('budgetRent')}
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Input
+              type="number"
+              placeholder={
+                selectedType === 'SALE'
+                  ? t('minPricePlaceholderBuy')
+                  : t('minPricePlaceholderRent')
+              }
+              value={localMinPrice}
+              onChange={(e) => setLocalMinPrice(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              {t('minPrice')}
+              {selectedType === 'RENT' ? t('perMonth') : ''}
+            </p>
+          </div>
+          <div>
+            <Input
+              type="number"
+              placeholder={
+                selectedType === 'SALE'
+                  ? t('maxPricePlaceholderBuy')
+                  : t('maxPricePlaceholderRent')
+              }
+              value={localMaxPrice}
+              onChange={(e) => setLocalMaxPrice(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              {t('maxPrice')}
+              {selectedType === 'RENT' ? t('perMonth') : ''}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Type de propriété */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold">{t('propertyType')}</label>
+        <Select
+          value={selectedPropertyType || 'all'}
+          onValueChange={(value) =>
+            setSelectedPropertyType(
+              value === 'all' ? null : (value as PropertyType),
+            )
+          }
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={t('allTypes')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('allTypes')}</SelectItem>
+            {PROPERTY_TYPE_KEYS.map((key) => (
+              <SelectItem key={key} value={key}>
+                {t(`propertyTypes.${key}`)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Chambres et Salles de bain (sauf pour terrains) */}
+      {selectedPropertyType !== 'LAND' && (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-semibold">{t('bedrooms')}</label>
+            <Select
+              value={selectedMinBedrooms}
+              onValueChange={setSelectedMinBedrooms}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={t('all')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('all')}</SelectItem>
+                <SelectItem value="1">1+</SelectItem>
+                <SelectItem value="2">2+</SelectItem>
+                <SelectItem value="3">3+</SelectItem>
+                <SelectItem value="4">4+</SelectItem>
+                <SelectItem value="5">5+</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-semibold">{t('bathrooms')}</label>
+            <Select
+              value={selectedMinBathrooms}
+              onValueChange={setSelectedMinBathrooms}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={t('all')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('all')}</SelectItem>
+                <SelectItem value="1">1+</SelectItem>
+                <SelectItem value="2">2+</SelectItem>
+                <SelectItem value="3">3+</SelectItem>
+                <SelectItem value="4">4+</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
+
+      {/* Surface pour les terrains */}
+      {selectedPropertyType === 'LAND' && (
+        <div className="space-y-2">
+          <label className="text-sm font-semibold">{t('area')}</label>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Input
+                type="number"
+                placeholder={t('minArea')}
+                value={localMinArea}
+                onChange={(e) => setLocalMinArea(e.target.value)}
+              />
+            </div>
+            <div>
+              <Input
+                type="number"
+                placeholder={t('maxArea')}
+                value={localMaxArea}
+                onChange={(e) => setLocalMaxArea(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export function SearchFiltersModal({
   open,
@@ -213,178 +429,6 @@ export function SearchFiltersModal({
     router,
   ]);
 
-  // Shared content for both Drawer and Dialog
-  const FiltersContent = () => (
-    <div className="overflow-y-auto p-4 space-y-6">
-      {/* Type de transaction */}
-      <div className="space-y-2">
-        <label className="text-sm font-semibold">{t('lookingFor')}</label>
-        <div className="grid grid-cols-2 gap-2">
-          {LISTING_TYPES.map(({ value, icon: Icon }) => (
-            <Button
-              key={value}
-              type="button"
-              variant={selectedType === value ? 'default' : 'outline'}
-              className="flex items-center justify-center gap-2 h-12"
-              onClick={() => setSelectedType(value)}
-            >
-              <Icon className="h-5 w-5" />
-              <span className="text-sm font-medium">
-                {value === 'SALE' ? t('buy') : t('rent')}
-              </span>
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* Localisation */}
-      <div className="space-y-2">
-        <label className="text-sm font-semibold">{t('location')}</label>
-        <LocationSearchBar
-          onLocationSelect={handleLocationSelect}
-          placeholder={t('locationPlaceholder')}
-          defaultValue={searchLocation}
-          showCurrentLocationButton={true}
-        />
-      </div>
-
-      {/* Prix adapté selon SALE ou RENT */}
-      <div className="space-y-2">
-        <label className="text-sm font-semibold">
-          {selectedType === 'SALE' ? t('budgetBuy') : t('budgetRent')}
-        </label>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <Input
-              type="number"
-              placeholder={
-                selectedType === 'SALE'
-                  ? t('minPricePlaceholderBuy')
-                  : t('minPricePlaceholderRent')
-              }
-              value={localMinPrice}
-              onChange={(e) => setLocalMinPrice(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {t('minPrice')}
-              {selectedType === 'RENT' ? t('perMonth') : ''}
-            </p>
-          </div>
-          <div>
-            <Input
-              type="number"
-              placeholder={
-                selectedType === 'SALE'
-                  ? t('maxPricePlaceholderBuy')
-                  : t('maxPricePlaceholderRent')
-              }
-              value={localMaxPrice}
-              onChange={(e) => setLocalMaxPrice(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {t('maxPrice')}
-              {selectedType === 'RENT' ? t('perMonth') : ''}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Type de propriété */}
-      <div className="space-y-2">
-        <label className="text-sm font-semibold">{t('propertyType')}</label>
-        <Select
-          value={selectedPropertyType || 'all'}
-          onValueChange={(value) =>
-            setSelectedPropertyType(
-              value === 'all' ? null : (value as PropertyType),
-            )
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={t('allTypes')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('allTypes')}</SelectItem>
-            {PROPERTY_TYPE_KEYS.map((key) => (
-              <SelectItem key={key} value={key}>
-                {t(`propertyTypes.${key}`)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Chambres et Salles de bain (sauf pour terrains) */}
-      {selectedPropertyType !== 'LAND' && (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-semibold">{t('bedrooms')}</label>
-            <Select
-              value={selectedMinBedrooms}
-              onValueChange={setSelectedMinBedrooms}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('all')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('all')}</SelectItem>
-                <SelectItem value="1">1+</SelectItem>
-                <SelectItem value="2">2+</SelectItem>
-                <SelectItem value="3">3+</SelectItem>
-                <SelectItem value="4">4+</SelectItem>
-                <SelectItem value="5">5+</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-semibold">{t('bathrooms')}</label>
-            <Select
-              value={selectedMinBathrooms}
-              onValueChange={setSelectedMinBathrooms}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('all')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('all')}</SelectItem>
-                <SelectItem value="1">1+</SelectItem>
-                <SelectItem value="2">2+</SelectItem>
-                <SelectItem value="3">3+</SelectItem>
-                <SelectItem value="4">4+</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      )}
-
-      {/* Surface pour les terrains */}
-      {selectedPropertyType === 'LAND' && (
-        <div className="space-y-2">
-          <label className="text-sm font-semibold">{t('area')}</label>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Input
-                type="number"
-                placeholder={t('minArea')}
-                value={localMinArea}
-                onChange={(e) => setLocalMinArea(e.target.value)}
-              />
-            </div>
-            <div>
-              <Input
-                type="number"
-                placeholder={t('maxArea')}
-                value={localMaxArea}
-                onChange={(e) => setLocalMaxArea(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-
   // Mobile: Drawer
   if (!isDesktop) {
     return (
@@ -395,7 +439,27 @@ export function SearchFiltersModal({
             <DrawerDescription>{t('description')}</DrawerDescription>
           </DrawerHeader>
 
-          <FiltersContent />
+          <FiltersContent
+            t={t}
+            selectedType={selectedType}
+            setSelectedType={setSelectedType}
+            searchLocation={searchLocation}
+            handleLocationSelect={handleLocationSelect}
+            localMinPrice={localMinPrice}
+            setLocalMinPrice={setLocalMinPrice}
+            localMaxPrice={localMaxPrice}
+            setLocalMaxPrice={setLocalMaxPrice}
+            selectedPropertyType={selectedPropertyType}
+            setSelectedPropertyType={setSelectedPropertyType}
+            selectedMinBedrooms={selectedMinBedrooms}
+            setSelectedMinBedrooms={setSelectedMinBedrooms}
+            selectedMinBathrooms={selectedMinBathrooms}
+            setSelectedMinBathrooms={setSelectedMinBathrooms}
+            localMinArea={localMinArea}
+            setLocalMinArea={setLocalMinArea}
+            localMaxArea={localMaxArea}
+            setLocalMaxArea={setLocalMaxArea}
+          />
 
           <DrawerFooter className="pt-4 border-t">
             <Button className="w-full h-12" size="lg" onClick={handleSearch}>
@@ -419,7 +483,27 @@ export function SearchFiltersModal({
           <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
-        <FiltersContent />
+        <FiltersContent
+          t={t}
+          selectedType={selectedType}
+          setSelectedType={setSelectedType}
+          searchLocation={searchLocation}
+          handleLocationSelect={handleLocationSelect}
+          localMinPrice={localMinPrice}
+          setLocalMinPrice={setLocalMinPrice}
+          localMaxPrice={localMaxPrice}
+          setLocalMaxPrice={setLocalMaxPrice}
+          selectedPropertyType={selectedPropertyType}
+          setSelectedPropertyType={setSelectedPropertyType}
+          selectedMinBedrooms={selectedMinBedrooms}
+          setSelectedMinBedrooms={setSelectedMinBedrooms}
+          selectedMinBathrooms={selectedMinBathrooms}
+          setSelectedMinBathrooms={setSelectedMinBathrooms}
+          localMinArea={localMinArea}
+          setLocalMinArea={setLocalMinArea}
+          localMaxArea={localMaxArea}
+          setLocalMaxArea={setLocalMaxArea}
+        />
 
         <DialogFooter className="pt-4 border-t">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
