@@ -79,15 +79,38 @@ export function LoginForm({
     },
   });
 
+  const {
+    pendingCreateIntent,
+    setPendingCreateIntent,
+    setIsPropertyTypeModalOpen,
+    setIsLoginModalOpen,
+  } = useGlobalStore();
+
   useEffect(() => {
     if (session?.data?.user) {
+      // If the user was trying to create a property, resume that flow instead of redirecting
+      if (pendingCreateIntent) {
+        setPendingCreateIntent?.(false);
+        // close login modal and open property type modal to continue creation
+        setIsLoginModalOpen?.(false);
+        setIsPropertyTypeModalOpen?.(true);
+        return;
+      }
+
       if (session?.data?.user.role === 'ADMIN') {
         redirect({ href: { pathname: '/dashboard' }, locale });
       } else {
         redirect({ href: { pathname: '/' }, locale });
       }
     }
-  }, [session?.data?.user, locale]);
+  }, [
+    session?.data?.user,
+    locale,
+    pendingCreateIntent,
+    setPendingCreateIntent,
+    setIsPropertyTypeModalOpen,
+    setIsLoginModalOpen,
+  ]);
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>

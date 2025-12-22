@@ -94,7 +94,8 @@ const LocationPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    setCurrentStep?.(1);
+    // Location is now step index 0 in the new flow
+    setCurrentStep?.(0);
   }, [setCurrentStep]);
 
   // Validation: activer Next seulement si on a les données nécessaires pour chaque phase
@@ -128,7 +129,8 @@ const LocationPage = () => {
 
     // Mark step as complete when address is validated (confirm phase with valid data)
     if (currentPhase === 'confirm' && isValid && propertyId) {
-      setPropertyProgress?.(Number(propertyId), 1, true);
+      // Mark location (step 0) complete
+      setPropertyProgress?.(Number(propertyId), 0, true);
     }
   }, [
     currentPhase,

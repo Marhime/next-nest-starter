@@ -171,6 +171,16 @@
     "title": "Choose property type",
     "description": "Select the type of property you want to add",
     "cancel": "Cancel",
+    "chooseListingTitle": "Would you like to sell or rent out this property ?",
+    "listing": {
+      "sale": "Sale",
+      "saleDescription": "Put this property up for sale",
+      "rent": "Rent",
+      "rentDescription": "Offer this property for rent"
+    },
+    "choosePropertyTypeTitle": "Which property type?",
+    "choosePropertyTypeDescription": "Choose the property type you want to add",
+    "back": "Back",
     "house": {
       "label": "House",
       "description": "Detached house with garden"

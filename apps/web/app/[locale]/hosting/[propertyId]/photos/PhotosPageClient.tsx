@@ -31,7 +31,8 @@ export function PhotosPageClient({
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
   useEffect(() => {
-    setCurrentStep?.(2); // Index 2 = 'photos' dans le tableau steps
+    // Photos step is index 1 in the new flow (0=location,1=photos,2=characteristics...)
+    setCurrentStep?.(1);
   }, [setCurrentStep]);
 
   // Validation: minimum 5 photos
@@ -39,9 +40,9 @@ export function PhotosPageClient({
     const isValid = photos.length >= 5;
     setCanProceed?.(isValid);
 
-    // Mark step as complete when we have at least 5 photos
+    // Mark step as complete when we have at least 5 photos (step 1)
     if (isValid) {
-      setPropertyProgress?.(propertyId, 2, true);
+      setPropertyProgress?.(propertyId, 1, true);
     }
   }, [photos.length, setCanProceed, propertyId, setPropertyProgress]);
 

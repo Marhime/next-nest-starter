@@ -148,4 +148,15 @@ export class CreatePropertyDto {
   @IsOptional()
   @IsDateString()
   availableFrom?: string;
+
+  @ApiPropertyOptional({ description: 'Année de construction' })
+  @IsOptional()
+  @IsInt()
+  constructionYear?: number;
+
+  @ApiPropertyOptional({ description: 'Surface du terrain (m²)' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  landSurface?: number;
 }

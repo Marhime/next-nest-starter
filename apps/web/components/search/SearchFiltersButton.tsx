@@ -13,7 +13,6 @@ import { SlidersHorizontal, Search, SearchIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SearchFiltersModal } from './SearchFiltersModal';
 import { useSearchStore } from '@/stores/search-store';
-import { IconMagnetFilled } from '@tabler/icons-react';
 
 interface SearchFiltersButtonProps {
   variant?: 'default' | 'outline' | 'secondary' | 'compact' | 'home' | 'find';
@@ -41,7 +40,7 @@ export function SearchFiltersButton({
   return (
     <>
       <Button
-        variant="default"
+        variant="classic"
         className={cn(
           'flex gap-2 flex-1 text-black ',
           className,

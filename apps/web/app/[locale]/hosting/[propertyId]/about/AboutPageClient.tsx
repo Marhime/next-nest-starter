@@ -6,9 +6,8 @@ import { useTranslations } from 'next-intl';
 import { useAddPropertyStore } from '../../store';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import {
   Bed,
@@ -42,7 +41,7 @@ import {
   Refrigerator,
 } from 'lucide-react';
 
-interface Property {
+export interface AboutProperty {
   id: number;
   title: string;
   description?: string;
@@ -57,8 +56,8 @@ interface Property {
   listingType?: string;
 }
 
-interface AboutPageClientProps {
-  property: Property;
+export interface AboutPageClientProps {
+  property: AboutProperty;
 }
 
 // Liste des équipements disponibles style SeLoger Mexique
@@ -125,6 +124,12 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
     capacity: property.capacity || 1,
     floor: property.floor || 0,
     area: property.area || undefined, // Don't default to 0, use undefined
+    constructionYear:
+      (property as unknown as { constructionYear?: number })
+        ?.constructionYear || undefined,
+    landSurface:
+      (property as unknown as { landSurface?: number })?.landSurface ||
+      undefined,
     amenities: property.amenities || [],
     status: property.status || 'DRAFT',
   });
@@ -132,38 +137,55 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
   useEffect(() => {
-    setCurrentStep?.(3);
+    // Characteristics step is index 2 after location and photos
+    setCurrentStep?.(2);
   }, [setCurrentStep]);
 
   // Validate form whenever formData changes
   useEffect(() => {
+    const isLand = property.propertyType === 'LAND';
+
     const isValid =
-      formData.title.trim().length > 0 &&
-      formData.description &&
-      formData.description.trim().length > 0 &&
+      // Characteristics: bedrooms, bathrooms and area/landSurface are required here
       formData.bedrooms > 0 &&
       formData.bathrooms > 0 &&
-      formData.area !== undefined &&
-      formData.area > 0; // Add area validation
+      (isLand
+        ? formData.landSurface !== undefined && formData.landSurface > 0
+        : formData.area !== undefined && formData.area > 0); // Add area/landSurface validation
 
     setCanProceed?.(isValid as boolean);
 
     // Mark step as complete when form is valid
     if (isValid) {
-      setPropertyProgress?.(property.id, 3, true);
+      // Mark characteristics (step 2) as complete
+      setPropertyProgress?.(property.id, 2, true);
     }
-  }, [formData, setCanProceed, property.id, setPropertyProgress]); // Save and publish handler
+  }, [
+    formData,
+    setCanProceed,
+    property.id,
+    setPropertyProgress,
+    property.propertyType,
+  ]); // Save and publish handler
   const handleSave = useCallback(async () => {
-    // Validate area before publishing
-    if (!formData.area || formData.area <= 0) {
-      toast.error(t('areaRequired'));
-      return;
+    const isLand = property.propertyType === 'LAND';
+
+    // Validate required surface depending on property type
+    if (isLand) {
+      if (!formData.landSurface || formData.landSurface <= 0) {
+        toast.error(t('areaRequired'));
+        return;
+      }
+    } else {
+      if (!formData.area || formData.area <= 0) {
+        toast.error(t('areaRequired'));
+        return;
+      }
     }
 
-    // Save all changes and set status to ACTIVE to publish
+    // Save characteristics changes (do not force publication here)
     const dataToSave = {
       ...formData,
-      status: 'ACTIVE', // Force publication
     };
 
     const publishPromise = fetch(`${API_URL}/properties/${property.id}`, {
@@ -201,7 +223,7 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
       // Don't redirect on error
       console.error('Publication failed:', error);
     }
-  }, [API_URL, property.id, formData, router, t]);
+  }, [API_URL, property.id, formData, router, t, property.propertyType]);
 
   // Configure navigation
   useEffect(() => {
@@ -255,42 +277,7 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
         </p>
       </div>
 
-      {/* Title & Description */}
-      <Card className="p-6 space-y-6">
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Informations générales</h2>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="title" className="text-base font-medium">
-                Titre de l&apos;annonce *
-              </Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => updateField('title', e.target.value)}
-                placeholder="Ex: Bel appartement lumineux avec vue"
-                className="mt-2 text-base h-12"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="description" className="text-base font-medium">
-                Description *
-              </Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => updateField('description', e.target.value)}
-                placeholder="Décrivez votre bien en détail..."
-                className="mt-2 min-h-[150px] text-base"
-              />
-              <p className="text-sm text-muted-foreground mt-2">
-                {formData.description?.length || 0} caractères
-              </p>
-            </div>
-          </div>
-        </div>
-      </Card>
+      {/* Title & Description moved to the dedicated Description step */}
 
       {/* Area */}
       <Card className="p-6">
@@ -320,6 +307,54 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
                 La surface est obligatoire
               </p>
             )}
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="landSurface" className="text-base font-medium">
+                  Surface du terrain (m²)
+                </Label>
+                <Input
+                  id="landSurface"
+                  type="number"
+                  value={formData.landSurface || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    updateField(
+                      'landSurface',
+                      value === '' ? undefined : parseFloat(value),
+                    );
+                  }}
+                  placeholder="Ex: 250"
+                  className="mt-2 text-base h-12"
+                  min="0"
+                  step="1"
+                />
+              </div>
+
+              <div>
+                <Label
+                  htmlFor="constructionYear"
+                  className="text-base font-medium"
+                >
+                  Année de construction
+                </Label>
+                <Input
+                  id="constructionYear"
+                  type="number"
+                  value={formData.constructionYear || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    updateField(
+                      'constructionYear',
+                      value === '' ? undefined : parseInt(value, 10),
+                    );
+                  }}
+                  placeholder="Ex: 2005"
+                  className="mt-2 text-base h-12"
+                  min="1800"
+                  max={new Date().getFullYear()}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </Card>

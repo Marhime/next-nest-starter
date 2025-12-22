@@ -1,50 +1,37 @@
-import { cookies } from 'next/headers';
+'use client';
+
+import { useParams } from 'next/navigation';
 import { AboutPageClient } from './AboutPageClient';
+import type { AboutProperty } from './AboutPageClient';
+import { useProperty } from '@/hooks/use-properties';
+import { useTranslations } from 'next-intl';
 
-interface Property {
-  id: number;
-  title: string;
-  description?: string;
-  bedrooms?: number;
-  bathrooms?: number;
-  capacity?: number;
-  floor?: number;
-  area?: number;
-  amenities?: string[];
-  status: string;
-  propertyType: string;
-  listingType?: string;
-}
+export default function AboutPage() {
+  const params = useParams();
+  const { propertyId } = params as { propertyId?: string };
+  const { property, isLoading, isError } = useProperty(propertyId || '');
+  const t = useTranslations('PropertyForm');
 
-async function getProperty(propertyId: string): Promise<Property> {
-  const cookieStore = await cookies();
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((cookie) => `${cookie.name}=${cookie.value}`)
-    .join('; ');
+  if (isLoading) return <div className="p-6">{t('messages.loading')}</div>;
+  if (isError || !property)
+    return <div className="p-6">{t('messages.updateError')}</div>;
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-  const res = await fetch(`${API_URL}/properties/${propertyId}`, {
-    headers: {
-      Cookie: cookieHeader,
-    },
-    cache: 'no-store',
-  });
+  const p = property as unknown as Partial<AboutProperty> & { id: number };
 
-  if (!res.ok) {
-    throw new Error('Failed to fetch property');
-  }
+  const safeProperty: AboutProperty = {
+    id: p.id,
+    title: p.title || '',
+    description: p.description,
+    bedrooms: p.bedrooms,
+    bathrooms: p.bathrooms,
+    capacity: p.capacity,
+    floor: p.floor,
+    area: p.area,
+    amenities: p.amenities,
+    status: (p.status as string) || 'DRAFT',
+    propertyType: (p.propertyType as string) || 'HOUSE',
+    listingType: p.listingType,
+  };
 
-  return res.json();
-}
-
-export default async function AboutPage({
-  params,
-}: {
-  params: Promise<{ propertyId: string }>;
-}) {
-  const { propertyId } = await params;
-  const property = await getProperty(propertyId);
-
-  return <AboutPageClient property={property} />;
+  return <AboutPageClient property={safeProperty} />;
 }

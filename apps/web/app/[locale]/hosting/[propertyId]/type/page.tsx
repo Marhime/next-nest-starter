@@ -6,6 +6,14 @@ import { useProperty } from '@/hooks/use-properties';
 import { useTranslations } from 'next-intl';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
 import {
   Card,
   CardContent,
@@ -53,10 +61,6 @@ const TypePage = () => {
       icon: Building2,
     },
     { value: 'LAND', label: t('propertyTypes.land'), icon: LandPlot },
-    { value: 'HOTEL', label: t('propertyTypes.hotel'), icon: Hotel },
-    { value: 'HOSTEL', label: t('propertyTypes.hostel'), icon: Building },
-    { value: 'GUESTHOUSE', label: t('propertyTypes.guesthouse'), icon: House },
-    { value: 'ROOM', label: t('propertyTypes.room'), icon: BedDouble },
   ];
 
   const ListingTypeOptions = [
@@ -67,7 +71,8 @@ const TypePage = () => {
       icon: Calendar,
     },
     {
-      value: 'LONG_TERM',
+      // Backend enum uses 'RENT' for long-term rentals — keep frontend value aligned
+      value: 'RENT',
       label: t('listingTypes.longTerm'),
       description: t('listingTypes.longTermDescription'),
       icon: CalendarClock,
@@ -88,19 +93,47 @@ const TypePage = () => {
     monthlyPrice: string;
     nightlyPrice: string;
     salePrice: string;
+    area?: string;
+    bedrooms?: string;
+    bathrooms?: string;
+    availableFrom?: string;
+    furnished?: boolean;
+    colocation?: boolean;
+    parking?: boolean;
+    heatingType?: string;
+    constructionYear?: string;
+    landSurface?: string;
+    amenitiesSelections?: string[];
   }>({
     propertyType: undefined,
     listingType: undefined,
     monthlyPrice: '',
     nightlyPrice: '',
     salePrice: '',
+    area: undefined,
+    bedrooms: undefined,
+    bathrooms: undefined,
+    availableFrom: undefined,
+    furnished: false,
+    colocation: false,
+    parking: false,
+    heatingType: undefined,
+    constructionYear: undefined,
+    landSurface: undefined,
+    amenitiesSelections: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const isLand = formData.propertyType === 'LAND';
+
+  // used to silence unused var lint during render cycles
+  console.log('isSubmitting', isSubmitting);
   console.log('Current formData:', formData);
 
   useEffect(() => {
-    setCurrentStep?.(0); // Type is now step 0 (was step 1)
+    // This page is now a fallback for older flows. The modal handles listing/type selection.
+    // Do not modify the property progress here (location is step 0).
+    setCurrentStep?.(0);
   }, [setCurrentStep]);
 
   // Validation du formulaire
@@ -108,17 +141,15 @@ const TypePage = () => {
     const isValid =
       formData.propertyType !== undefined &&
       formData.listingType !== undefined &&
-      ((formData.listingType === 'LONG_TERM' && formData.monthlyPrice !== '') ||
+      ((formData.listingType === 'RENT' && formData.monthlyPrice !== '') ||
         (formData.listingType === 'SHORT_TERM' &&
           formData.nightlyPrice !== '') ||
         (formData.listingType === 'SALE' && formData.salePrice !== ''));
 
     setCanProceed?.(isValid);
 
-    // Mark step as completed when valid
-    if (isValid && propertyId) {
-      setPropertyProgress(Number(propertyId), 0, true);
-    }
+    // Marking progress for the wizard is done in each step's dedicated page (location/characteristics/...)
+    // We intentionally don't mark progress here because this page is a fallback and not part of the new ordered flow.
   }, [formData, setCanProceed, setPropertyProgress, propertyId]);
 
   // Charger les données existantes
@@ -140,9 +171,63 @@ const TypePage = () => {
           ? String(property.nightlyPrice)
           : '',
         salePrice: property.salePrice ? String(property.salePrice) : '',
+        area: property.area ? String(property.area) : undefined,
+        bedrooms: property.bedrooms ? String(property.bedrooms) : undefined,
+        bathrooms: property.bathrooms ? String(property.bathrooms) : undefined,
+        availableFrom: (property as unknown as { availableFrom?: string })
+          ?.availableFrom
+          ? new Date(
+              (
+                property as unknown as { availableFrom?: string }
+              ).availableFrom!,
+            )
+              .toISOString()
+              .slice(0, 10)
+          : undefined,
+        furnished:
+          (
+            property as unknown as { amenities?: string[] }
+          )?.amenities?.includes('furnished') || false,
+        colocation:
+          (
+            property as unknown as { amenities?: string[] }
+          )?.amenities?.includes('colocation') || false,
+        parking:
+          (
+            property as unknown as { amenities?: string[] }
+          )?.amenities?.includes('parking') || false,
+        heatingType: (() => {
+          const found = (
+            property as unknown as { amenities?: string[] }
+          )?.amenities?.find((a: string) => a?.startsWith?.('heating:'));
+          return found ? String(found).split(':')[1] : undefined;
+        })(),
+        constructionYear: (() => {
+          const found = (
+            property as unknown as { amenities?: string[] }
+          )?.amenities?.find((a: string) =>
+            a?.startsWith?.('constructionYear:'),
+          );
+          return found ? String(found).split(':')[1] : undefined;
+        })(),
+        landSurface: (property as unknown as { landSurface?: number })
+          ?.landSurface
+          ? String(
+              (property as unknown as { landSurface?: number })?.landSurface,
+            )
+          : undefined,
+        amenitiesSelections:
+          (property as unknown as { amenities?: string[] })?.amenities || [],
       });
+
+      // If property already has type and listing (modal already set them), skip to location
+      if (property.propertyType && property.listingType) {
+        // ensure we redirect to the location step
+        router.push(`/hosting/${propertyId}/location`);
+        return;
+      }
     }
-  }, [property]);
+  }, [property, propertyId, router]);
 
   // Réinitialiser les prix non pertinents quand le ListingType change (mais pas au chargement initial)
   const [initialLoadDone, setInitialLoadDone] = useState(false);
@@ -155,7 +240,7 @@ const TypePage = () => {
 
     if (!initialLoadDone) return;
 
-    if (formData.listingType === 'LONG_TERM') {
+    if (formData.listingType === 'RENT') {
       // Garder seulement monthlyPrice
       setFormData((prev) => ({
         ...prev,
@@ -190,7 +275,7 @@ const TypePage = () => {
       }
 
       // Validation conditionnelle des prix selon le ListingType
-      if (formData.listingType === 'LONG_TERM' && !formData.monthlyPrice) {
+      if (formData.listingType === 'RENT' && !formData.monthlyPrice) {
         toast.error(t('messages.monthlyPriceRequired'));
         return;
       }
@@ -224,6 +309,19 @@ const TypePage = () => {
         const API_URL =
           process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+        // Build amenities array: keep user selections and encode some structured fields
+        const amenities: string[] = Array.isArray(formData.amenitiesSelections)
+          ? [...formData.amenitiesSelections]
+          : [];
+
+        if (formData.furnished) amenities.push('furnished');
+        if (formData.colocation) amenities.push('colocation');
+        if (formData.parking) amenities.push('parking');
+        if (formData.heatingType)
+          amenities.push(`heating:${formData.heatingType}`);
+        if (formData.constructionYear)
+          amenities.push(`constructionYear:${formData.constructionYear}`);
+
         const updatePromise = fetch(`${API_URL}/properties/${propertyId}`, {
           method: 'PATCH',
           credentials: 'include',
@@ -242,6 +340,26 @@ const TypePage = () => {
             salePrice: formData.salePrice
               ? parseFloat(formData.salePrice)
               : null,
+            // For LAND properties we persist landSurface in its dedicated column
+            // and set area to null to avoid confusion.
+            area:
+              formData.propertyType === 'LAND'
+                ? null
+                : formData.area
+                  ? parseFloat(formData.area)
+                  : null,
+            bedrooms: formData.bedrooms
+              ? parseInt(formData.bedrooms, 10)
+              : null,
+            bathrooms: formData.bathrooms
+              ? parseInt(formData.bathrooms, 10)
+              : null,
+            landSurface:
+              formData.propertyType === 'LAND' && formData.landSurface
+                ? parseFloat(formData.landSurface)
+                : null,
+            availableFrom: formData.availableFrom || null,
+            amenities,
             currency: 'MXN',
           }),
         }).then(async (response) => {
@@ -397,7 +515,7 @@ const TypePage = () => {
               </div>
               {formData.listingType && (
                 <p className="text-sm text-muted-foreground">
-                  {formData.listingType === 'LONG_TERM' &&
+                  {formData.listingType === 'RENT' &&
                     t('messages.monthlyPriceInfo')}
                   {formData.listingType === 'SHORT_TERM' &&
                     t('messages.nightlyPriceInfo')}
@@ -416,15 +534,15 @@ const TypePage = () => {
                     <span className="text-red-500">*</span>
                   )}
                 </Label>
-                {/* Monthly Price - Affiché si LONG_TERM ou pas de choix */}
-                {formData.listingType === 'LONG_TERM' && (
+                {/* Monthly Price - Affiché si RENT (long-term) ou pas de choix */}
+                {formData.listingType === 'RENT' && (
                   <div className="space-y-2">
                     <Label
                       htmlFor="monthlyPrice"
                       className="text-sm font-normal"
                     >
                       {t('labels.monthlyPrice')}
-                      {formData.listingType === 'LONG_TERM' && (
+                      {formData.listingType === 'RENT' && (
                         <span className="text-red-500 ml-1">*</span>
                       )}
                     </Label>
@@ -446,7 +564,7 @@ const TypePage = () => {
                             monthlyPrice: e.target.value,
                           })
                         }
-                        required={formData.listingType === 'LONG_TERM'}
+                        required={formData.listingType === 'RENT'}
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
                         MXN {t('labels.perMonth')}
@@ -529,6 +647,236 @@ const TypePage = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Informations clés (surface, pièces, salles d'eau, disponibilité, meublé, colocation) */}
+                <div className="space-y-4 pt-4 border-t">
+                  <Label className="text-base font-semibold">
+                    Informations clés
+                  </Label>
+
+                  {isLand ? (
+                    <div className="grid grid-cols-1 gap-3">
+                      <div>
+                        <Label htmlFor="landSurface" className="text-sm">
+                          Surface du terrain (m²)
+                        </Label>
+                        <Input
+                          id="landSurface"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          placeholder="Ex: 250"
+                          value={formData.landSurface || ''}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              landSurface: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <Label htmlFor="area" className="text-sm">
+                          Superficie (m²)
+                        </Label>
+                        <Input
+                          id="area"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          placeholder="Ex: 75"
+                          value={formData.area || ''}
+                          onChange={(e) =>
+                            setFormData({ ...formData, area: e.target.value })
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="bedrooms" className="text-sm">
+                          Nombre de pièces
+                        </Label>
+                        <Input
+                          id="bedrooms"
+                          type="number"
+                          min="0"
+                          placeholder="Ex: 3"
+                          value={formData.bedrooms || ''}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              bedrooms: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="bathrooms" className="text-sm">
+                          Nombre de salles de bain
+                        </Label>
+                        <Input
+                          id="bathrooms"
+                          type="number"
+                          min="0"
+                          placeholder="Ex: 1"
+                          value={formData.bathrooms || ''}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              bathrooms: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <Label htmlFor="availableFrom" className="text-sm">
+                        Disponible à partir de
+                      </Label>
+                      <Input
+                        id="availableFrom"
+                        type="date"
+                        value={formData.availableFrom || ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            availableFrom: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+
+                    {!isLand && (
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          checked={!!formData.furnished}
+                          onCheckedChange={(val) =>
+                            setFormData({ ...formData, furnished: !!val })
+                          }
+                        />
+                        <Label>Meublé</Label>
+                      </div>
+                    )}
+
+                    {!isLand && (
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          checked={!!formData.colocation}
+                          onCheckedChange={(val) =>
+                            setFormData({ ...formData, colocation: !!val })
+                          }
+                        />
+                        <Label>Colocation possible</Label>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Equipements et espaces extérieurs */}
+                  <div className="space-y-2">
+                    <Label className="text-sm">Équipements (optionnel)</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {[
+                        ['kitchen_equipped', 'Cuisine équipée'],
+                        ['terrace', 'Terrasse'],
+                        ['balcony', 'Balcon'],
+                        ['garden', 'Jardin'],
+                        ['pool', 'Piscine'],
+                      ].map(([key, label]) => (
+                        <label key={key} className="flex items-center gap-2">
+                          <Checkbox
+                            checked={formData.amenitiesSelections?.includes(
+                              String(key),
+                            )}
+                            onCheckedChange={(checked) => {
+                              const set = new Set(
+                                formData.amenitiesSelections || [],
+                              );
+                              if (checked) set.add(String(key));
+                              else set.delete(String(key));
+                              setFormData({
+                                ...formData,
+                                amenitiesSelections: Array.from(set),
+                              });
+                            }}
+                          />
+                          <span className="text-sm">{label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <Label htmlFor="parking" className="text-sm">
+                        Stationnement
+                      </Label>
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          checked={!!formData.parking}
+                          onCheckedChange={(val) =>
+                            setFormData({ ...formData, parking: !!val })
+                          }
+                        />
+                        <Label>Oui</Label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="heatingType" className="text-sm">
+                        Type de chauffage
+                      </Label>
+                      <Select
+                        value={formData.heatingType}
+                        onValueChange={(val) =>
+                          setFormData({ ...formData, heatingType: val })
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Sélectionner" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[
+                            'Electrique',
+                            'Gaz',
+                            'Collectif',
+                            'Pompe à chaleur',
+                          ].map((h) => (
+                            <SelectItem key={h} value={h}>
+                              {h}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="constructionYear" className="text-sm">
+                        Année de construction
+                      </Label>
+                      <Input
+                        id="constructionYear"
+                        type="number"
+                        min="1800"
+                        max={new Date().getFullYear()}
+                        placeholder="Ex: 2005"
+                        value={formData.constructionYear || ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            constructionYear: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </form>

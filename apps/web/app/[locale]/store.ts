@@ -12,6 +12,12 @@ type GlobalStore = {
   // Property type modal state
   isPropertyTypeModalOpen?: boolean;
   setIsPropertyTypeModalOpen?: (isOpen: boolean) => void;
+  // Login modal state (used to prompt user to sign in before creating a listing)
+  isLoginModalOpen?: boolean;
+  setIsLoginModalOpen?: (isOpen: boolean) => void;
+  // Pending intent when user tried to start creating a listing but needs to login
+  pendingCreateIntent?: boolean;
+  setPendingCreateIntent?: (v: boolean) => void;
 };
 
 export const useGlobalStore = create<GlobalStore>()(
@@ -26,6 +32,10 @@ export const useGlobalStore = create<GlobalStore>()(
       isPropertyTypeModalOpen: false,
       setIsPropertyTypeModalOpen: (isOpen) =>
         set({ isPropertyTypeModalOpen: isOpen }),
+      isLoginModalOpen: false,
+      setIsLoginModalOpen: (isOpen) => set({ isLoginModalOpen: isOpen }),
+      pendingCreateIntent: false,
+      setPendingCreateIntent: (v) => set({ pendingCreateIntent: v }),
     }),
     {
       name: 'global-storage', // unique name for your storage item

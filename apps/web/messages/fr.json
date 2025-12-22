@@ -167,10 +167,26 @@
     "submit": "Envoyer",
     "cancel": "Annuler"
   },
+  "LoginModal": {
+    "loginTitle": "Se connecter",
+    "registerTitle": "Créer un compte",
+    "haveAccount": "Vous avez déjà un compte ?",
+    "noAccount": "Tu n'as pas de compte ?"
+  },
   "PropertyTypeModal": {
     "title": "Choisir le type de bien",
     "description": "Sélectionnez le type de bien que vous souhaitez ajouter",
     "cancel": "Annuler",
+    "chooseListingTitle": "Quel type d'annonce souhaitez-vous déposer ?",
+    "listing": {
+      "sale": "Vente",
+      "saleDescription": "Mettre ce bien en vente",
+      "rent": "Location",
+      "rentDescription": "Mettre ce bien en location"
+    },
+    "choosePropertyTypeTitle": "Quel type de bien ?",
+    "choosePropertyTypeDescription": "Choisissez le type de propriété que vous souhaitez ajouter",
+    "back": "Retour",
     "house": {
       "label": "Maison",
       "description": "Maison individuelle avec jardin"

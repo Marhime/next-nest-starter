@@ -68,15 +68,17 @@ export const useAddPropertyStore = create<AddPropertyStore>()(
         const progress = get().propertyProgress[propertyId];
         if (!progress) return 0;
 
-        // Find first incomplete step (0=type, 1=location, 2=photos, 3=about)
-        const steps = [0, 1, 2, 3];
+        // Find first incomplete step
+        // Steps mapping (no dedicated "type" page - modal handles type):
+        // 0=location, 1=photos, 2=characteristics(about), 3=description, 4=pricing
+        const steps = [0, 1, 2, 3, 4];
         for (const step of steps) {
           if (!progress.completedSteps.includes(step)) {
             return step;
           }
         }
-        // All steps completed, return last step
-        return 3;
+        // All steps completed, return last step index
+        return 4;
       },
     }),
     {

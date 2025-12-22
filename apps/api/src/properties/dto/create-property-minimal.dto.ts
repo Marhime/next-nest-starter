@@ -1,6 +1,6 @@
-import { IsEnum } from 'class-validator';
+import { IsEnum, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { PropertyType } from '../../../generated/prisma/client';
+import { PropertyType, ListingType } from '../../../generated/prisma/client';
 
 /**
  * DTO minimal pour créer une propriété avec uniquement le type
@@ -16,4 +16,15 @@ export class CreatePropertyMinimalDto {
     message: 'propertyType must be a valid PropertyType enum value',
   })
   propertyType: PropertyType;
+
+  @ApiProperty({
+    enum: ListingType,
+    description: 'Optional listing type (SALE, RENT, SHORT_TERM)',
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(ListingType, {
+    message: 'listingType must be a valid ListingType enum value',
+  })
+  listingType?: ListingType;
 }

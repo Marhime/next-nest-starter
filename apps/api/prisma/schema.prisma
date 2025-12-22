@@ -115,11 +115,13 @@ model Property {
   latitude   Decimal? @db.Decimal(10, 8)
   longitude  Decimal? @db.Decimal(11, 8)
 
-  area      Decimal? @db.Decimal(8, 2)
-  bedrooms  Int?
-  bathrooms Int?
-  capacity  Int? // for hotels/hostels
-  floor     Int?
+  area             Decimal? @db.Decimal(8, 2)
+  bedrooms         Int?
+  bathrooms        Int?
+  capacity         Int? // for hotels/hostels
+  floor            Int?
+  constructionYear Int?     @map("construction_year")
+  landSurface      Decimal? @map("land_surface") @db.Decimal(8, 2)
 
   amenities Json?
 

@@ -86,6 +86,9 @@ export class PropertiesService {
       data: {
         userId,
         propertyType: createPropertyMinimalDto.propertyType,
+        ...(createPropertyMinimalDto.listingType && {
+          listingType: createPropertyMinimalDto.listingType,
+        }),
         title: defaultTitles[createPropertyMinimalDto.propertyType],
         status: PropertyStatus.DRAFT, // Les nouvelles propriétés sont en brouillon
         currency: Currency.MXN,

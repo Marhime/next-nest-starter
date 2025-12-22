@@ -19,20 +19,39 @@ export default function PropertyRedirectPage() {
   );
 
   const { property, isLoading } = useProperty(propertyId as string);
+  const setCurrentStep = useAddPropertyStore((s) => s.setCurrentStep);
 
   useEffect(() => {
     if (isLoading || !property) return;
 
-    const steps = ['type', 'location', 'photos', 'about'];
+    // New wizard order: start at location, then characteristics, photos, description, pricing
+    // Map step indices (from store.getCurrentPropertyStep) to route names
+    const steps = [
+      'location',
+      'photos',
+      'characteristics',
+      'description',
+      'pricing',
+    ];
     const propertyIdNum = Number(propertyId);
 
     // Get the current step for this property
     const currentStep = getCurrentPropertyStep(propertyIdNum);
 
+    // Make sure the global currentStep is set for the layout/progress bar
+    setCurrentStep?.(currentStep);
+
     // Redirect to the appropriate step
-    const targetStep = steps[currentStep] || 'type';
+    const targetStep = steps[currentStep] || 'location';
     router.replace(`/hosting/${propertyId}/${targetStep}`);
-  }, [propertyId, property, isLoading, getCurrentPropertyStep, router]);
+  }, [
+    propertyId,
+    property,
+    isLoading,
+    getCurrentPropertyStep,
+    router,
+    setCurrentStep,
+  ]);
 
   return (
     <div className="flex items-center justify-center min-h-[60vh]">

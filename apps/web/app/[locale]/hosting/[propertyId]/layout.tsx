@@ -52,7 +52,14 @@ export default function AddPropertyLayout({
 
   // Afficher un loader pendant la vérification
 
-  const steps = ['type', 'location', 'photos', 'about'];
+  // Wizard order: location -> photos -> characteristics -> description -> pricing
+  const steps = [
+    'location',
+    'photos',
+    'characteristics',
+    'description',
+    'pricing',
+  ];
   const maxSteps = steps.length - 1;
 
   return (

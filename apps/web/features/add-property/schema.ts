@@ -11,7 +11,8 @@ export const PropertyTypeEnum = z.enum([
   'ROOM',
 ]);
 
-export const ListingTypeEnum = z.enum(['SHORT_TERM', 'LONG_TERM', 'SALE']);
+// Keep values aligned with backend Prisma enum: use RENT for long-term rentals
+export const ListingTypeEnum = z.enum(['SHORT_TERM', 'RENT', 'SALE']);
 
 export const CurrencyEnum = z.enum(['MXN', 'USD']);
 

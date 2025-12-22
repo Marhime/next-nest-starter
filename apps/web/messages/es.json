@@ -171,6 +171,16 @@
     "title": "Elegir tipo de propiedad",
     "description": "Selecciona el tipo de propiedad que deseas agregar",
     "cancel": "Cancelar",
+    "chooseListingTitle": "Que tipo de anuncio deseas publicar?",
+    "listing": {
+      "sale": "Venta",
+      "saleDescription": "Poner esta propiedad a la venta",
+      "rent": "Alquiler",
+      "rentDescription": "Ofrecer esta propiedad en alquiler"
+    },
+    "choosePropertyTypeTitle": "¿Qué tipo de propiedad?",
+    "choosePropertyTypeDescription": "Elige el tipo de propiedad que deseas agregar",
+    "back": "Atrás",
     "house": {
       "label": "Casa",
       "description": "Casa independiente con jardín"

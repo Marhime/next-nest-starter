@@ -7,6 +7,10 @@ import { useLocale } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 import { ArrowLeft, ArrowLeftIcon, SlidersHorizontal } from 'lucide-react';
+import LocaleSwitcher from '../LocaleSwitcher';
+import ProfileDropdown from './ProfileDropdown';
+import Link from 'next/link';
+import { AddPropertyButton } from '../AddPropertyButton';
 
 const Header = () => {
   const pathname = usePathname();
@@ -26,17 +30,12 @@ const Header = () => {
   }, [pathname, locale]);
 
   return (
-    <div className="fixed top-0 left-0 right-0 p-4 xl:py-6 xl:px-12 z-20 max-w-[1824px] mx-auto bg-white">
-      <div
-        className={cn(
-          'w-full',
-          variant === 'find' && 'flex items-center gap-4',
-        )}
-      >
+    <div className="fixed top-0 left-0 right-0 p-4 xl:py-6 xl:px-12 z-20 max-w-[1824px] mx-auto">
+      <div className="flex justify-between">
         {/* Logo */}
-        {/* <Link href={'/'} className="text-white text-2xl font-bold shrink-0">
+        <Link href={'/'} className="text-white text-2xl font-bold shrink-0">
           MyLogo
-        </Link> */}
+        </Link>
 
         {/* Search Button - Conditional based on page */}
         {/* <ModernSearchBar /> */}
@@ -46,18 +45,19 @@ const Header = () => {
           </div>
         )}
 
-        <SearchFiltersButton variant={variant} className="bg-white" />
+        {/* <SearchFiltersButton variant={variant} className="bg-white" />
         {variant === 'find' && (
           <div className="flex-1 flex justify-end">
             <SlidersHorizontal />
           </div>
-        )}
+        )} */}
 
         {/* Right Actions */}
-        {/* <div className="text-white flex justify-end items-center gap-4 shrink-0">
-          <LocaleSwitcher className="hidden md:block" />
+        <div className="text-white flex justify-end items-center gap-4 shrink-0">
+          <AddPropertyButton variant="default" />
+          {/* <LocaleSwitcher className="hidden md:block" /> */}
           <ProfileDropdown />
-        </div> */}
+        </div>
       </div>
     </div>
   );

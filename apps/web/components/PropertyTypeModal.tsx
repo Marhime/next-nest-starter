@@ -13,7 +13,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -24,8 +23,9 @@ import { useCreateProperty } from '@/hooks/use-create-property';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
-import { Home, Building2, LandPlot } from 'lucide-react';
+import { Home, Building2, LandPlot, KeyRound, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 type PropertyType = 'HOUSE' | 'APARTMENT' | 'LAND';
 
@@ -46,10 +46,6 @@ export function PropertyTypeModal() {
     return (
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>{t('title')}</DialogTitle>
-            <DialogDescription>{t('description')}</DialogDescription>
-          </DialogHeader>
           <PropertyTypeSelection />
         </DialogContent>
       </Dialog>
@@ -75,9 +71,15 @@ export function PropertyTypeModal() {
 }
 
 function PropertyTypeSelection({ className }: { className?: string }) {
+  // Step 1: choose listing (SALE or RENT) — keep value aligned with backend ('RENT')
+  const [listingChoice, setListingChoice] = React.useState<
+    'SALE' | 'RENT' | null
+  >(null);
+  // Step 2: choose property type
   const [selectedType, setSelectedType] = React.useState<PropertyType | null>(
     null,
   );
+
   const { createProperty, isCreating } = useCreateProperty();
   const setIsOpen = useGlobalStore((state) => state.setIsPropertyTypeModalOpen);
   const router = useRouter();
@@ -108,14 +110,17 @@ function PropertyTypeSelection({ className }: { className?: string }) {
     setSelectedType(type);
 
     try {
-      const property = await createProperty({ propertyType: type });
+      const property = await createProperty({
+        propertyType: type,
+        listingType: listingChoice || undefined,
+      });
 
       toast.success(t('successMessage'));
 
-      // Fermer la modal
+      // Close modal
       setIsOpen?.(false);
 
-      // Rediriger vers la page d'ajout de propriété
+      // Redirect to the hosting flow
       router.push(`/hosting/${property.id}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('errorMessage'));
@@ -124,44 +129,100 @@ function PropertyTypeSelection({ className }: { className?: string }) {
   };
 
   return (
-    <div className={cn('grid gap-4 py-4', className)}>
-      {propertyTypes.map((option) => {
-        const Icon = option.icon;
-        const isSelected = selectedType === option.type;
-        const isDisabled = isCreating && !isSelected;
+    <>
+      <DialogHeader>
+        <DialogTitle>
+          {listingChoice
+            ? t('choosePropertyTypeTitle')
+            : t('chooseListingTitle')}
+        </DialogTitle>
+      </DialogHeader>
+      <div className={cn('grid gap-4 pt-4', className)}>
+        {/* Step: Listing choice */}
+        {!listingChoice && (
+          <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-2 gap-3 pt-3">
+              <button
+                className="p-4 rounded-lg border-2 hover:border-primary flex flex-col items-center gap-4"
+                onClick={() => setListingChoice('SALE')}
+              >
+                <DollarSign size={48} />
+                <div className="font-medium">{t('listing.sale')}</div>
+              </button>
 
-        return (
-          <button
-            key={option.type}
-            onClick={() => handleSelectAndCreate(option.type)}
-            disabled={isCreating}
-            className={cn(
-              'flex items-start gap-4 rounded-lg border-2 p-4 text-left transition-all hover:border-primary',
-              isSelected && 'border-primary bg-primary/5',
-              isDisabled && 'opacity-50 cursor-not-allowed',
-              !isCreating && !isSelected && 'hover:bg-accent',
-            )}
-          >
-            <div
-              className={cn(
-                'flex h-12 w-12 items-center justify-center rounded-lg',
-                isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted',
-              )}
-            >
-              <Icon className="h-6 w-6" />
+              <button
+                className="p-4 rounded-lg border-2 hover:border-primary flex flex-col items-center gap-4"
+                onClick={() => setListingChoice('RENT')}
+              >
+                <KeyRound size={48} />
+                <div className="font-medium">{t('listing.rent')}</div>
+              </button>
             </div>
-            <div className="flex-1 space-y-1">
-              <p className="font-medium leading-none">{t(option.labelKey)}</p>
-              <p className="text-sm text-muted-foreground">
-                {t(option.descriptionKey)}
-              </p>
-              {isSelected && isCreating && (
-                <p className="text-xs text-primary mt-2">{t('creating')}</p>
-              )}
+          </div>
+        )}
+
+        {/* Step: Property type selection (shown after listing choice) */}
+        {listingChoice && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <button
+                  className="text-sm text-muted-foreground underline"
+                  onClick={() => setListingChoice(null)}
+                >
+                  {t('back')}
+                </button>
+              </div>
             </div>
-          </button>
-        );
-      })}
-    </div>
+
+            <div className="grid gap-4">
+              {propertyTypes.map((option) => {
+                const Icon = option.icon;
+                const isSelected = selectedType === option.type;
+                const isDisabled = isCreating && !isSelected;
+
+                return (
+                  <button
+                    key={option.type}
+                    onClick={() => handleSelectAndCreate(option.type)}
+                    disabled={isCreating}
+                    className={cn(
+                      'flex items-start gap-4 rounded-lg border-2 p-4 text-left transition-all hover:border-primary',
+                      isSelected && 'border-primary bg-primary/5',
+                      isDisabled && 'opacity-50 cursor-not-allowed',
+                      !isCreating && !isSelected && 'hover:bg-accent',
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'flex h-12 w-12 items-center justify-center rounded-lg',
+                        isSelected
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted',
+                      )}
+                    >
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="font-medium leading-none">
+                        {t(option.labelKey)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {t(option.descriptionKey)}
+                      </p>
+                      {isSelected && isCreating && (
+                        <p className="text-xs text-primary mt-2">
+                          {t('creating')}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

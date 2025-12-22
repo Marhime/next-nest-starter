@@ -15,6 +15,7 @@ type PropertyType =
 
 interface CreatePropertyInput {
   propertyType: PropertyType;
+  listingType?: 'SHORT_TERM' | 'RENT' | 'SALE';
 }
 
 interface Property {

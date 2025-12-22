@@ -116,7 +116,7 @@ export const FiltersContent: React.FC<FiltersContentProps> = ({
   setLocalMaxArea,
 }: FiltersContentProps) => {
   return (
-    <div className="overflow-y-auto py-4 space-y-6">
+    <div className="overflow-y-auto p-4 md:px-0 space-y-6">
       {/* Type de transaction */}
       <div className="space-y-2">
         <label className="text-sm font-semibold">{t('lookingFor')}</label>
