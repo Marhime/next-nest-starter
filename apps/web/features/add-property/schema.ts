@@ -1,18 +1,12 @@
 import z from 'zod';
 
 // Enums matching Prisma schema
-export const PropertyTypeEnum = z.enum([
-  'HOTEL',
-  'HOSTEL',
-  'GUESTHOUSE',
-  'HOUSE',
-  'APARTMENT',
-  'LAND',
-  'ROOM',
-]);
+export const PropertyTypes = ['HOUSE', 'APARTMENT', 'LAND'];
+export const PropertyTypeEnum = z.enum(PropertyTypes);
 
 // Keep values aligned with backend Prisma enum: use RENT for long-term rentals
-export const ListingTypeEnum = z.enum(['SHORT_TERM', 'RENT', 'SALE']);
+export const ListingTypes = ['RENT', 'SALE'];
+export const ListingTypeEnum = z.enum(ListingTypes);
 
 export const CurrencyEnum = z.enum(['MXN', 'USD']);
 

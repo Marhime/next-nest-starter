@@ -4,8 +4,15 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAddPropertyStore } from '../../store';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import {
   Bed,
@@ -34,8 +41,17 @@ import {
   Sun,
   Refrigerator,
   CircleDollarSign,
+  LandPlot,
+  MapPinHouse,
+  KeyRound,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  ListingTypes,
+  PropertyTypeEnum,
+  PropertyTypes,
+} from '@/features/add-property/schema';
+import { ListingType, PropertyType } from '@/hooks/use-create-property';
 
 export interface AboutProperty {
   id: number;
@@ -48,8 +64,8 @@ export interface AboutProperty {
   area?: number;
   amenities?: string[];
   status: string;
-  propertyType: string;
-  listingType?: string;
+  propertyType: PropertyType;
+  listingType?: ListingType;
   price: number;
 }
 
@@ -137,7 +153,9 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
       undefined,
     amenities: property.amenities || [],
     status: property.status || 'DRAFT',
-    price: property.price || undefined,
+    price: property.price || '',
+    propertyType: property.propertyType,
+    listingType: property.listingType,
   });
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
@@ -164,6 +182,7 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
       // Mark characteristics (step 2) as complete
       setPropertyProgress?.(property.id, 2, true);
     }
+    console.log(formData);
   }, [
     formData,
     setCanProceed,
@@ -278,83 +297,223 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
       </div>
 
       {/* Title & Description moved to the dedicated Description step */}
-
-      {/* Bedrooms */}
       <Card className="p-6">
+        {/* Price */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-primary/10 rounded-lg">
-              <Bed className="h-8 w-8 text-primary" />
+              <MapPinHouse className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <p className="text-lg font-medium">{t('bedrooms.title')}</p>
+              <p className="text-lg font-medium">{t('listingType.title')}</p>
               <p className="text-sm text-muted-foreground">
-                {t('bedrooms.hint')}
+                {t('listingType.hint')}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => decrementValue('bedrooms')}
-              disabled={formData.bedrooms <= 0}
-              className="h-12 w-12 rounded-full border-2 border-gray-300 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+          <div className={cn('flex items-center gap-3 relative h-full')}>
+            <Select
+              onValueChange={(key) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  listingType: key as ListingType,
+                }))
+              }
+              defaultValue={property.listingType}
             >
-              <Minus className="h-5 w-5" />
-            </button>
-            <span className="text-2xl font-semibold w-12 text-center">
-              {formData.bedrooms}
-            </span>
-            <button
-              onClick={() => incrementValue('bedrooms')}
-              className="h-12 w-12 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center transition-colors"
-            >
-              <Plus className="h-5 w-5" />
-            </button>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                {ListingTypes.map((key) => (
+                  <SelectItem className="capitalize" key={key} value={key}>
+                    {key}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
-      </Card>
 
-      {/* Bathrooms */}
-      <Card className="p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-primary/10 rounded-lg">
-              <Bath className="h-8 w-8 text-primary" />
+              <KeyRound className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <p className="text-lg font-medium">{t('bathrooms.title')}</p>
+              <p className="text-lg font-medium">{t('propertyType.title')}</p>
               <p className="text-sm text-muted-foreground">
-                {t('bathrooms.hint')}
+                {t('propertyType.hint')}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => decrementValue('bathrooms')}
-              disabled={formData.bathrooms <= 0}
-              className="h-12 w-12 rounded-full border-2 border-gray-300 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+          <div className={cn('flex items-center gap-3 relative h-full')}>
+            <Select
+              onValueChange={(key) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  propertyType: key as PropertyType,
+                }))
+              }
+              defaultValue={property.propertyType}
             >
-              <Minus className="h-5 w-5" />
-            </button>
-            <span className="text-2xl font-semibold w-12 text-center">
-              {formData.bathrooms}
-            </span>
-            <button
-              onClick={() => incrementValue('bathrooms')}
-              className="h-12 w-12 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center transition-colors"
-            >
-              <Plus className="h-5 w-5" />
-            </button>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                {PropertyTypes.map((key) => (
+                  <SelectItem className="capitalize" key={key} value={key}>
+                    {key}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
-      </Card>
 
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-primary/10 rounded-lg">
+              <CircleDollarSign className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <p className="text-lg font-medium">{t('price.title')}</p>
+              <p className="text-sm text-muted-foreground">
+                {formData.listingType === 'SALE'
+                  ? t('price.hintSale')
+                  : t('price.hintRent')}
+              </p>
+            </div>
+          </div>
+          <div className={cn('flex items-center gap-3 relative h-full w-32')}>
+            <Input
+              id="price"
+              value={formData.price}
+              type="number"
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  price: e.target.value,
+                }))
+              }
+              className="h-14"
+              placeholder={formData.listingType === 'SALE' ? '200000' : '5000'}
+            />
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm font-semibold pointer-events-none">
+              MXN
+            </div>
+          </div>
+        </div>
+
+        {/* Bedrooms */}
+        {formData.propertyType !== 'LAND' ? (
+          <>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <Bed className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <p className="text-lg font-medium">{t('bedrooms.title')}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t('bedrooms.hint')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => decrementValue('bedrooms')}
+                  disabled={formData.bedrooms <= 0}
+                  className="h-12 w-12 rounded-full border-2 border-gray-300 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+                >
+                  <Minus className="h-5 w-5" />
+                </button>
+                <span className="text-2xl font-semibold w-12 text-center">
+                  {formData.bedrooms}
+                </span>
+                <button
+                  onClick={() => incrementValue('bedrooms')}
+                  className="h-12 w-12 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center transition-colors"
+                >
+                  <Plus className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <Bath className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <p className="text-lg font-medium">{t('bathrooms.title')}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t('bathrooms.hint')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => decrementValue('bathrooms')}
+                  disabled={formData.bathrooms <= 0}
+                  className="h-12 w-12 rounded-full border-2 border-gray-300 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+                >
+                  <Minus className="h-5 w-5" />
+                </button>
+                <span className="text-2xl font-semibold w-12 text-center">
+                  {formData.bathrooms}
+                </span>
+                <button
+                  onClick={() => incrementValue('bathrooms')}
+                  className="h-12 w-12 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center transition-colors"
+                >
+                  <Plus className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/10 rounded-lg">
+                <LandPlot className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <p className="text-lg font-medium">{t('landSurface.label')}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t('landSurface.placeholder')}
+                </p>
+              </div>
+            </div>
+            <div className={cn('flex items-center gap-3 relative h-full w-32')}>
+              <Input
+                id="price"
+                value={formData.landSurface}
+                type="number"
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    landSurface: +e.target.value || 0,
+                  }))
+                }
+                className="h-14"
+                placeholder="250"
+              />
+              <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm font-semibold pointer-events-none">
+                M2
+              </div>
+            </div>
+          </div>
+        )}
+      </Card>
       {/* Amenities */}
       <Card className="p-6">
-        <h2 className="text-xl font-semibold">
-          {t('amenities.title')} ({tGen('optional')})
-        </h2>
-        <p className="text-sm text-muted-foreground">{t('amenities.hint')}</p>
+        <CardHeader className="p-0">
+          <h2 className="text-xl font-semibold">
+            {t('amenities.title')} ({tGen('optional')})
+          </h2>
+          <p className="text-sm text-muted-foreground">{t('amenities.hint')}</p>
+        </CardHeader>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {AVAILABLE_AMENITIES.map((amenity) => {
             const Icon = amenity.icon;

@@ -446,13 +446,25 @@
     "publishSuccess": "🎉 ¡Anuncio publicado con éxito!",
     "publishError": "Error al publicar",
     "header": {
-      "title": "Caracteristicas",
-      "subtitle": "Revisa y completa la información de tu propiedad"
+      "title": "Información de la propiedad",
+      "subtitle": "Cuéntanos más sobre tu propiedad para atraer a más interesados."
+    },
+    "characteristics": {
+      "title": "Characteristics",
+      "hint": "Please fill in your property informations"
+    },
+    "propertyType": {
+      "title": "Tipo de inmueble",
+      "hint": "¿Qué tipo de propiedad es?"
+    },
+    "listingType": {
+      "title": "Tipo de anuncio",
+      "hint": "¿Qué deseas hacer con esta propiedad?"
     },
     "price": {
       "title": "Precio",
-      "hintRent": "Precio por mes",
-      "hintSale": "Precio de la propriedad"
+      "hintRent": "Precio mensual",
+      "hintSale": "Precio total de la propiedad."
     },
     "area": {
       "title": "Superficie",

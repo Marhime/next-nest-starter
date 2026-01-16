@@ -467,8 +467,20 @@
     "publishSuccess": "🎉 Listing published successfully!",
     "publishError": "Error publishing",
     "header": {
-      "title": "Finalize your listing",
-      "subtitle": "Review and complete your property details"
+      "title": "Property informations",
+      "subtitle": "Please fill in your property details"
+    },
+    "characteristics": {
+      "title": "Characteristics",
+      "hint": "Please fill in your property informations"
+    },
+    "propertyType": {
+      "title": "Tipo de raices",
+      "hint": "Una casa ? Un depa ?"
+    },
+    "listingType": {
+      "title": "Tipo de anuncio",
+      "hint": "Elige si deseas vender o alquilar, luego selecciona el tipo de propiedad"
     },
     "price": {
       "title": "Price",

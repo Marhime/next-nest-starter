@@ -20,15 +20,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { useGlobalStore } from '@/app/[locale]/store';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { useCreateProperty } from '@/hooks/use-create-property';
+import { PropertyType, useCreateProperty } from '@/hooks/use-create-property';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Home, Building2, LandPlot, KeyRound, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth/auth-client';
-
-type PropertyType = 'HOUSE' | 'APARTMENT' | 'LAND';
 
 interface PropertyTypeOption {
   type: PropertyType;

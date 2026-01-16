@@ -11,11 +11,7 @@ import { Button } from '@/components/ui/button';
 import { LocationSearchBar } from '@/components/shared/LocationSearchBar';
 import { Home, Key } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  useSearchStore,
-  type ListingType,
-  type PropertyType,
-} from '@/stores/search-store';
+import { useSearchStore } from '@/stores/search-store';
 import type { GeocodingResult } from '@/hooks/use-geocoding';
 import { QueryProvider } from '../providers/QueryProvider';
 import {

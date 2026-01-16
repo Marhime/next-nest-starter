@@ -5,7 +5,6 @@
 
 'use client';
 
-import { usePropertySearchStore } from '@/stores/property-search-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +15,7 @@ import { Slider } from '@/components/ui/slider';
 import { SlidersHorizontal, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
+import { PropertyType } from '@/hooks/use-create-property';
 
 const PROPERTY_TYPES = [
   'Appartement',
@@ -85,7 +85,7 @@ export function PropertyFilters({ onOpenChange }: PropertyFiltersProps) {
 
   const togglePropertyType = (type: string) => {
     if (propertyTypes.includes(type)) {
-      setPropertyTypes(propertyTypes.filter((t) => t !== type));
+      setPropertyTypes(propertyTypes.filter((t: PropertyType) => t !== type));
     } else {
       setPropertyTypes([...propertyTypes, type]);
     }
@@ -128,7 +128,7 @@ export function PropertyFilters({ onOpenChange }: PropertyFiltersProps) {
             'fixed top-[10px] bottom-[10px]',
             'w-[320px] bg-background border rounded-lg shadow-2xl',
             'flex flex-col z-50',
-            'animate-in slide-in-from-left-4 duration-300'
+            'animate-in slide-in-from-left-4 duration-300',
           )}
           style={{
             left: `calc(var(--sidebar-width) + 10px)`,

@@ -7,18 +7,6 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
 // SeLoger-style: Only long-term real estate (Achat/Location)
-export type ListingType = 'SALE' | 'RENT' | null;
-export type PropertyType =
-  | 'APARTMENT'
-  | 'HOUSE'
-  | 'STUDIO'
-  | 'VILLA'
-  | 'LAND'
-  | 'TOWNHOUSE'
-  | 'DUPLEX'
-  | 'PENTHOUSE'
-  | 'LOFT'
-  | null;
 
 // Property interface (from API)
 export interface Property {
