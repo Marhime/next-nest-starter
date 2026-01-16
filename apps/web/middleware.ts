@@ -43,7 +43,9 @@ export async function middleware(request: NextRequest) {
 
   // Protected routes - match /dashboard/* with or without locale
   const isDashboardRoute = pathname.match(/^\/([a-z]{2}\/)?dashboard/);
+  const isProfileRoutes = pathname.match(/^\/([a-z]{2}\/)?profile/);
 
+  console.log('route', isProfileRoutes);
   if (isDashboardRoute) {
     console.log('🔒 Protected route detected');
 

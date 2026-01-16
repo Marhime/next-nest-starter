@@ -23,12 +23,22 @@ export function PhotosPageClient({
   const [loading, setLoading] = useState(false);
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
   const setCanProceed = useAddPropertyStore((state) => state.setCanProceed);
-  const setHandleNext = useAddPropertyStore((state) => state.setHandleNext);
   const setPropertyProgress = useAddPropertyStore(
     (state) => state.setPropertyProgress,
   );
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const MINIMUM_PHOTOS = 2;
+
+  const tokenKey = `property-edit-token:${propertyId}`;
+  const editToken =
+    (typeof window !== 'undefined' && localStorage.getItem(tokenKey)) ||
+    undefined;
+  const headers: Record<string, string> = {};
+
+  if (editToken) {
+    headers['x-edit-token'] = editToken;
+  }
 
   useEffect(() => {
     // Photos step is index 1 in the new flow (0=location,1=photos,2=characteristics...)
@@ -37,7 +47,7 @@ export function PhotosPageClient({
 
   // Validation: minimum 5 photos
   useEffect(() => {
-    const isValid = photos.length >= 5;
+    const isValid = photos.length >= MINIMUM_PHOTOS;
     setCanProceed?.(isValid);
 
     // Mark step as complete when we have at least 5 photos (step 1)
@@ -45,12 +55,6 @@ export function PhotosPageClient({
       setPropertyProgress?.(propertyId, 1, true);
     }
   }, [photos.length, setCanProceed, propertyId, setPropertyProgress]);
-
-  // Configure navigation - pas de handler, le layout gère la navigation
-  useEffect(() => {
-    setHandleNext?.(undefined);
-    return () => setHandleNext?.(undefined);
-  }, [setHandleNext]);
 
   // Upload photos
   const handleUpload = async (files: File[]) => {
@@ -61,14 +65,19 @@ export function PhotosPageClient({
         const formData = new FormData();
         formData.append('file', file);
 
+        console.log('hi');
+
         const response = await fetch(
           `${API_URL}/photos/property/${propertyId}`,
           {
             method: 'POST',
             body: formData,
             credentials: 'include',
+            headers,
           },
         );
+
+        console.log('ho');
 
         if (!response.ok) {
           throw new Error(`Échec de l'upload de ${file.name}`);
@@ -88,49 +97,49 @@ export function PhotosPageClient({
 
   // Delete photo
   const handleDelete = async (photoId: number) => {
-    const deletePromise = fetch(`${API_URL}/photos/${photoId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    }).then(async (response) => {
+    try {
+      const response = await fetch(`${API_URL}/photos/${photoId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers,
+      });
+
       if (!response.ok) {
         throw new Error(t('deleteError'));
       }
-      return response;
-    });
 
-    await toast.promise(deletePromise, {
-      loading: t('deleting'),
-      success: t('deleted'),
-      error: (err) => err.message || t('deleteError'),
-    });
-
-    setPhotos((prev) => prev.filter((p) => p.id !== photoId));
+      // Update UI silently on success
+      setPhotos((prev) => prev.filter((p) => p.id !== photoId));
+    } catch (err) {
+      console.error('Delete photo failed', err);
+      toast.error(err instanceof Error ? err.message : t('deleteError'));
+    }
   };
 
   // Set primary photo
   const handleSetPrimary = async (photoId: number) => {
-    const setPrimaryPromise = fetch(`${API_URL}/photos/${photoId}/primary`, {
-      method: 'PATCH',
-      credentials: 'include',
-    }).then(async (response) => {
+    try {
+      const response = await fetch(`${API_URL}/photos/${photoId}/primary`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers,
+      });
+
       if (!response.ok) {
         throw new Error(t('updateError'));
       }
-      return response;
-    });
 
-    await toast.promise(setPrimaryPromise, {
-      loading: t('updating'),
-      success: t('coverUpdated'),
-      error: (err) => err.message || t('updateError'),
-    });
-
-    setPhotos((prev) =>
-      prev.map((p) => ({
-        ...p,
-        isPrimary: p.id === photoId,
-      })),
-    );
+      // Update UI silently on success
+      setPhotos((prev) =>
+        prev.map((p) => ({
+          ...p,
+          isPrimary: p.id === photoId,
+        })),
+      );
+    } catch (err) {
+      console.error('Set primary failed', err);
+      toast.error(err instanceof Error ? err.message : t('updateError'));
+    }
   };
 
   return (
@@ -145,9 +154,9 @@ export function PhotosPageClient({
           <div className="text-right">
             <div className="text-3xl font-bold">{photos.length}/20</div>
             <div className="text-sm text-muted-foreground">
-              {photos.length >= 5
+              {photos.length >= MINIMUM_PHOTOS
                 ? t('ready')
-                : `${5 - photos.length} ${t('remaining')}`}
+                : `${MINIMUM_PHOTOS - photos.length} ${t('remaining')}`}
             </div>
           </div>
         </div>

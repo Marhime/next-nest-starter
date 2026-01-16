@@ -33,7 +33,7 @@ const Header = () => {
     <div className="fixed top-0 left-0 right-0 p-4 xl:py-6 xl:px-12 z-20 max-w-[1824px] mx-auto">
       <div className="flex justify-between">
         {/* Logo */}
-        <Link href={'/'} className="text-white text-2xl font-bold shrink-0">
+        <Link href={'/'} className="text-primary text-2xl font-bold shrink-0">
           MyLogo
         </Link>
 
@@ -54,8 +54,8 @@ const Header = () => {
 
         {/* Right Actions */}
         <div className="text-white flex justify-end items-center gap-4 shrink-0">
-          <AddPropertyButton variant="default" />
-          {/* <LocaleSwitcher className="hidden md:block" /> */}
+          <AddPropertyButton className="rounded-full" variant="default" />
+          <LocaleSwitcher className="hidden md:block" />
           <ProfileDropdown />
         </div>
       </div>

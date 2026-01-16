@@ -12,6 +12,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Headers,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { PropertiesService } from './properties.service';
@@ -28,7 +29,7 @@ import { RateLimitGuard } from '@/src/common/guards/rate-limit.guard';
 
 @ApiTags('properties')
 @Controller('properties')
-@UseGuards(AuthGuard, RateLimitGuard)
+@UseGuards(RateLimitGuard)
 export class PropertiesController {
   constructor(private readonly propertiesService: PropertiesService) {}
 
@@ -41,13 +42,14 @@ export class PropertiesController {
   @ApiResponse({ status: 201, description: 'Property created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @AllowAnonymous()
   create(
     @Body() createPropertyDto: CreatePropertyMinimalDto,
-    @Session() session: UserSession,
+    @Session() session?: UserSession,
   ) {
     return this.propertiesService.createMinimal(
       createPropertyDto,
-      session.user.id,
+      session?.user?.id,
     );
   }
 
@@ -213,15 +215,19 @@ export class PropertiesController {
   @ApiResponse({ status: 200, description: 'Property updated successfully' })
   @ApiResponse({ status: 404, description: 'Property not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @AllowAnonymous()
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updatePropertyDto: UpdatePropertyDto,
-    @Session() session: UserSession,
+    @Session() session?: UserSession,
+    @Headers('x-edit-token') editToken?: string,
   ) {
+    // Allow update via either authenticated user or edit token
     return this.propertiesService.update(
       id,
       updatePropertyDto,
-      session.user.id,
+      session?.user?.id,
+      editToken,
     );
   }
 
@@ -231,11 +237,17 @@ export class PropertiesController {
   @ApiResponse({ status: 204, description: 'Property deleted successfully' })
   @ApiResponse({ status: 404, description: 'Property not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @AllowAnonymous()
   remove(
     @Param('id', ParseIntPipe) id: number,
-    @Session() session: UserSession,
+    @Session() session?: UserSession,
+    @Headers('x-edit-token') editToken?: string,
   ) {
-    return this.propertiesService.remove(id, session.user.id);
+    return this.propertiesService.remove(
+      id,
+      session?.user?.id || undefined,
+      editToken,
+    );
   }
 
   @Get(':id/validate')

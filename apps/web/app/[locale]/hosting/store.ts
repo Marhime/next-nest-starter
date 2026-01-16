@@ -70,8 +70,8 @@ export const useAddPropertyStore = create<AddPropertyStore>()(
 
         // Find first incomplete step
         // Steps mapping (no dedicated "type" page - modal handles type):
-        // 0=location, 1=photos, 2=characteristics(about), 3=description, 4=pricing
-        const steps = [0, 1, 2, 3, 4];
+        // 0=location, 1=characteristics(about), 2=photos, 3=description
+        const steps = [0, 1, 2, 3];
         for (const step of steps) {
           if (!progress.completedSteps.includes(step)) {
             return step;

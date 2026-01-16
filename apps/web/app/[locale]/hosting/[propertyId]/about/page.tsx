@@ -31,6 +31,7 @@ export default function AboutPage() {
     status: (p.status as string) || 'DRAFT',
     propertyType: (p.propertyType as string) || 'HOUSE',
     listingType: p.listingType,
+    price: p.price || 0,
   };
 
   return <AboutPageClient property={safeProperty} />;

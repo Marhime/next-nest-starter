@@ -1,4 +1,7 @@
 {
+  "Generic": {
+    "optional": "opcional"
+  },
   "Home": {
     "title": "Ton prochain chez-toi à Puerto Escondido.",
     "subtitle": "Découvre les meilleures maisons, appartements et terrains à vendre ou à louer. Tout le marché local, mis à jour en temps réel — sans prise de tête.",
@@ -206,6 +209,41 @@
   "AddPropertyButton": {
     "label": "Ajouter un bien"
   },
+  "QuickCreatePhone": {
+    "title": "Créer une annonce",
+    "description": "Ajoutez votre bien rapidement avec juste votre numéro de téléphone",
+    "cancel": "Annuler",
+    "heading": "Prêt à annoncer votre bien ?",
+    "hint": "Choisissez si vous voulez vendre ou louer, puis sélectionnez le type de bien",
+    "listing": {
+      "sale": "Vente",
+      "rent": "Location"
+    },
+    "back": "Retour",
+    "phoneLabel": "Numéro de téléphone",
+    "phonePlaceholder": "Entrez votre numéro de téléphone",
+    "house": {
+      "label": "Maison",
+      "description": "Maison individuelle avec jardin"
+    },
+    "apartment": {
+      "label": "Appartement",
+      "description": "Appartement en résidence"
+    },
+    "land": {
+      "label": "Terrain",
+      "description": "Terrain constructible ou agricole"
+    },
+    "creating": "Création en cours...",
+    "error": "Erreur lors de la création du bien",
+    "tokenSaved": "Token d'édition sauvegardé localement",
+    "tokenDialog": {
+      "title": "Votre token d'édition",
+      "description": "Ce token vous permet d'éditer votre annonce sans créer de compte. Enregistrez-le maintenant — il ne sera plus montré.",
+      "continue": "Continuer",
+      "copyAndSave": "Copier et enregistrer"
+    }
+  },
   "HostingPage": {
     "back": "← Retour",
     "duplicateFrom": "Créer à partir d'une annonce existante",
@@ -257,6 +295,7 @@
       "listingType": "Type d'annonce",
       "pricing": "Tarification (MXN)",
       "monthlyPrice": "Prix mensuel",
+      "price": "Prix",
       "nightlyPrice": "Prix par nuit",
       "salePrice": "Prix de vente",
       "perMonth": "/ mois",
@@ -349,7 +388,7 @@
   },
   "PhotoUpload": {
     "title": "Ajoutez des photos",
-    "subtitle": "Minimum 5 photos • Maximum 20 photos",
+    "subtitle": "Minimum 2 photos • Maximum 20 photos",
     "ready": "✓ Prêt",
     "remaining": "restantes",
     "uploadTitle": "Uploader des photos",
@@ -411,7 +450,94 @@
     "areaRequired": "La surface doit être supérieure à 0 m²",
     "publishing": "Publication en cours...",
     "publishSuccess": "🎉 Annonce publiée avec succès !",
-    "publishError": "Erreur lors de la publication"
+    "publishError": "Erreur lors de la publication",
+    "header": {
+      "title": "Finalisez votre annonce",
+      "subtitle": "Vérifiez et complétez les informations de votre bien"
+    },
+    "price": {
+      "title": "Prix",
+      "hintRent": "Prix par mois",
+      "hintSale": "Prix de la propriété"
+    },
+    "area": {
+      "title": "Surface",
+      "label": "Surface habitable (m²)",
+      "placeholder": "Ex: 85",
+      "required": "La surface est requise"
+    },
+    "landSurface": {
+      "label": "Surface du terrain (m²)",
+      "placeholder": "Ex: 250"
+    },
+    "constructionYear": {
+      "label": "Année de construction",
+      "placeholder": "Ex: 2005"
+    },
+    "bedrooms": {
+      "title": "Chambres",
+      "hint": "Nombre de chambres à coucher"
+    },
+    "bathrooms": {
+      "title": "Salles de bain",
+      "hint": "Nombre de salles de bain complètes"
+    },
+    "capacity": {
+      "title": "Capacité",
+      "hint": "Nombre de personnes maximum"
+    },
+    "floor": {
+      "title": "Étage",
+      "hint": "Numéro de l'étage (0 = rez-de-chaussée)"
+    },
+    "amenities": {
+      "title": "Équipements",
+      "hint": "Sélectionnez tous les équipements disponibles dans votre bien",
+      "wifi": "WiFi",
+      "air_conditioning": "Climatisation",
+      "heating": "Chauffage",
+      "kitchen": "Cuisine équipée",
+      "tv": "Télévision",
+      "refrigerator": "Réfrigérateur",
+      "washing_machine": "Machine à laver",
+      "parking": "Parking",
+      "garage": "Garage",
+      "garden": "Jardin",
+      "balcony": "Balcon",
+      "terrace": "Terrasse",
+      "pool": "Piscine",
+      "gym": "Salle de sport",
+      "jacuzzi": "Jacuzzi",
+      "security": "Sécurité 24h",
+      "doorman": "Portier",
+      "elevator": "Ascenseur",
+      "furnished": "Meublé",
+      "pets_allowed": "Animaux acceptés",
+      "cleaning_service": "Service de ménage",
+      "ventilator": "Ventilateurs"
+    },
+    "status": {
+      "title": "Statut de l'annonce",
+      "DRAFT": "Brouillon",
+      "ACTIVE": "Actif",
+      "INACTIVE": "Inactif",
+      "RENTED": "Loué",
+      "SOLD": "Vendu"
+    },
+    "summary": {
+      "title": "Récapitulatif",
+      "titleLabel": "Titre:",
+      "descriptionLabel": "Description:",
+      "featuresLabel": "Caractéristiques:",
+      "amenitiesLabel": "Équipements:",
+      "statusLabel": "Statut:",
+      "notDefined": "Non défini",
+      "rooms": "chambre",
+      "baths": "salle",
+      "people": "personne",
+      "selected": "sélectionné",
+      "selected_plural": "sélectionnés"
+    }
   },
   "SearchFilters": {
     "title": "Filtres de recherche",

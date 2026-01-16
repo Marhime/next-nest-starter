@@ -27,19 +27,11 @@ interface PropertyCardProps {
 export const PropertyCard = React.memo(function PropertyCard({
   property,
 }: PropertyCardProps) {
-  const { hoveredPropertyId, hoverProperty } = useSearchStore();
+  const { hoverProperty } = useSearchStore();
   const [isFavorite, setIsFavorite] = useState(false);
-
-  const isHovered = hoveredPropertyId === property.id;
 
   const primaryPhoto =
     property.photos.find((p) => p.isPrimary) || property.photos[0];
-
-  // SeLoger-style: Show salePrice for SALE, monthlyPrice for RENT
-  const price =
-    property.listingType === 'SALE'
-      ? property.salePrice
-      : property.monthlyPrice;
 
   const priceLabel = getPriceLabel(property.listingType);
 
@@ -52,8 +44,7 @@ export const PropertyCard = React.memo(function PropertyCard({
     <Link target="_blank" href={`/property/${property.id}`}>
       <Card
         className={cn(
-          'group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl w-full max-w-[480px] mx-auto',
-          isHovered && 'shadow-lg',
+          'group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl w-full max-w-[480px] mx-auto p-0',
         )}
         onMouseEnter={() => hoverProperty(property.id)}
         onMouseLeave={() => hoverProperty(null)}
@@ -112,10 +103,10 @@ export const PropertyCard = React.memo(function PropertyCard({
           {/* Content Section */}
           <div className="p-4 space-y-3">
             {/* Price */}
-            {price && (
+            {property.price && (
               <div className="flex items-baseline gap-1">
                 <span className="text-md font-bold text-primary">
-                  {price}
+                  {property.price}
                   {property.currency === 'EUR'
                     ? ' €'
                     : ` ${property.currency || '€'}`}
@@ -165,22 +156,6 @@ export const PropertyCard = React.memo(function PropertyCard({
                 </div>
               )}
             </div>
-
-            {/* Amenities */}
-            {property.amenities && property.amenities.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-2 border-t">
-                {property.amenities.slice(0, 3).map((amenity, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {amenity}
-                  </Badge>
-                ))}
-                {property.amenities.length > 3 && (
-                  <Badge variant="outline" className="text-xs">
-                    +{property.amenities.length - 3}
-                  </Badge>
-                )}
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>

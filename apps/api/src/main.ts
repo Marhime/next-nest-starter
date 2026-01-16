@@ -3,17 +3,22 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bodyParser: false, // Required for Better Auth
   });
 
+  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
   app.enableCors({
     origin: ['http://localhost:3001', 'http://localhost:3000'], // Frontend et API
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    allowedHeaders:
+      'Access-Control-Allow-Origin, X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Observe, x-edit-token',
   });
 
   const config = new DocumentBuilder()

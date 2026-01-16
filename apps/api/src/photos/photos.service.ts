@@ -40,6 +40,7 @@ export class PhotosService {
     propertyId: number,
     userId: string,
     file: Express.Multer.File,
+    editToken?: string,
   ): Promise<any> {
     // Verify property ownership
     const property = await this.prisma.property.findUnique({
@@ -50,8 +51,17 @@ export class PhotosService {
       throw new NotFoundException('Property not found');
     }
 
-    if (property.userId !== userId) {
-      throw new BadRequestException('You do not own this property');
+    if (userId) {
+      if (property.userId !== userId) {
+        throw new NotFoundException(`You do not own this property`);
+      }
+    } else if (editToken) {
+      if ((property as any).editToken !== editToken) {
+        throw new NotFoundException(`You do not own this property token`);
+      }
+    } else {
+      // No credentials provided
+      throw new NotFoundException(`You do not own this property`);
     }
 
     // Validate file
@@ -113,20 +123,38 @@ export class PhotosService {
   /**
    * Get all photos for a property
    */
-  async getPropertyPhotos(propertyId: number, userId?: string) {
+  async getPropertyPhotos(
+    propertyId: number,
+    userId?: string,
+    editToken?: string,
+  ) {
     // If userId provided, verify ownership
+
+    const property = await this.prisma.property.findUnique({
+      where: { id: propertyId },
+    });
+
+    if (!property) {
+      throw new NotFoundException('Property not found');
+    }
+
     if (userId) {
-      const property = await this.prisma.property.findUnique({
-        where: { id: propertyId },
-      });
-
-      if (!property) {
-        throw new NotFoundException('Property not found');
-      }
-
       if (property.userId !== userId) {
-        throw new BadRequestException('You do not own this property');
+        throw new NotFoundException(
+          `Property with ID ${propertyId} not found or you don't have permission to update it`,
+        );
       }
+    } else if (editToken) {
+      if ((property as any).editToken !== editToken) {
+        throw new NotFoundException(
+          `Property with ID ${propertyId} not found or invalid edit token`,
+        );
+      }
+    } else {
+      // No credentials provided
+      throw new NotFoundException(
+        `Property with ID ${propertyId} not found or you don't have permission to update it`,
+      );
     }
 
     return this.prisma.photo.findMany({
@@ -149,6 +177,7 @@ export class PhotosService {
     }
 
     if (photo.property.userId !== userId) {
+      console.log('error: deletePhoto');
       throw new BadRequestException('You do not own this property');
     }
 
@@ -210,6 +239,7 @@ export class PhotosService {
     }
 
     if (property.userId !== userId) {
+      console.log('error: reorderPhotos');
       throw new BadRequestException('You do not own this property');
     }
 
@@ -240,6 +270,7 @@ export class PhotosService {
     }
 
     if (photo.property.userId !== userId) {
+      console.log('error: setPrimaryPhoto');
       throw new BadRequestException('You do not own this property');
     }
 

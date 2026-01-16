@@ -10,9 +10,10 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       <Header />
       {/* Main content with padding for mobile nav */}
       <div className="md:pb-0 pb-20">{children}</div>
-      <Footer />
+
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
+      <Footer />
     </QueryProvider>
   );
 }

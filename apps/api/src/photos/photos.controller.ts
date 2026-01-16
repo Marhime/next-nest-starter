@@ -10,16 +10,22 @@ import {
   UploadedFile,
   ParseIntPipe,
   BadRequestException,
+  Headers,
   UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { PhotosService } from './photos.service';
-import { AuthGuard, Session, UserSession } from '@thallesp/nestjs-better-auth';
+import {
+  AllowAnonymous,
+  Session,
+  UserSession,
+} from '@thallesp/nestjs-better-auth';
+import { RateLimitGuard } from '../common/guards/rate-limit.guard';
 
 @ApiTags('photos')
 @Controller('photos')
-@UseGuards(AuthGuard)
+@UseGuards(RateLimitGuard)
 export class PhotosController {
   constructor(private readonly photosService: PhotosService) {}
 
@@ -44,34 +50,49 @@ export class PhotosController {
       },
     }),
   )
+  @AllowAnonymous()
   async uploadPhoto(
     @Param('propertyId', ParseIntPipe) propertyId: number,
     @UploadedFile() file: Express.Multer.File,
     @Session() session: UserSession,
+    @Headers('x-edit-token') editToken?: string,
   ) {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
+    console.log(editToken);
 
-    return this.photosService.uploadPhoto(propertyId, session.user.id, file);
+    return this.photosService.uploadPhoto(
+      propertyId,
+      session?.user?.id,
+      file,
+      editToken,
+    );
   }
 
   @Get('property/:propertyId')
   @ApiOperation({ summary: 'Get all photos for a property' })
+  @AllowAnonymous()
   async getPropertyPhotos(
     @Param('propertyId', ParseIntPipe) propertyId: number,
     @Session() session: UserSession,
+    @Headers('x-edit-token') editToken?: string,
   ) {
-    return this.photosService.getPropertyPhotos(propertyId, session.user?.id);
+    return this.photosService.getPropertyPhotos(
+      propertyId,
+      session?.user?.id,
+      editToken,
+    );
   }
 
   @Delete(':photoId')
   @ApiOperation({ summary: 'Delete a photo' })
+  @AllowAnonymous()
   async deletePhoto(
     @Param('photoId', ParseIntPipe) photoId: number,
     @Session() session: UserSession,
   ) {
-    return this.photosService.deletePhoto(photoId, session.user.id);
+    return this.photosService.deletePhoto(photoId, session?.user?.id);
   }
 
   @Patch('property/:propertyId/reorder')

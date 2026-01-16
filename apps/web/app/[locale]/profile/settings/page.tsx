@@ -21,7 +21,7 @@ export default function ProfileSettingsPage() {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <h1 className="text-2xl font-semibold mb-4">
+      <h1 className="text-xl font-semibold mb-4">
         {t('settingsTitle') || 'Paramètres du profil'}
       </h1>
 

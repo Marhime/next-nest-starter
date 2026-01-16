@@ -4,26 +4,15 @@ import useSWRMutation from 'swr/mutation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-type PropertyType =
-  | 'HOUSE'
-  | 'APARTMENT'
-  | 'LAND'
-  | 'HOTEL'
-  | 'HOSTEL'
-  | 'GUESTHOUSE'
-  | 'ROOM';
+type PropertyType = 'HOUSE' | 'APARTMENT' | 'LAND' | 'ROOM';
 
 interface CreatePropertyInput {
   propertyType: PropertyType;
-  listingType?: 'SHORT_TERM' | 'RENT' | 'SALE';
+  listingType?: 'RENT' | 'SALE';
+  phone?: string;
 }
 
-interface Property {
-  id: string;
-  propertyType: PropertyType;
-  createdAt: string;
-  updatedAt: string;
-}
+// Response shape may be either { id, propertyType, ... } or { property: { ... }, editToken: string }
 
 async function createProperty(
   url: string,
@@ -45,7 +34,8 @@ async function createProperty(
     throw new Error(error.message || `HTTP ${response.status}`);
   }
 
-  return response.json() as Promise<Property>;
+  // Return raw parsed JSON. The backend may return either { property } or { property, editToken }
+  return response.json() as Promise<Record<string, unknown>>;
 }
 
 export function useCreateProperty() {

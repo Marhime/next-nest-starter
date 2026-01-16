@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { useLocale } from 'next-intl';
 
 interface Property {
   id: number;
@@ -23,6 +24,7 @@ export function DescriptionPageClient({
   property,
 }: DescriptionPageClientProps) {
   const router = useRouter();
+  const locale = useLocale();
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
   const setCanProceed = useAddPropertyStore((state) => state.setCanProceed);
   const setHandleNext = useAddPropertyStore((state) => state.setHandleNext);
@@ -52,13 +54,29 @@ export function DescriptionPageClient({
       return;
     }
 
+    // Include edit token header if present in localStorage (anonymous flow)
+    const tokenKey = `property-edit-token:${property.id}`;
+    const editToken =
+      (typeof window !== 'undefined' && localStorage.getItem(tokenKey)) ||
+      undefined;
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    console.log(editToken);
+    if (editToken) {
+      headers['x-edit-token'] = editToken;
+    }
+
     const res = await fetch(`${API_URL}/properties/${property.id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       credentials: 'include',
       body: JSON.stringify({
         title: title.trim(),
         description: description.trim(),
+        status: 'ACTIVE',
       }),
     });
 
@@ -67,15 +85,20 @@ export function DescriptionPageClient({
       throw new Error(err.message || 'Failed to save description');
     }
 
-    toast.success('Description sauvegardée');
+    toast.success('Annonce publiée');
     // advance to next step (pricing) on success
-    router.push(`/hosting/${property.id}/pricing`);
+    return true;
   }, [API_URL, property.id, title, description, router]);
 
   useEffect(() => {
-    setHandleNext?.(() => handleSave);
+    const handler = async () => {
+      await handleSave();
+    };
+
+    setHandleNext?.(handler);
+
     return () => setHandleNext?.(undefined);
-  }, [handleSave, setHandleNext]);
+  }, [setHandleNext, handleSave, router, locale, property.id]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">

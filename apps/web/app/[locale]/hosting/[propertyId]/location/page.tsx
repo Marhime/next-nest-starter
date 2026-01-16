@@ -16,10 +16,7 @@ import {
 import { toast } from 'sonner';
 import { Loader2, MapPin } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import {
-  LocationSearchInput,
-  type LocationResult,
-} from '@/components/location/LocationSearchInput';
+// LocationSearchInput removed: single-step map used instead
 import { AddressConfirmForm } from '@/components/location/AddressConfirmForm';
 import 'leaflet/dist/leaflet.css';
 import '@/app/leaflet-custom.css';
@@ -74,14 +71,14 @@ const LocationPage = () => {
     mutate,
   } = useProperty(propertyId as string);
 
-  // Workflow steps: 'search' -> 'form' -> 'confirm'
-  const [currentPhase, setCurrentPhase] = useState<
-    'search' | 'form' | 'confirm'
-  >('search');
+  // Single-step flow: user places/adjusts marker (point) or zone center, then optionally edits address
+  // Removed multi-phase state in favor of a single consolidated screen
   const [coordinates, setCoordinates] = useState<{
     lat: number;
     lng: number;
   } | null>(null);
+  const [selectionMode, setSelectionMode] = useState<'point' | 'zone'>('point');
+  const [zoneRadiusMeters, setZoneRadiusMeters] = useState<number>(500);
   const [addressForm, setAddressForm] = useState<AddressFormData>({
     street: '',
     buildingInfo: '',
@@ -92,34 +89,18 @@ const LocationPage = () => {
     country: 'FR',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(false);
 
   useEffect(() => {
     // Location is now step index 0 in the new flow
     setCurrentStep?.(0);
   }, [setCurrentStep]);
 
-  // Validation: activer Next seulement si on a les données nécessaires pour chaque phase
+  // Validation: allow proceeding if coordinates exist
   useEffect(() => {
-    let isValid = false;
-
-    if (currentPhase === 'search') {
-      // En phase search, on peut avancer si on a des coordonnées
-      isValid = coordinates !== null;
-    } else if (currentPhase === 'form') {
-      // En phase form, on peut avancer si tous les champs sont remplis
-      isValid = !!(
-        addressForm.street &&
-        addressForm.postalCode &&
-        addressForm.city &&
-        coordinates
-      );
-    } else if (currentPhase === 'confirm') {
-      // En phase confirm, on peut soumettre
-      isValid = coordinates !== null;
-    }
+    const isValid = coordinates !== null;
 
     console.log('Location validation:', {
-      currentPhase,
       coordinates,
       isValid,
       addressForm,
@@ -127,13 +108,11 @@ const LocationPage = () => {
 
     setCanProceed?.(isValid);
 
-    // Mark step as complete when address is validated (confirm phase with valid data)
-    if (currentPhase === 'confirm' && isValid && propertyId) {
-      // Mark location (step 0) complete
+    // Mark location step complete when coordinates present
+    if (isValid && propertyId) {
       setPropertyProgress?.(Number(propertyId), 0, true);
     }
   }, [
-    currentPhase,
     coordinates,
     addressForm,
     setCanProceed,
@@ -172,39 +151,19 @@ const LocationPage = () => {
             : parseFloat(String(propLongitude));
 
         setCoordinates({ lat, lng });
-
-        // Si on a déjà des coordonnées ET une adresse complète, passer directement à la phase confirm
+        // keep editingAddress false by default; user can open edit if they want
         if (hasExistingData) {
-          setCurrentPhase('confirm');
+          // keep address displayed
         }
       }
     }
   }, [property]);
 
-  const handleLocationSelect = (location: LocationResult) => {
-    setCoordinates({
-      lat: parseFloat(location.lat),
-      lng: parseFloat(location.lon),
-    });
+  // Note: location search input was removed in favour of the single-step map.
 
-    // Pre-fill form with location data
-    setAddressForm({
-      street:
-        `${location.address.house_number || ''} ${location.address.road || ''}`.trim(),
-      buildingInfo: '',
-      buildingName: '',
-      postalCode: location.address.postcode || '',
-      city:
-        location.address.city ||
-        location.address.town ||
-        location.address.village ||
-        '',
-      state: location.address.state || '',
-      country: location.address.country_code?.toUpperCase() || 'FR',
-    });
-
-    // Passer à la phase formulaire
-    setCurrentPhase('form');
+  // Allow setting selection mode (point vs zone)
+  const handleSelectionModeChange = (mode: 'point' | 'zone') => {
+    setSelectionMode(mode);
   };
 
   const handleFormChange = (field: keyof AddressFormData, value: string) => {
@@ -255,22 +214,7 @@ const LocationPage = () => {
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      // Validation
-      if (!addressForm.street) {
-        toast.error(t('messages.addressRequired'));
-        return;
-      }
-
-      if (!addressForm.postalCode) {
-        toast.error(t('messages.postalCodeRequired'));
-        return;
-      }
-
-      if (!addressForm.city) {
-        toast.error(t('messages.cityRequired'));
-        return;
-      }
-
+      // Validation: require coordinates (either point or zone). Address is optional.
       if (!coordinates) {
         toast.error(t('messages.selectAddress'));
         return;
@@ -282,24 +226,47 @@ const LocationPage = () => {
         const API_URL =
           process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-        const payload = {
-          address: addressForm.street,
-          city: addressForm.city,
+        const payload: Record<string, unknown> & { landSurface?: number } = {
+          // address fields are optional — include if present
+          ...(addressForm.street ? { address: addressForm.street } : {}),
+          ...(addressForm.city ? { city: addressForm.city } : {}),
           state: addressForm.state || null,
-          postalCode: addressForm.postalCode,
+          ...(addressForm.postalCode
+            ? { postalCode: addressForm.postalCode }
+            : {}),
           country: addressForm.country,
           latitude: Number(coordinates.lat),
           longitude: Number(coordinates.lng),
         };
 
+        // If the user selected a zone, include approximate area (store in landSurface as m²)
+        if (selectionMode === 'zone' && zoneRadiusMeters > 0) {
+          const areaMeters2 = Math.PI * Math.pow(zoneRadiusMeters, 2);
+          // round to 2 decimals
+          // store approx area in landSurface (backend currently supports this field)
+          payload.landSurface = Number(areaMeters2.toFixed(2));
+        }
+
         console.log('Sending location data:', payload);
+
+        // Include edit token header if present in localStorage (anonymous flow)
+        const tokenKey = `property-edit-token:${propertyId}`;
+        const editToken =
+          (typeof window !== 'undefined' && localStorage.getItem(tokenKey)) ||
+          undefined;
+
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        console.log(editToken);
+        if (editToken) {
+          headers['x-edit-token'] = editToken;
+        }
 
         const updatePromise = fetch(`${API_URL}/properties/${propertyId}`, {
           method: 'PATCH',
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers,
           body: JSON.stringify(payload),
         }).then(async (response) => {
           if (!response.ok) {
@@ -309,11 +276,18 @@ const LocationPage = () => {
           return response.json();
         });
 
-        await toast.promise(updatePromise, {
-          loading: t('messages.saving') || 'Sauvegarde...',
-          success: t('messages.addressSaved'),
-          error: (err) => err.message || t('messages.updateError'),
-        });
+        try {
+          // Await the update and be silent on success. Surface errors only.
+          await updatePromise;
+        } catch (err) {
+          console.error('Failed to update property (location):', err);
+          const message =
+            err && typeof err === 'object' && 'message' in err
+              ? (err as Error).message
+              : String(err);
+          toast.error(message || t('messages.updateError'));
+          throw err;
+        }
 
         mutate(); // Refresh data
 
@@ -323,61 +297,29 @@ const LocationPage = () => {
         setIsSubmitting(false);
       }
     },
-    [addressForm, coordinates, propertyId, router, mutate, t],
+    [
+      addressForm,
+      coordinates,
+      propertyId,
+      router,
+      mutate,
+      t,
+      selectionMode,
+      zoneRadiusMeters,
+    ],
   );
 
-  // Configurer le handler pour le bouton Next
+  // Register Next handler: directly submit the single-step location form
   useEffect(() => {
     const handler = async () => {
-      console.log('Location page handleNext called, phase:', currentPhase);
-
-      if (currentPhase === 'search') {
-        // Passer à la phase formulaire
-        console.log('Moving from search to form');
-        setCurrentPhase('form');
-      } else if (currentPhase === 'form') {
-        // Valider et passer à confirm
-        console.log('Validating form and moving to confirm');
-        if (!addressForm.street) {
-          toast.error(t('messages.addressRequired'));
-          return;
-        }
-        if (!addressForm.postalCode) {
-          toast.error(t('messages.postalCodeRequired'));
-          return;
-        }
-        if (!addressForm.city) {
-          toast.error(t('messages.cityRequired'));
-          return;
-        }
-        if (!coordinates) {
-          toast.error(t('messages.selectAddress'));
-          return;
-        }
-        if (isNaN(coordinates.lat) || isNaN(coordinates.lng)) {
-          toast.error(t('messages.invalidCoordinates'));
-          setCurrentPhase('search');
-          return;
-        }
-        setCurrentPhase('confirm');
-      } else if (currentPhase === 'confirm') {
-        // Soumettre le formulaire
-        console.log('Submitting location data');
-        const syntheticEvent = {
-          preventDefault: () => {},
-        } as React.FormEvent;
-        await handleSubmit(syntheticEvent);
-      }
+      const syntheticEvent = { preventDefault: () => {} } as React.FormEvent;
+      await handleSubmit(syntheticEvent);
     };
 
-    console.log('Location page: Setting handleNext for phase:', currentPhase);
     setHandleNext?.(handler);
 
-    return () => {
-      console.log('Location page: Clearing handleNext');
-      setHandleNext?.(undefined);
-    };
-  }, [setHandleNext, handleSubmit, currentPhase, addressForm, coordinates, t]);
+    return () => setHandleNext?.(undefined);
+  }, [setHandleNext, handleSubmit]);
 
   if (isLoadingProperty) {
     return (
@@ -391,156 +333,161 @@ const LocationPage = () => {
     <div className="flex w-full h-full justify-center items-center p-4">
       <Card className="w-full max-w-4xl border-0 shadow-none">
         <CardHeader>
-          <CardTitle className="text-4xl">
-            {currentPhase === 'search' && t('titles.search')}
-            {currentPhase === 'form' && t('titles.form')}
-            {currentPhase === 'confirm' && t('titles.confirm')}
-          </CardTitle>
-          <CardDescription>
-            {currentPhase === 'search' && t('descriptions.search')}
-            {currentPhase === 'form' && t('descriptions.form')}
-            {currentPhase === 'confirm' && t('descriptions.confirm')}
-          </CardDescription>
+          <CardTitle className="text-4xl">{t('titles.search')}</CardTitle>
+          <CardDescription>{t('descriptions.search')}</CardDescription>
         </CardHeader>
         <CardContent className="relative">
-          {/* PHASE 1: Search */}
-          {currentPhase === 'search' && (
-            <div className="space-y-6">
-              <LocationSearchInput
-                onLocationSelect={handleLocationSelect}
-                className="absolute top-5 left-1/2 transform -translate-x-1/2 w-[calc(100%-5rem)] shadow-md rounded-xl z-10 bg-white p-5"
-                defaultValue={
-                  property?.address
-                    ? `${property.address}, ${property.city || ''}`
-                    : ''
-                }
-              />
+          {/* Selection mode: exact point or approximate zone */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex gap-2">
+              <Button
+                variant={selectionMode === 'point' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleSelectionModeChange('point')}
+              >
+                {t('buttons.point') || 'Point'}
+              </Button>
+              <Button
+                variant={selectionMode === 'zone' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleSelectionModeChange('zone')}
+              >
+                {t('buttons.zone') || 'Zone (500m)'}
+              </Button>
+            </div>
 
-              {/* Carte - affiche toujours Puerto Escondido par défaut ou les coordonnées si elles existent */}
-              <div className="rounded-lg overflow-hidden border">
-                <MapView
-                  latitude={coordinates?.lat || 15.5143}
-                  longitude={coordinates?.lng || 97.0418}
-                  zoom={coordinates ? 15 : 12}
-                  className="h-[900px] w-full"
-                  markerTitle={
-                    coordinates
-                      ? t('messages.selectedLocation')
-                      : t('messages.defaultLocation')
-                  }
-                  showMarker={!!coordinates}
+            {selectionMode === 'zone' && (
+              <div className="ml-4 flex items-center gap-2">
+                <label className="text-sm text-muted-foreground">
+                  {t('labels.radius') || 'Radius (m)'}:
+                </label>
+                <input
+                  type="number"
+                  value={zoneRadiusMeters}
+                  min={50}
+                  max={2000}
+                  onChange={(e) => setZoneRadiusMeters(Number(e.target.value))}
+                  className="w-24 rounded border px-2 py-1"
                 />
               </div>
+            )}
+          </div>
+          {/* Single-step location UI */}
+          <div className="space-y-6">
+            {/* <LocationSearchInput
+              onLocationSelect={handleLocationSelect}
+              className="absolute top-5 left-1/2 transform -translate-x-1/2 w-[calc(100%-5rem)] shadow-md rounded-xl z-10 bg-white p-5"
+              defaultValue={
+                property?.address
+                  ? `${property.address}, ${property.city || ''}`
+                  : ''
+              }
+            /> */}
 
-              {!coordinates && (
-                <p className="text-sm text-muted-foreground text-center">
-                  📍 {t('messages.clickToSelect')}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* PHASE 2: Form */}
-          {currentPhase === 'form' && (
-            <div className="space-y-6">
-              <AddressConfirmForm
-                formData={addressForm}
-                onChange={handleFormChange}
-              />
-            </div>
-          )}
-
-          {/* PHASE 3: Confirm on Map */}
-          {currentPhase === 'confirm' && (
-            <>
-              {!coordinates ? (
-                // Pas de coordonnées - afficher message et bouton pour revenir à la recherche
-                <div className="space-y-6">
-                  <div className="p-6 bg-muted rounded-lg text-center space-y-4">
-                    <MapPin className="h-12 w-12 mx-auto text-muted-foreground" />
-                    <div>
-                      <h3 className="font-semibold mb-2">
-                        {t('messages.selectAddress')}
-                      </h3>
+            {/* Address summary / edit */}
+            <div className="p-4 bg-muted rounded-lg space-y-2">
+              {!editingAddress ? (
+                <div className="flex items-start gap-3 justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
+                      <MapPin className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold">
+                        {addressForm.street || t('messages.noAddressYet')}
+                      </p>
                       <p className="text-sm text-muted-foreground">
-                        {t('descriptions.search')}
+                        {addressForm.postalCode} {addressForm.city}
+                        {addressForm.state && `, ${addressForm.state}`}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {addressForm.country}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="flex items-center gap-2">
                     <Button
-                      type="button"
+                      size="sm"
                       variant="outline"
-                      onClick={() => setCurrentPhase('form')}
-                      className="flex-1"
+                      onClick={() => setEditingAddress(true)}
                     >
-                      {t('buttons.back')}
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={() => setCurrentPhase('search')}
-                      className="flex-1"
-                    >
-                      {t('buttons.changeAddress')}
+                      {t('buttons.modifyAddress') || 'Edit address'}
                     </Button>
                   </div>
                 </div>
               ) : (
-                // Avec coordonnées - afficher la carte
-                <div className="space-y-6">
-                  {/* Adresse affichée */}
-                  <div className="p-4 bg-muted rounded-lg space-y-2">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-                        <MapPin className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold">{addressForm.street}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {addressForm.postalCode} {addressForm.city}
-                          {addressForm.state && `, ${addressForm.state}`}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {addressForm.country}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Carte interactive avec marqueur déplaçable */}
-                  <div className="space-y-3">
-                    <div className="rounded-lg overflow-hidden border">
-                      <MapView
-                        latitude={coordinates.lat}
-                        longitude={coordinates.lng}
-                        zoom={17}
-                        className="h-[500px] w-full"
-                        markerTitle={t('messages.dragMarker')}
-                        draggableMarker={true}
-                        onMarkerDragEnd={handleMarkerDragEnd}
-                      />
-                    </div>
-                    <p className="text-sm text-muted-foreground text-center">
-                      {t('messages.mapInstructions')}
-                    </p>
-                  </div>
-
-                  {/* Bouton pour modifier l'adresse */}
-                  <div className="flex justify-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setCurrentPhase('search')}
-                      disabled={isSubmitting}
-                    >
-                      {t('buttons.modifyAddress')}
-                    </Button>
-                  </div>
-                </div>
+                <AddressConfirmForm
+                  formData={addressForm}
+                  onChange={handleFormChange}
+                />
               )}
-            </>
-          )}
+            </div>
+
+            {/* Map (marker or zone) */}
+            <div className="rounded-lg overflow-hidden border">
+              <MapView
+                latitude={coordinates?.lat || 15.865}
+                longitude={coordinates?.lng || -97.07}
+                zoom={coordinates ? 15 : 13}
+                className="h-[700px] w-full"
+                markerTitle={t('messages.dragMarker')}
+                draggableMarker={true}
+                showMarker={true}
+                onMarkerDragEnd={handleMarkerDragEnd}
+                selectionMode={selectionMode}
+                zoneRadiusMeters={zoneRadiusMeters}
+                onMapClick={async (lat: number, lng: number) => {
+                  setCoordinates({ lat, lng });
+                  try {
+                    const response = await fetch(
+                      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=en`,
+                    );
+
+                    if (response.ok) {
+                      const data = await response.json();
+                      if (data && data.address) {
+                        setAddressForm({
+                          street:
+                            `${data.address.house_number || ''} ${data.address.road || ''}`.trim(),
+                          buildingInfo: '',
+                          buildingName: '',
+                          postalCode: data.address.postcode || '',
+                          city:
+                            data.address.city ||
+                            data.address.town ||
+                            data.address.village ||
+                            '',
+                          state: data.address.state || '',
+                          country: data.address.country_code
+                            ? data.address.country_code.toUpperCase()
+                            : 'FR',
+                        });
+                        toast.success(t('messages.addressUpdated'));
+                      }
+                    }
+                  } catch {
+                    // ignore reverse geocode errors
+                  }
+                  setEditingAddress(false);
+                }}
+              />
+            </div>
+
+            <p className="text-sm text-muted-foreground text-center">
+              {t('messages.mapInstructions')}
+            </p>
+
+            <div className="flex gap-4 justify-center">
+              <Button
+                type="button"
+                onClick={() => setEditingAddress(true)}
+                disabled={isSubmitting}
+              >
+                {t('buttons.modifyAddress')}
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

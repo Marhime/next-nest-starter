@@ -1,4 +1,7 @@
 {
+  "Generic": {
+    "optional": "opcional"
+  },
   "Home": {
     "title": "Tu próximo hogar en Puerto Escondido.",
     "subtitle": "Descubre las mejores casas, departamentos y terrenos en venta o renta. Todo el mercado local, actualizado en tiempo real — sin complicaciones.",
@@ -200,6 +203,41 @@
   "AddPropertyButton": {
     "label": "Añadir una propiedad"
   },
+  "QuickCreatePhone": {
+    "title": "Crear un anuncio",
+    "description": "Agrega tu propiedad rápidamente solo con tu número de teléfono",
+    "cancel": "Cancelar",
+    "heading": "¿Listo para anunciar tu propiedad?",
+    "hint": "Elige si deseas vender o alquilar, luego selecciona el tipo de propiedad",
+    "listing": {
+      "sale": "Venta",
+      "rent": "Alquiler"
+    },
+    "back": "Atrás",
+    "phoneLabel": "Número de teléfono",
+    "phonePlaceholder": "Ingresa tu número de teléfono",
+    "house": {
+      "label": "Casa",
+      "description": "Casa independiente con jardín"
+    },
+    "apartment": {
+      "label": "Apartamento",
+      "description": "Apartamento en residencia"
+    },
+    "land": {
+      "label": "Terreno",
+      "description": "Terreno edificable o agrícola"
+    },
+    "creating": "Creando...",
+    "error": "Error al crear la propiedad",
+    "tokenSaved": "Token de edición guardado localmente",
+    "tokenDialog": {
+      "title": "Tu token de edición",
+      "description": "Este token te permite editar tu anuncio sin crear una cuenta. Guárdalo ahora — no se mostrará de nuevo.",
+      "continue": "Continuar",
+      "copyAndSave": "Copiar y guardar"
+    }
+  },
   "HostingPage": {
     "back": "← Atrás",
     "duplicateFrom": "Crear desde un anuncio existente",
@@ -338,12 +376,13 @@
       "geolocationNotSupported": "La geolocalización no está soportada por tu navegador",
       "cannotAccessLocation": "No se puede acceder a tu ubicación",
       "cannotGetAddress": "No se puede obtener tu dirección",
-      "cannotSearchAddresses": "No se pueden buscar direcciones en este momento"
+      "cannotSearchAddresses": "No se pueden buscar direcciones en este momento",
+      "noAddressYet": "Sin dirección aún"
     }
   },
   "PhotoUpload": {
     "title": "Agrega fotos",
-    "subtitle": "Mínimo 5 fotos • Máximo 20 fotos",
+    "subtitle": "Mínimo 2 fotos • Máximo 20 fotos",
     "ready": "✓ Listo",
     "remaining": "restantes",
     "uploadTitle": "Subir fotos",
@@ -405,7 +444,94 @@
     "areaRequired": "La superficie debe ser mayor a 0 m²",
     "publishing": "Publicando...",
     "publishSuccess": "🎉 ¡Anuncio publicado con éxito!",
-    "publishError": "Error al publicar"
+    "publishError": "Error al publicar",
+    "header": {
+      "title": "Caracteristicas",
+      "subtitle": "Revisa y completa la información de tu propiedad"
+    },
+    "price": {
+      "title": "Precio",
+      "hintRent": "Precio por mes",
+      "hintSale": "Precio de la propriedad"
+    },
+    "area": {
+      "title": "Superficie",
+      "label": "Superficie habitable (m²)",
+      "placeholder": "Ej: 85",
+      "required": "La superficie es obligatoria"
+    },
+    "landSurface": {
+      "label": "Superficie del terreno (m²)",
+      "placeholder": "Ej: 250"
+    },
+    "constructionYear": {
+      "label": "Año de construcción",
+      "placeholder": "Ej: 2005"
+    },
+    "bedrooms": {
+      "title": "Recámaras",
+      "hint": "Número de recámaras"
+    },
+    "bathrooms": {
+      "title": "Baños",
+      "hint": "Número de baños completos"
+    },
+    "capacity": {
+      "title": "Capacidad",
+      "hint": "Número máximo de personas"
+    },
+    "floor": {
+      "title": "Piso",
+      "hint": "Número de piso (0 = planta baja)"
+    },
+    "amenities": {
+      "title": "Equipamientos",
+      "hint": "Selecciona todos los servicios disponibles en tu propiedad",
+      "wifi": "WiFi",
+      "air_conditioning": "Aire acondicionado",
+      "heating": "Calefacción",
+      "kitchen": "Cocina equipada",
+      "tv": "Televisión",
+      "refrigerator": "Refrigerador",
+      "washing_machine": "Lavadora",
+      "parking": "Estacionamiento",
+      "garage": "Garaje",
+      "garden": "Jardín",
+      "balcony": "Balcón",
+      "terrace": "Terraza",
+      "pool": "Piscina",
+      "gym": "Gimnasio",
+      "jacuzzi": "Jacuzzi",
+      "security": "Seguridad 24h",
+      "doorman": "Portero",
+      "elevator": "Ascensor",
+      "furnished": "Amueblado",
+      "pets_allowed": "Se permiten mascotas",
+      "cleaning_service": "Servicio de limpieza",
+      "ventilator": "Ventiladores"
+    },
+    "status": {
+      "title": "Estado del anuncio",
+      "DRAFT": "Borrador",
+      "ACTIVE": "Publicado",
+      "INACTIVE": "Inactivo",
+      "RENTED": "Alquilado",
+      "SOLD": "Vendido"
+    },
+    "summary": {
+      "title": "Resumen",
+      "titleLabel": "Título:",
+      "descriptionLabel": "Descripción:",
+      "featuresLabel": "Características:",
+      "amenitiesLabel": "Equipamientos:",
+      "statusLabel": "Estado:",
+      "notDefined": "No definido",
+      "rooms": "hab",
+      "baths": "baño",
+      "people": "persona",
+      "selected": "seleccionado",
+      "selected_plural": "seleccionados"
+    }
   },
   "SearchFilters": {
     "title": "Filtros de búsqueda",

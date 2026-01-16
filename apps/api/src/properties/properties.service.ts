@@ -10,6 +10,7 @@ import {
   PropertyStatus,
   Currency,
 } from '../../generated/prisma/client';
+import { randomUUID } from 'node:crypto';
 
 @Injectable()
 export class PropertiesService {
@@ -19,26 +20,31 @@ export class PropertiesService {
    * Créer une propriété avec données complètes
    * @deprecated Utiliser createMinimal pour l'initialisation, puis update pour compléter
    */
-  async create(createPropertyDto: CreatePropertyDto, userId: string) {
+  async create(createPropertyDto: CreatePropertyDto, userId?: string) {
     const { amenities, ...data } = createPropertyDto;
 
-    // Valider que l'utilisateur existe
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+    // Générer un edit token pour permettre l'édition sans compte
+    const editToken = randomUUID();
 
-    if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
+    // Si userId est fourni, vérifier que l'utilisateur existe
+    let owner = null;
+    if (userId) {
+      owner = await this.prisma.user.findUnique({ where: { id: userId } });
+      if (!owner) {
+        throw new NotFoundException(`User avec l'ID ${userId} introuvable`);
+      }
     }
 
-    return this.prisma.property.create({
+    const created = await this.prisma.property.create({
       data: {
         ...data,
-        userId,
+        // n'ajouter userId dans la création que s'il est présent
+        ...(userId && { userId }),
+        editToken,
         amenities: amenities || [],
         status: data.status || PropertyStatus.DRAFT, // Par défaut en brouillon
         currency: data.currency || Currency.MXN,
-      },
+      } as any,
       include: {
         user: {
           select: {
@@ -51,6 +57,17 @@ export class PropertiesService {
         photos: true,
       },
     });
+
+    // Si création anonyme, retourner aussi le token pour que le créateur puisse l'enregistrer
+    if (!userId) {
+      return {
+        property: this.sanitizeProperty(created),
+        editToken,
+      };
+    }
+
+    // Pour les créations authentifiées, ne jamais exposer l'editToken
+    return this.sanitizeProperty(created);
   }
 
   /**
@@ -59,15 +76,14 @@ export class PropertiesService {
    */
   async createMinimal(
     createPropertyMinimalDto: CreatePropertyMinimalDto,
-    userId: string,
+    userId?: string,
   ) {
-    // Valider que l'utilisateur existe
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
+    // Valider que l'utilisateur existe si fourni
+    if (userId) {
+      const user = await this.prisma.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        throw new NotFoundException(`User with ID ${userId} not found`);
+      }
     }
 
     // Générer un titre par défaut basé sur le type de propriété
@@ -81,10 +97,14 @@ export class PropertiesService {
       ROOM: 'New Room',
     };
 
+    // Générer un edit token pour les créations anonymes
+    const editToken = !userId ? randomUUID() : undefined;
+
     // Créer la propriété avec des valeurs par défaut
-    return this.prisma.property.create({
+    const created = await this.prisma.property.create({
       data: {
-        userId,
+        ...(userId && { userId }),
+        ...(editToken && { editToken }),
         propertyType: createPropertyMinimalDto.propertyType,
         ...(createPropertyMinimalDto.listingType && {
           listingType: createPropertyMinimalDto.listingType,
@@ -93,7 +113,7 @@ export class PropertiesService {
         status: PropertyStatus.DRAFT, // Les nouvelles propriétés sont en brouillon
         currency: Currency.MXN,
         amenities: [],
-      },
+      } as any,
       include: {
         user: {
           select: {
@@ -106,6 +126,15 @@ export class PropertiesService {
         photos: true,
       },
     });
+
+    if (editToken) {
+      return {
+        property: this.sanitizeProperty(created),
+        editToken,
+      };
+    }
+
+    return this.sanitizeProperty(created);
   }
 
   async findAll(query: QueryPropertyDto) {
@@ -187,20 +216,7 @@ export class PropertiesService {
       if (minPrice !== undefined) priceFilter.gte = String(minPrice);
       if (maxPrice !== undefined) priceFilter.lte = String(maxPrice);
 
-      if (listingType === 'SHORT_TERM') {
-        where.nightlyPrice = priceFilter;
-      } else if (listingType === 'RENT') {
-        where.monthlyPrice = priceFilter;
-      } else if (listingType === 'SALE') {
-        where.salePrice = priceFilter;
-      } else {
-        // If no listingType specified, search across all price types (OR condition)
-        where.OR = [
-          { nightlyPrice: priceFilter },
-          { monthlyPrice: priceFilter },
-          { salePrice: priceFilter },
-        ];
-      }
+      where.price = priceFilter;
     }
 
     const skip = (page - 1) * limit;
@@ -224,7 +240,6 @@ export class PropertiesService {
           },
           _count: {
             select: {
-              reservations: true,
               favorites: true,
             },
           },
@@ -235,7 +250,7 @@ export class PropertiesService {
     ]);
 
     return {
-      data: properties,
+      data: properties.map((p) => this.sanitizeProperty(p)),
       meta: {
         total,
         page,
@@ -245,7 +260,8 @@ export class PropertiesService {
     };
   }
 
-  async findOne(id: number) {
+  // Internal: fetch property including secret fields (editToken) for server-side checks
+  private async getPropertyRaw(id: number) {
     const property = await this.prisma.property.findUnique({
       where: { id },
       include: {
@@ -261,15 +277,8 @@ export class PropertiesService {
         photos: {
           orderBy: { order: 'asc' },
         },
-        availabilities: {
-          where: {
-            startDate: { gte: new Date() },
-          },
-          orderBy: { startDate: 'asc' },
-        },
         _count: {
           select: {
-            reservations: true,
             favorites: true,
           },
         },
@@ -283,23 +292,39 @@ export class PropertiesService {
     return property;
   }
 
+  // Public: sanitized property without secret fields (editToken)
+  async findOne(id: number) {
+    const prop = await this.getPropertyRaw(id);
+    return this.sanitizeProperty(prop);
+  }
+
+  // Allow update with either owner userId or editToken
   async update(
     id: number,
     updatePropertyDto: UpdatePropertyDto,
     userId?: string,
+    editToken?: string,
   ) {
-    const property = await this.findOne(id);
+    // Need raw property (contains editToken and userId)
+    const property = await this.getPropertyRaw(id);
 
-    // Si un userId est fourni, vérifier que l'utilisateur est bien le propriétaire
-    if (userId && property.userId !== userId) {
-      throw new NotFoundException(
-        `Property with ID ${id} not found or you don't have permission to update it`,
-      );
+    // Authorization: either matching userId or matching editToken is required
+    if (userId) {
+      if (property.userId !== userId) {
+        throw new NotFoundException(`You do not own this property`);
+      }
+    } else if (editToken) {
+      if ((property as any).editToken !== editToken) {
+        throw new NotFoundException(`You do not own this property token`);
+      }
+    } else {
+      // No credentials provided
+      throw new NotFoundException(`You do not own this property`);
     }
 
     const { amenities, ...data } = updatePropertyDto;
 
-    return this.prisma.property.update({
+    const updated = await this.prisma.property.update({
       where: { id },
       data: {
         ...data,
@@ -318,21 +343,34 @@ export class PropertiesService {
         photos: true,
       },
     });
+
+    return this.sanitizeProperty(updated);
   }
 
-  async remove(id: number, userId?: string) {
-    const property = await this.findOne(id);
+  async remove(id: number, userId?: string, editToken?: string) {
+    // Use raw because findOne sanitizes editToken
+    const property = await this.getPropertyRaw(id);
 
-    // Si un userId est fourni, vérifier que l'utilisateur est bien le propriétaire
-    if (userId && property.userId !== userId) {
+    // Authorization: either matching userId or matching editToken is required
+    if (userId) {
+      if (property.userId !== userId) {
+        throw new NotFoundException(
+          `Property with ID ${id} not found or you don't have permission to delete it`,
+        );
+      }
+    } else if (editToken) {
+      if ((property as any).editToken !== editToken) {
+        throw new NotFoundException(
+          `Property with ID ${id} not found or invalid edit token`,
+        );
+      }
+    } else {
       throw new NotFoundException(
         `Property with ID ${id} not found or you don't have permission to delete it`,
       );
     }
 
-    return this.prisma.property.delete({
-      where: { id },
-    });
+    return this.prisma.property.delete({ where: { id } });
   }
 
   /**
@@ -340,7 +378,7 @@ export class PropertiesService {
    * Retourne un objet avec isValid et les champs manquants
    */
   async validatePropertyForPublishing(id: number, userId: string) {
-    const property = await this.findOne(id);
+    const property = await this.getPropertyRaw(id);
 
     // Vérifier la propriété
     if (property.userId !== userId) {
@@ -357,11 +395,7 @@ export class PropertiesService {
     };
 
     // Vérifier qu'au moins un type de prix est défini
-    if (
-      !property.monthlyPrice &&
-      !property.nightlyPrice &&
-      !property.salePrice
-    ) {
+    if (!property.price) {
       missingFields.push('price (monthly, nightly, or sale price required)');
     }
 
@@ -417,7 +451,7 @@ export class PropertiesService {
     }
 
     // Mettre à jour le statut
-    return this.prisma.property.update({
+    const updated = await this.prisma.property.update({
       where: { id },
       data: {
         status: PropertyStatus.ACTIVE,
@@ -435,13 +469,15 @@ export class PropertiesService {
         photos: true,
       },
     });
+
+    return this.sanitizeProperty(updated);
   }
 
   /**
    * Remettre une propriété en brouillon
    */
   async unpublishProperty(id: number, userId: string) {
-    const property = await this.findOne(id);
+    const property = await this.getPropertyRaw(id);
 
     if (property.userId !== userId) {
       throw new NotFoundException(
@@ -449,7 +485,7 @@ export class PropertiesService {
       );
     }
 
-    return this.prisma.property.update({
+    const updated = await this.prisma.property.update({
       where: { id },
       data: {
         status: PropertyStatus.DRAFT,
@@ -467,10 +503,12 @@ export class PropertiesService {
         photos: true,
       },
     });
+
+    return this.sanitizeProperty(updated);
   }
 
   async findByUser(userId: string) {
-    return this.prisma.property.findMany({
+    const properties = await this.prisma.property.findMany({
       where: { userId },
       include: {
         photos: {
@@ -478,13 +516,14 @@ export class PropertiesService {
         },
         _count: {
           select: {
-            reservations: true,
             favorites: true,
           },
         },
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    return properties.map((p) => this.sanitizeProperty(p));
   }
 
   async searchNearby(
@@ -568,7 +607,7 @@ export class PropertiesService {
     ]);
 
     return {
-      data: properties,
+      data: properties.map((p) => this.sanitizeProperty(p)),
       meta: {
         total,
         page,
@@ -605,14 +644,23 @@ export class PropertiesService {
         id: true,
         latitude: true,
         longitude: true,
-        salePrice: true,
-        monthlyPrice: true,
-        nightlyPrice: true,
         listingType: true,
         propertyType: true,
       },
     });
 
     return properties;
+  }
+
+  // Utility: remove sensitive/internal-only fields before exposing to API clients
+  private sanitizeProperty(property: any) {
+    if (!property) return property;
+
+    // Clone to avoid mutating original object returned by Prisma client
+    const clone = JSON.parse(JSON.stringify(property));
+    if (Object.prototype.hasOwnProperty.call(clone, 'editToken')) {
+      delete clone.editToken;
+    }
+    return clone;
   }
 }

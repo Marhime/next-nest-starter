@@ -22,6 +22,8 @@ interface MapViewProps {
   draggableMarker?: boolean;
   onMarkerDragEnd?: (lat: number, lng: number) => void;
   showMarker?: boolean;
+  selectionMode?: 'point' | 'zone';
+  zoneRadiusMeters?: number;
 }
 
 export function MapView({
@@ -34,9 +36,12 @@ export function MapView({
   draggableMarker = false,
   onMarkerDragEnd,
   showMarker = true,
+  selectionMode = 'point',
+  zoneRadiusMeters = 0,
 }: MapViewProps) {
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
+  const circleRef = useRef<L.Circle | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -66,7 +71,7 @@ export function MapView({
         maxZoom: 22,
       }).addTo(map);
 
-      // Add marker only if showMarker is true
+      // Add marker only if showMarker is true (marker may be created later when coordinates arrive)
       let marker: L.Marker | null = null;
       if (showMarker) {
         marker = L.marker([latitude, longitude], {
@@ -107,22 +112,79 @@ export function MapView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount - dependencies handled in separate effect
 
-  // Update map position and marker when coordinates change
+  // Update map position and marker when coordinates or display mode change
   useEffect(() => {
-    if (mapRef.current && markerRef.current) {
-      const newLatLng = L.latLng(latitude, longitude);
+    if (!mapRef.current) return;
 
-      // Animate map to new position
-      mapRef.current.setView(newLatLng, zoom, {
-        animate: true,
-        duration: 0.5,
-      });
+    const map = mapRef.current;
+    const newLatLng = L.latLng(latitude, longitude);
 
-      // Update marker position
-      markerRef.current.setLatLng(newLatLng);
-      markerRef.current.bindPopup(markerTitle).openPopup();
+    // Animate map to new position
+    map.setView(newLatLng, zoom, {
+      animate: true,
+      duration: 0.5,
+    });
+
+    // Ensure marker exists if requested
+    if (showMarker) {
+      if (!markerRef.current) {
+        // create marker dynamically
+        const m = L.marker([latitude, longitude], {
+          draggable: draggableMarker,
+          title: markerTitle,
+        }).addTo(map);
+
+        if (draggableMarker && onMarkerDragEnd) {
+          m.on('dragend', (e) => {
+            const position = e.target.getLatLng();
+            onMarkerDragEnd(position.lat, position.lng);
+          });
+        }
+
+        markerRef.current = m;
+      } else {
+        markerRef.current.setLatLng(newLatLng);
+        markerRef.current.bindPopup(markerTitle).openPopup();
+      }
+    } else {
+      // remove marker if exists and not wanted
+      if (markerRef.current) {
+        map.removeLayer(markerRef.current);
+        markerRef.current = null;
+      }
     }
-  }, [latitude, longitude, zoom, markerTitle]);
+
+    // Zone circle handling
+    if (selectionMode === 'zone' && zoneRadiusMeters > 0) {
+      if (!circleRef.current) {
+        const c = L.circle(newLatLng, {
+          radius: zoneRadiusMeters,
+          color: '#2563eb',
+          fillColor: '#2563eb',
+          fillOpacity: 0.12,
+        }).addTo(map);
+        circleRef.current = c;
+      } else {
+        circleRef.current.setLatLng(newLatLng);
+        circleRef.current.setRadius(zoneRadiusMeters);
+      }
+    } else {
+      if (circleRef.current) {
+        map.removeLayer(circleRef.current);
+        circleRef.current = null;
+      }
+    }
+  }, [
+    latitude,
+    longitude,
+    zoom,
+    markerTitle,
+    showMarker,
+    draggableMarker,
+    onMarkerDragEnd,
+    selectionMode,
+    zoneRadiusMeters,
+  ]);
 
   return (
     <div className="relative">

@@ -29,9 +29,7 @@ export interface Property {
   title: string;
   description?: string;
   status: string;
-  monthlyPrice?: string;
-  nightlyPrice?: string;
-  salePrice?: string;
+  price: string;
   currency?: string;
   address?: string;
   city?: string;

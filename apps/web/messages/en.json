@@ -1,7 +1,10 @@
 {
+  "Generic": {
+    "optional": "opcional"
+  },
   "Home": {
-    "title": "Your next home in Puerto Escondido.",
-    "subtitle": "Discover the best houses, apartments and plots for sale or rent. All the local market, updated in real time — no hassle.",
+    "title": "Your next home in Puerto Escondido",
+    "subtitle": "Discover the best houses, apartments and plots for sale or rent. All the local market, updated in real time — no hassle",
     "searchPlaceholder": "Enter an address, city or ZIP code",
     "description": "Discover the best houses, apartments and plots for sale or rent. All the local market, updated in real time — no hassle.",
     "search": "Search"
@@ -200,6 +203,41 @@
   "AddPropertyButton": {
     "label": "Add a property"
   },
+  "QuickCreatePhone": {
+    "title": "Create a listing",
+    "description": "Add your property quickly with just your phone number",
+    "cancel": "Cancel",
+    "heading": "Ready to list your property?",
+    "hint": "Choose if you want to sell or rent, then select your property type",
+    "listing": {
+      "sale": "Sale",
+      "rent": "Rent"
+    },
+    "back": "Back",
+    "phoneLabel": "Phone number",
+    "phonePlaceholder": "Enter your phone number",
+    "house": {
+      "label": "House",
+      "description": "Detached house with garden"
+    },
+    "apartment": {
+      "label": "Apartment",
+      "description": "Apartment in residence"
+    },
+    "land": {
+      "label": "Land",
+      "description": "Buildable or agricultural land"
+    },
+    "creating": "Creating...",
+    "error": "Error creating property",
+    "tokenSaved": "Edit token saved locally",
+    "tokenDialog": {
+      "title": "Your edit token",
+      "description": "This token lets you edit your listing without creating an account. Save it now — it won't be shown again.",
+      "continue": "Continue",
+      "copyAndSave": "Copy & Save"
+    }
+  },
   "HostingPage": {
     "back": "← Back",
     "duplicateFrom": "Create from existing listing",
@@ -335,6 +373,7 @@
       "propertyLocation": "Your property's location",
       "addressDetails": "Address details",
       "mapInstructions": "Adjust the marker position if needed to accurately locate your property",
+      "noAddressYet": "No address yet",
       "geolocationNotSupported": "Geolocation is not supported by your browser",
       "cannotAccessLocation": "Cannot access your location",
       "cannotGetAddress": "Cannot retrieve your address",
@@ -343,7 +382,7 @@
   },
   "PhotoUpload": {
     "title": "Add photos",
-    "subtitle": "Minimum 5 photos • Maximum 20 photos",
+    "subtitle": "Minimum 2 photos • Maximum 20 photos",
     "ready": "✓ Ready",
     "remaining": "remaining",
     "uploadTitle": "Upload photos",
@@ -426,7 +465,94 @@
     "areaRequired": "Area must be greater than 0 m²",
     "publishing": "Publishing...",
     "publishSuccess": "🎉 Listing published successfully!",
-    "publishError": "Error publishing"
+    "publishError": "Error publishing",
+    "header": {
+      "title": "Finalize your listing",
+      "subtitle": "Review and complete your property details"
+    },
+    "price": {
+      "title": "Price",
+      "hintRent": "Price per month",
+      "hintSale": "Property price"
+    },
+    "area": {
+      "title": "Area",
+      "label": "Living area (m²)",
+      "placeholder": "Ex: 85",
+      "required": "Area is required"
+    },
+    "landSurface": {
+      "label": "Land surface (m²)",
+      "placeholder": "Ex: 250"
+    },
+    "constructionYear": {
+      "label": "Construction year",
+      "placeholder": "Ex: 2005"
+    },
+    "bedrooms": {
+      "title": "Bedrooms",
+      "hint": "Number of bedrooms"
+    },
+    "bathrooms": {
+      "title": "Bathrooms",
+      "hint": "Number of full bathrooms"
+    },
+    "capacity": {
+      "title": "Capacity",
+      "hint": "Maximum number of people"
+    },
+    "floor": {
+      "title": "Floor",
+      "hint": "Floor number (0 = ground floor)"
+    },
+    "amenities": {
+      "title": "Amenities",
+      "hint": "Select all amenities available in your property",
+      "wifi": "WiFi",
+      "air_conditioning": "Air conditioning",
+      "heating": "Heating",
+      "kitchen": "Equipped kitchen",
+      "tv": "TV",
+      "refrigerator": "Refrigerator",
+      "washing_machine": "Washing machine",
+      "parking": "Parking",
+      "garage": "Garage",
+      "garden": "Garden",
+      "balcony": "Balcony",
+      "terrace": "Terrace",
+      "pool": "Pool",
+      "gym": "Gym",
+      "jacuzzi": "Jacuzzi",
+      "security": "24/7 security",
+      "doorman": "Doorman",
+      "elevator": "Elevator",
+      "furnished": "Furnished",
+      "pets_allowed": "Pets allowed",
+      "cleaning_service": "Cleaning service",
+      "ventilator": "Fans"
+    },
+    "status": {
+      "title": "Listing status",
+      "DRAFT": "Draft",
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive",
+      "RENTED": "Rented",
+      "SOLD": "Sold"
+    },
+    "summary": {
+      "title": "Summary",
+      "titleLabel": "Title:",
+      "descriptionLabel": "Description:",
+      "featuresLabel": "Features:",
+      "amenitiesLabel": "Amenities:",
+      "statusLabel": "Status:",
+      "notDefined": "Not defined",
+      "rooms": "room",
+      "baths": "bath",
+      "people": "person",
+      "selected": "selected",
+      "selected_plural": "selected"
+    }
   },
   "SearchFilters": {
     "title": "Search filters",

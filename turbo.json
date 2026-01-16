@@ -13,7 +13,11 @@
         "BACKEND_URL",
         "RESEND_API_KEY",
         "EMAIL_FROM",
-        "NEXT_WEB_URL"
+        "NEXT_WEB_URL",
+        "FACEBOOK_CLIENT_ID",
+        "FACEBOOK_CLIENT_SECRET",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET"
       ]
     },
     "build": {
@@ -27,7 +31,11 @@
         "BACKEND_URL",
         "RESEND_API_KEY",
         "EMAIL_FROM",
-        "NEXT_WEB_URL"
+        "NEXT_WEB_URL",
+        "FACEBOOK_CLIENT_ID",
+        "FACEBOOK_CLIENT_SECRET",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET"
       ]
     },
 

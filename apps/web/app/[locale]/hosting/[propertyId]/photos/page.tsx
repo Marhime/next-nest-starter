@@ -14,13 +14,26 @@ const PhotosPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('yo');
     const fetchPhotos = async () => {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      const tokenKey = `property-edit-token:${propertyId}`;
+      const editToken =
+        (typeof window !== 'undefined' && localStorage.getItem(tokenKey)) ||
+        undefined;
+      console.log(editToken);
+      if (editToken) {
+        headers['x-edit-token'] = editToken;
+      }
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/photos/property/${propertyId}`,
           {
             credentials: 'include',
             cache: 'no-store',
+            headers,
           },
         );
 

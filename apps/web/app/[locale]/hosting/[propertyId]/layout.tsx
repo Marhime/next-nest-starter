@@ -53,13 +53,7 @@ export default function AddPropertyLayout({
   // Afficher un loader pendant la vérification
 
   // Wizard order: location -> photos -> characteristics -> description -> pricing
-  const steps = [
-    'location',
-    'photos',
-    'characteristics',
-    'description',
-    'pricing',
-  ];
+  const steps = ['location', 'photos', 'characteristics', 'description'];
   const maxSteps = steps.length - 1;
 
   return (
@@ -94,16 +88,24 @@ export default function AddPropertyLayout({
                   console.log('canProceed:', canProceed);
                   console.log('currentStep:', currentStep);
 
+                  if (currentStep !== undefined)
+                    console.log({
+                      steps,
+                      currentStep: steps[currentStep],
+                      currentStepPlusOne: steps[currentStep + 1],
+                    });
+
                   if (handleNext) {
                     console.log('Calling handleNext');
                     await handleNext();
                   } else {
                     console.log('No handleNext, using fallback navigation');
                     // Fallback: navigation directe si pas de handler
-                    const nextUrl =
-                      currentStep !== undefined && steps[currentStep + 1]
-                        ? `/hosting/${propertyId}/${steps[currentStep + 1]}`
-                        : `/property/${propertyId}`;
+                    let nextUrl;
+                    if (currentStep !== undefined && steps[currentStep])
+                      nextUrl = `/hosting/${propertyId}/${steps[currentStep + 1]}`;
+                    else nextUrl = '/';
+
                     console.log('Navigating to:', nextUrl);
                     router.push(nextUrl);
                   }
@@ -115,7 +117,7 @@ export default function AddPropertyLayout({
                   ? t('navigation.publish')
                   : t('navigation.next')}
               </Button>
-              {currentStep !== undefined && steps[currentStep + 1] && (
+              {currentStep !== undefined && steps[currentStep] && (
                 <div className="absolute top-0 left-0 w-full">
                   <Progress
                     className="rounded-none"

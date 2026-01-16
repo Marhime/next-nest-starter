@@ -18,8 +18,9 @@ import {
 
 export class CreatePropertyDto {
   @ApiProperty({ description: 'Owner ID' })
+  @IsOptional()
   @IsString()
-  userId: string;
+  userId?: string;
 
   @ApiProperty({ enum: PropertyType })
   @IsEnum(PropertyType)
@@ -40,23 +41,11 @@ export class CreatePropertyDto {
   @IsString()
   description?: string;
 
-  @ApiPropertyOptional({ description: 'Monthly price (long-term)' })
+  @ApiPropertyOptional({ description: 'Price' })
   @IsOptional()
   @IsNumber()
   @Min(0)
-  monthlyPrice?: number;
-
-  @ApiPropertyOptional({ description: 'Nightly price (short-term)' })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  nightlyPrice?: number;
-
-  @ApiPropertyOptional({ description: 'Sale price' })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  salePrice?: number;
+  price?: number;
 
   @ApiPropertyOptional({ enum: Currency, default: Currency.MXN })
   @IsOptional()
@@ -85,7 +74,7 @@ export class CreatePropertyDto {
 
   @ApiPropertyOptional({
     description: 'Country code (ISO 3166-1 alpha-2)',
-    default: 'FR',
+    default: 'MX',
   })
   @IsOptional()
   @IsString()
@@ -119,12 +108,6 @@ export class CreatePropertyDto {
   @Min(0)
   bathrooms?: number;
 
-  @ApiPropertyOptional({ description: 'Capacity (for hotels/hostels)' })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  capacity?: number;
-
   @ApiPropertyOptional()
   @IsOptional()
   @IsInt()
@@ -144,11 +127,6 @@ export class CreatePropertyDto {
   @IsEnum(PropertyStatus)
   status?: PropertyStatus;
 
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsDateString()
-  availableFrom?: string;
-
   @ApiPropertyOptional({ description: 'Année de construction' })
   @IsOptional()
   @IsInt()
@@ -159,4 +137,10 @@ export class CreatePropertyDto {
   @IsNumber()
   @Min(0)
   landSurface?: number;
+
+  // edit token
+  @ApiPropertyOptional({ description: 'Edit token for unauthenticated edits' })
+  @IsOptional()
+  @IsString()
+  editToken?: string;
 }

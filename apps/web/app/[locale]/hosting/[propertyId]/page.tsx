@@ -24,15 +24,9 @@ export default function PropertyRedirectPage() {
   useEffect(() => {
     if (isLoading || !property) return;
 
-    // New wizard order: start at location, then characteristics, photos, description, pricing
+    // Simplified wizard for v1: location -> details -> photos
     // Map step indices (from store.getCurrentPropertyStep) to route names
-    const steps = [
-      'location',
-      'photos',
-      'characteristics',
-      'description',
-      'pricing',
-    ];
+    const steps = ['location', 'details', 'photos'];
     const propertyIdNum = Number(propertyId);
 
     // Get the current step for this property

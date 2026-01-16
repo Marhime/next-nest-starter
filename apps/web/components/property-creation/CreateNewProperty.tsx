@@ -4,6 +4,14 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useCreateProperty } from '@/hooks/use-create-property';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
@@ -58,18 +66,54 @@ export function CreateNewProperty({ onSuccess }: CreateNewPropertyProps) {
   const router = useRouter();
   const t = useTranslations('PropertyTypeModal');
 
+  const handleSaveTokenAndContinue = (token: string, propertyId: string) => {
+    try {
+      const tokenKey = `property-edit-token:${propertyId}`;
+      localStorage.setItem(tokenKey, token);
+      // Also copy to clipboard for convenience
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        navigator.clipboard.writeText(token).catch(() => {});
+      }
+      router.push(`/hosting/${propertyId}`);
+    } catch {
+      // ignore
+      router.push(`/hosting/${propertyId}`);
+    }
+  };
+
   const handleSelectAndCreate = async (type: PropertyType) => {
     setSelectedType(type);
 
     try {
-      const property = await createProperty({ propertyType: type });
+      // createProperty may return an envelope { property, editToken } or just the property
+      const resp = await createProperty({ propertyType: type });
+
+      // Normalize: get property object
+      const createdProperty = (resp && (resp.property || resp)) as
+        | Record<string, unknown>
+        | undefined;
+
+      // Extract id safely
+      const createdId = createdProperty
+        ? String((createdProperty as Record<string, unknown>).id)
+        : undefined;
+
+      // If backend returned an editToken (anonymous flow), show the token dialog and let user copy/save it
+      if (resp && (resp as Record<string, unknown>).editToken && createdId) {
+        handleSaveTokenAndContinue(
+          String((resp as Record<string, unknown>).editToken),
+          createdId,
+        );
+        return;
+      }
 
       toast.success(t('successMessage'));
-
-      if (onSuccess) {
-        onSuccess(Number(property.id));
-      } else {
-        router.push(`/hosting/${property.id}`);
+      if (createdId) {
+        if (onSuccess) {
+          onSuccess(Number(createdId));
+        } else {
+          router.push(`/hosting/${createdId}`);
+        }
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('errorMessage'));
@@ -135,9 +179,12 @@ export function CreateNewProperty({ onSuccess }: CreateNewPropertyProps) {
           );
         })}
       </div>
+      {/* One-time token dialog shown after anonymous creation */}
     </div>
   );
 }
+
+// Token dialog state type and dialog UI handled below using the existing Dialog component
 
 interface DuplicatePropertyProps {
   propertyId: number;

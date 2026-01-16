@@ -63,7 +63,7 @@ button {
   --card-foreground: oklch(0.147 0.004 49.25);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.147 0.004 49.25);
-  --primary: oklch(0.216 0.006 56.043);
+  --primary: #f48d51;
   --primary-foreground: oklch(0.985 0.001 106.423);
   --secondary: oklch(0.97 0.001 106.424);
   --secondary-foreground: oklch(0.216 0.006 56.043);
@@ -181,4 +181,20 @@ button {
 [data-slot='dropdown-menu-item'] {
   cursor: pointer;
   padding-inline: 12px;
+}
+
+.container {
+  /* max-w-[1824px] p-4 pb-0 xl:px-12 */
+  max-width: 1824px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-bottom: 0;
+  margin-inline: auto;
+}
+
+@media (min-width: 1280px) {
+  .container {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
 }

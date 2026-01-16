@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Upload, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { toast } from 'sonner';
+// toast removed to avoid success toasts between steps; errors are shown inline
 
 interface PhotoUploadZoneProps {
   onUpload: (files: File[]) => Promise<void>;
@@ -34,14 +34,11 @@ export function PhotoUploadZone({
 
       setUploading(true);
       try {
-        const plural = acceptedFiles.length > 1 ? 's' : '';
-        await toast.promise(onUpload(acceptedFiles), {
-          loading: t('uploadingCount', { count: acceptedFiles.length, plural }),
-          success: t('uploadedCount', { count: acceptedFiles.length, plural }),
-          error: t('uploadError'),
-        });
+        // Run the upload silently. UI shows counts; only surface errors.
+        await onUpload(acceptedFiles);
       } catch (err) {
         console.error('Upload error:', err);
+        setError(t('uploadError'));
       } finally {
         setUploading(false);
       }

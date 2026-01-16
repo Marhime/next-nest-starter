@@ -2,19 +2,15 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useAddPropertyStore } from '../../store';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import {
   Bed,
   Bath,
-  Users,
   Building2,
-  Home,
   Wifi,
   Car,
   Waves,
@@ -23,9 +19,7 @@ import {
   UtensilsCrossed,
   Minus,
   Plus,
-  Maximize2,
   CheckCircle2,
-  ChevronRight,
   Heater,
   Wind,
   Fence,
@@ -39,7 +33,9 @@ import {
   Sparkles,
   Sun,
   Refrigerator,
+  CircleDollarSign,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface AboutProperty {
   id: number;
@@ -54,61 +50,70 @@ export interface AboutProperty {
   status: string;
   propertyType: string;
   listingType?: string;
+  price: number;
 }
 
 export interface AboutPageClientProps {
   property: AboutProperty;
 }
 
-// Liste des équipements disponibles style SeLoger Mexique
+// Liste des équipements disponibles (labels are translation keys)
 const AVAILABLE_AMENITIES = [
-  // Essentiels
-  { id: 'wifi', label: 'WiFi', icon: Wifi },
-  { id: 'air_conditioning', label: 'Climatisation', icon: Snowflake },
-  { id: 'heating', label: 'Chauffage', icon: Heater },
-  { id: 'kitchen', label: 'Cuisine équipée', icon: UtensilsCrossed },
+  { id: 'wifi', labelKey: 'amenities.wifi', icon: Wifi },
+  {
+    id: 'air_conditioning',
+    labelKey: 'amenities.air_conditioning',
+    icon: Snowflake,
+  },
+  { id: 'heating', labelKey: 'amenities.heating', icon: Heater },
+  { id: 'kitchen', labelKey: 'amenities.kitchen', icon: UtensilsCrossed },
 
-  // Électroménager
-  { id: 'tv', label: 'Télévision', icon: Tv },
-  { id: 'refrigerator', label: 'Réfrigérateur', icon: Refrigerator },
-  { id: 'washing_machine', label: 'Machine à laver', icon: Shirt },
+  { id: 'tv', labelKey: 'amenities.tv', icon: Tv },
+  {
+    id: 'refrigerator',
+    labelKey: 'amenities.refrigerator',
+    icon: Refrigerator,
+  },
+  { id: 'washing_machine', labelKey: 'amenities.washing_machine', icon: Shirt },
 
-  // Extérieur & Parking
-  { id: 'parking', label: 'Parking', icon: Car },
-  { id: 'garage', label: 'Garage', icon: DoorOpen },
-  { id: 'garden', label: 'Jardin', icon: Trees },
-  { id: 'balcony', label: 'Balcon', icon: Sun },
-  { id: 'terrace', label: 'Terrasse', icon: Fence },
+  { id: 'parking', labelKey: 'amenities.parking', icon: Car },
+  { id: 'garage', labelKey: 'amenities.garage', icon: DoorOpen },
+  { id: 'garden', labelKey: 'amenities.garden', icon: Trees },
+  { id: 'balcony', labelKey: 'amenities.balcony', icon: Sun },
+  { id: 'terrace', labelKey: 'amenities.terrace', icon: Fence },
 
-  // Luxe & Loisirs
-  { id: 'pool', label: 'Piscine', icon: Waves },
-  { id: 'gym', label: 'Salle de sport', icon: Dumbbell },
-  { id: 'jacuzzi', label: 'Jacuzzi', icon: Waves },
+  { id: 'pool', labelKey: 'amenities.pool', icon: Waves },
+  { id: 'gym', labelKey: 'amenities.gym', icon: Dumbbell },
+  { id: 'jacuzzi', labelKey: 'amenities.jacuzzi', icon: Waves },
 
-  // Sécurité & Services
-  { id: 'security', label: 'Sécurité 24h', icon: Shield },
-  { id: 'doorman', label: 'Portier', icon: Shield },
-  { id: 'elevator', label: 'Ascenseur', icon: Building2 },
-  { id: 'furnished', label: 'Meublé', icon: Sofa },
+  { id: 'security', labelKey: 'amenities.security', icon: Shield },
+  { id: 'doorman', labelKey: 'amenities.doorman', icon: Shield },
+  { id: 'elevator', labelKey: 'amenities.elevator', icon: Building2 },
+  { id: 'furnished', labelKey: 'amenities.furnished', icon: Sofa },
 
-  // Extras
-  { id: 'pets_allowed', label: 'Animaux acceptés', icon: Dog },
-  { id: 'cleaning_service', label: 'Service de ménage', icon: Sparkles },
-  { id: 'ventilator', label: 'Ventilateurs', icon: Wind },
+  { id: 'pets_allowed', labelKey: 'amenities.pets_allowed', icon: Dog },
+  {
+    id: 'cleaning_service',
+    labelKey: 'amenities.cleaning_service',
+    icon: Sparkles,
+  },
+  { id: 'ventilator', labelKey: 'amenities.ventilator', icon: Wind },
 ];
 
-// Status options
+// Status options (labels are translation keys)
 const STATUS_OPTIONS = [
-  { value: 'DRAFT', label: 'Brouillon', color: 'bg-gray-500' },
-  { value: 'ACTIVE', label: 'Actif', color: 'bg-green-500' },
-  { value: 'INACTIVE', label: 'Inactif', color: 'bg-yellow-500' },
-  { value: 'RENTED', label: 'Loué', color: 'bg-blue-500' },
-  { value: 'SOLD', label: 'Vendu', color: 'bg-purple-500' },
+  { value: 'DRAFT', labelKey: 'status.DRAFT', color: 'bg-gray-500' },
+  { value: 'ACTIVE', labelKey: 'status.ACTIVE', color: 'bg-green-500' },
+  { value: 'INACTIVE', labelKey: 'status.INACTIVE', color: 'bg-yellow-500' },
+  { value: 'RENTED', labelKey: 'status.RENTED', color: 'bg-blue-500' },
+  { value: 'SOLD', labelKey: 'status.SOLD', color: 'bg-purple-500' },
 ];
 
 export function AboutPageClient({ property }: AboutPageClientProps) {
-  const router = useRouter();
   const t = useTranslations('AboutPage');
+  const tGen = useTranslations('Generic');
+  const router = useRouter();
+  const locale = useLocale();
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
   const setCanProceed = useAddPropertyStore((state) => state.setCanProceed);
   const setHandleNext = useAddPropertyStore((state) => state.setHandleNext);
@@ -132,6 +137,7 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
       undefined,
     amenities: property.amenities || [],
     status: property.status || 'DRAFT',
+    price: property.price || undefined,
   });
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
@@ -147,11 +153,9 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
 
     const isValid =
       // Characteristics: bedrooms, bathrooms and area/landSurface are required here
-      formData.bedrooms > 0 &&
-      formData.bathrooms > 0 &&
-      (isLand
+      formData.bedrooms > 0 && formData.bathrooms > 0 && isLand
         ? formData.landSurface !== undefined && formData.landSurface > 0
-        : formData.area !== undefined && formData.area > 0); // Add area/landSurface validation
+        : true; // Add area/landSurface validation
 
     setCanProceed?.(isValid as boolean);
 
@@ -167,6 +171,7 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
     setPropertyProgress,
     property.propertyType,
   ]); // Save and publish handler
+
   const handleSave = useCallback(async () => {
     const isLand = property.propertyType === 'LAND';
 
@@ -176,12 +181,9 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
         toast.error(t('areaRequired'));
         return;
       }
-    } else {
-      if (!formData.area || formData.area <= 0) {
-        toast.error(t('areaRequired'));
-        return;
-      }
     }
+
+    // Register Next handler: directly submit the single-step location form
 
     // Save characteristics changes (do not force publication here)
     const dataToSave = {
@@ -209,31 +211,31 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
     });
 
     try {
-      await toast.promise(publishPromise, {
-        loading: t('publishing'),
-        success: t('publishSuccess'),
-        error: (err) => err.message || t('publishError'),
-      });
-
-      // Redirect to public property page only after success
-      setTimeout(() => {
-        router.push(`/property/${property.id}`);
-      }, 1000);
+      // Perform the PATCH silently for step navigation. Only surface errors.
+      await publishPromise;
+      return true;
     } catch (error) {
-      // Don't redirect on error
+      // Surface error to the user but avoid success toasts between steps
+      const message =
+        error instanceof Error ? error.message : t('publishError');
+      toast.error(message);
       console.error('Publication failed:', error);
     }
-  }, [API_URL, property.id, formData, router, t, property.propertyType]);
+  }, [API_URL, property.id, formData, t, property.propertyType]);
 
-  // Configure navigation
   useEffect(() => {
-    setHandleNext?.(handleSave);
-    return () => setHandleNext?.(undefined);
-  }, [handleSave, setHandleNext]);
+    const handler = async () => {
+      const success = await handleSave();
+      if (success) {
+        // Navigate to next step (adjust route as needed)
+        router.push(`/${locale}/hosting/${property.id}/description`);
+      }
+    };
 
-  const updateField = (field: string, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+    setHandleNext?.(handler);
+
+    return () => setHandleNext?.(undefined);
+  }, [setHandleNext, handleSave, router, locale, property.id]);
 
   const incrementValue = (
     field: 'bedrooms' | 'bathrooms' | 'capacity' | 'floor',
@@ -271,95 +273,13 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold">Finalisez votre annonce</h1>
-        <p className="text-muted-foreground text-lg">
-          Vérifiez et complétez les informations de votre bien
-        </p>
+        <h1 className="text-3xl font-semibold">{t('header.title')}</h1>
+        <p className="text-muted-foreground text-lg">{t('header.subtitle')}</p>
       </div>
 
       {/* Title & Description moved to the dedicated Description step */}
 
-      {/* Area */}
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Surface</h2>
-        <div className="flex items-center gap-4">
-          <Maximize2 className="h-8 w-8 text-muted-foreground" />
-          <div className="flex-1">
-            <Label htmlFor="area" className="text-base font-medium">
-              Surface habitable (m²) <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="area"
-              type="number"
-              value={formData.area || ''}
-              onChange={(e) => {
-                const value = e.target.value;
-                updateField('area', value === '' ? 0 : parseFloat(value));
-              }}
-              placeholder="Ex: 85"
-              className={`mt-2 text-base h-12 ${!formData.area || formData.area <= 0 ? 'border-red-500' : ''}`}
-              min="1"
-              step="1"
-              required
-            />
-            {(!formData.area || formData.area <= 0) && (
-              <p className="text-sm text-red-500 mt-1">
-                La surface est obligatoire
-              </p>
-            )}
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="landSurface" className="text-base font-medium">
-                  Surface du terrain (m²)
-                </Label>
-                <Input
-                  id="landSurface"
-                  type="number"
-                  value={formData.landSurface || ''}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    updateField(
-                      'landSurface',
-                      value === '' ? undefined : parseFloat(value),
-                    );
-                  }}
-                  placeholder="Ex: 250"
-                  className="mt-2 text-base h-12"
-                  min="0"
-                  step="1"
-                />
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="constructionYear"
-                  className="text-base font-medium"
-                >
-                  Année de construction
-                </Label>
-                <Input
-                  id="constructionYear"
-                  type="number"
-                  value={formData.constructionYear || ''}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    updateField(
-                      'constructionYear',
-                      value === '' ? undefined : parseInt(value, 10),
-                    );
-                  }}
-                  placeholder="Ex: 2005"
-                  className="mt-2 text-base h-12"
-                  min="1800"
-                  max={new Date().getFullYear()}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Bedrooms - Airbnb Style */}
+      {/* Bedrooms */}
       <Card className="p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -367,9 +287,9 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
               <Bed className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <p className="text-lg font-medium">Chambres</p>
+              <p className="text-lg font-medium">{t('bedrooms.title')}</p>
               <p className="text-sm text-muted-foreground">
-                Nombre de chambres à coucher
+                {t('bedrooms.hint')}
               </p>
             </div>
           </div>
@@ -394,7 +314,7 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
         </div>
       </Card>
 
-      {/* Bathrooms - Airbnb Style */}
+      {/* Bathrooms */}
       <Card className="p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -402,9 +322,9 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
               <Bath className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <p className="text-lg font-medium">Salles de bain</p>
+              <p className="text-lg font-medium">{t('bathrooms.title')}</p>
               <p className="text-sm text-muted-foreground">
-                Nombre de salles de bain complètes
+                {t('bathrooms.hint')}
               </p>
             </div>
           </div>
@@ -429,82 +349,12 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
         </div>
       </Card>
 
-      {/* Capacity - Airbnb Style */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Users className="h-8 w-8 text-primary" />
-            </div>
-            <div>
-              <p className="text-lg font-medium">Capacité d&apos;accueil</p>
-              <p className="text-sm text-muted-foreground">
-                Nombre de personnes maximum
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => decrementValue('capacity')}
-              disabled={formData.capacity <= 1}
-              className="h-12 w-12 rounded-full border-2 border-gray-300 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-            >
-              <Minus className="h-5 w-5" />
-            </button>
-            <span className="text-2xl font-semibold w-12 text-center">
-              {formData.capacity}
-            </span>
-            <button
-              onClick={() => incrementValue('capacity')}
-              className="h-12 w-12 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center transition-colors"
-            >
-              <Plus className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-      </Card>
-
-      {/* Floor - Airbnb Style */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Building2 className="h-8 w-8 text-primary" />
-            </div>
-            <div>
-              <p className="text-lg font-medium">Étage</p>
-              <p className="text-sm text-muted-foreground">
-                Numéro de l&apos;étage (0 = rez-de-chaussée)
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => decrementValue('floor')}
-              disabled={formData.floor <= 0}
-              className="h-12 w-12 rounded-full border-2 border-gray-300 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-            >
-              <Minus className="h-5 w-5" />
-            </button>
-            <span className="text-2xl font-semibold w-12 text-center">
-              {formData.floor}
-            </span>
-            <button
-              onClick={() => incrementValue('floor')}
-              className="h-12 w-12 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center transition-colors"
-            >
-              <Plus className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-      </Card>
-
       {/* Amenities */}
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Équipements</h2>
-        <p className="text-sm text-muted-foreground mb-4">
-          Sélectionnez tous les équipements disponibles dans votre bien
-        </p>
+        <h2 className="text-xl font-semibold">
+          {t('amenities.title')} ({tGen('optional')})
+        </h2>
+        <p className="text-sm text-muted-foreground">{t('amenities.hint')}</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {AVAILABLE_AMENITIES.map((amenity) => {
             const Icon = amenity.icon;
@@ -527,7 +377,7 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
                   />
                 </div>
                 <span className="flex-1 text-sm font-medium">
-                  {amenity.label}
+                  {t(amenity.labelKey)}
                 </span>
                 {isSelected && (
                   <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -539,80 +389,6 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
       </Card>
 
       {/* Status */}
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Statut de l&apos;annonce</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {STATUS_OPTIONS.map((status) => {
-            const isSelected = formData.status === status.value;
-
-            return (
-              <button
-                key={status.value}
-                onClick={() => updateField('status', status.value)}
-                className={`
-                  flex items-center gap-3 p-4 rounded-lg border-2 transition-all
-                  ${isSelected ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}
-                `}
-              >
-                <div
-                  className={`w-3 h-3 rounded-full ${isSelected ? status.color : 'bg-gray-300'}`}
-                />
-                <span className="font-medium">{status.label}</span>
-                {isSelected && <ChevronRight className="h-4 w-4 ml-auto" />}
-              </button>
-            );
-          })}
-        </div>
-      </Card>
-
-      {/* Summary */}
-      <Card className="p-6 bg-primary/5 border-primary/20">
-        <div className="flex items-start gap-4">
-          <div className="p-3 bg-primary/10 rounded-lg">
-            <Home className="h-6 w-6 text-primary" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-lg mb-2">Récapitulatif</h3>
-            <div className="space-y-1 text-sm text-muted-foreground">
-              <p>
-                <strong>Titre:</strong> {formData.title || 'Non défini'}
-              </p>
-              <p>
-                <strong>Description:</strong>{' '}
-                {formData.description
-                  ? `${formData.description.substring(0, 100)}...`
-                  : 'Non défini'}
-              </p>
-              <p>
-                <strong>Caractéristiques:</strong> {formData.bedrooms} chambre
-                {formData.bedrooms > 1 ? 's' : ''} · {formData.bathrooms} salle
-                {formData.bathrooms > 1 ? 's' : ''} de bain ·{' '}
-                {formData.capacity} personne{formData.capacity > 1 ? 's' : ''}
-                {formData.area && formData.area > 0 && ` · ${formData.area} m²`}
-              </p>
-              <p>
-                <strong>Équipements:</strong> {formData.amenities?.length || 0}{' '}
-                sélectionné
-                {(formData.amenities?.length || 0) > 1 ? 's' : ''}
-              </p>
-              <p>
-                <strong>Statut:</strong>{' '}
-                <Badge
-                  className={
-                    STATUS_OPTIONS.find((s) => s.value === formData.status)
-                      ?.color
-                  }
-                >
-                  {
-                    STATUS_OPTIONS.find((s) => s.value === formData.status)
-                      ?.label
-                  }
-                </Badge>
-              </p>
-            </div>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }
