@@ -76,7 +76,6 @@ export function DescriptionPageClient({
       body: JSON.stringify({
         title: title.trim(),
         description: description.trim(),
-        status: 'ACTIVE',
       }),
     });
 
@@ -88,11 +87,15 @@ export function DescriptionPageClient({
     toast.success('Annonce publiée');
     // advance to next step (pricing) on success
     return true;
-  }, [API_URL, property.id, title, description, router]);
+  }, [API_URL, property.id, title, description]);
 
   useEffect(() => {
     const handler = async () => {
-      await handleSave();
+      const success = await handleSave();
+      if (success) {
+        // Navigate to next step (adjust route as needed)
+        router.push(`/${locale}/hosting/${property.id}/contact`);
+      }
     };
 
     setHandleNext?.(handler);

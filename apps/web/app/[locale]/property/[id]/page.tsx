@@ -6,6 +6,7 @@
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import PropertyDetailsClient from './PropertyDetailsClient';
+import { Property } from '@/hooks/use-properties';
 
 interface Photo {
   id: number;
@@ -18,33 +19,6 @@ interface User {
   firstName: string;
   lastName: string;
   email: string;
-}
-
-interface Property {
-  id: number;
-  title: string;
-  description?: string;
-  propertyType: string;
-  listingType?: string;
-  bedrooms?: number;
-  bathrooms?: number;
-  capacity?: number;
-  floor?: number;
-  area?: number;
-  amenities?: string[];
-  status: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  latitude?: number;
-  longitude?: number;
-  monthlyPrice?: string;
-  nightlyPrice?: string;
-  salePrice?: string;
-  currency?: string;
-  photos: Photo[];
-  user?: User;
 }
 
 async function getProperty(propertyId: string): Promise<Property> {

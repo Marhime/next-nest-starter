@@ -1,10 +1,11 @@
 'use client';
 
 import useSWR from 'swr';
+import { ListingType } from './use-create-property';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-interface Property {
+export interface Property {
   id: number;
   userId: string;
   propertyType: string;
@@ -62,6 +63,33 @@ export function useUserProperties() {
   return {
     properties: data || [],
     total: data?.length || 0,
+    isLoading,
+    isError: error,
+    mutate,
+  };
+}
+
+type fetchPropertyType = {
+  data: Property[];
+};
+
+export function useLatestProperties(listingType?: string) {
+  const { data, error, isLoading, mutate } = useSWR<fetchPropertyType>(
+    `${API_URL}/properties?limit=4${listingType ? `&listingType=${listingType}` : ''}`,
+    fetcher,
+
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
+
+  if (error) {
+    console.error('Error fetching user properties:', error);
+  }
+
+  return {
+    properties: data?.data || [],
     isLoading,
     isError: error,
     mutate,

@@ -26,19 +26,6 @@ import { PropertyCardFloating } from './PropertyCardFloating';
 import 'leaflet/dist/leaflet.css';
 import { PropertyDetailsModal } from './PropertyDetailsModal';
 
-// Fix for default marker icons in Next.js
-const icon = L.icon({
-  iconUrl: '/marker-icon.svg',
-  iconRetinaUrl: '/marker-icon.svg',
-  shadowUrl: '/marker-shadow.png',
-  iconSize: [44, 44],
-  iconAnchor: [22, 44],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
-
-L.Marker.prototype.options.icon = icon;
-
 // Component to update map view based on store state
 function MapViewController() {
   const map = useMap();
@@ -71,6 +58,26 @@ function MapViewController() {
 
   return null;
 }
+
+const clusterIcon = (cluster: any) => {
+  const markers = cluster.getAllChildMarkers();
+  const count = cluster.getChildCount();
+
+  const price = markers
+    .map((m: any) => m.options.price)
+    .sort((a: number, b: number) => a - b)
+    .slice(0, 1);
+
+  return L.divIcon({
+    className: 'airbnb-cluster',
+    html: `
+      <div class="cluster-inner">
+        <div class="cluster-count">${count}</div>
+      </div>
+    `,
+    iconSize: [90, 90],
+  });
+};
 
 // Component to handle map events (with debounce for bounds)
 function MapEventHandler() {
@@ -111,7 +118,7 @@ const PropertyMarkerComponent = React.memo(function PropertyMarkerComponent({
 }: {
   marker: PropertyMarkerType;
 }) {
-  const { selectProperty } = useSearchStore();
+  const { selectProperty, selectedPropertyId } = useSearchStore();
 
   const handleClick = useCallback(() => {
     selectProperty(marker.id);
@@ -120,6 +127,15 @@ const PropertyMarkerComponent = React.memo(function PropertyMarkerComponent({
   if (!marker.latitude || !marker.longitude) {
     return null;
   }
+
+  console.log(marker);
+
+  const icon = L.divIcon({
+    className: `price-marker ${selectedPropertyId === marker.id ? 'active' : ''}`,
+    html: `<span class="inline-flex items-center justify-center rounded-full border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden bg-white">€${marker.price}</span>`,
+    iconSize: [52, 30],
+    iconAnchor: [26, 15],
+  });
 
   const position: [number, number] = [marker.latitude, marker.longitude];
 
@@ -157,6 +173,8 @@ export function PropertyMap({ className }: { className?: string }) {
     [mapMarkers],
   );
 
+  if (!JAWG_ATTRIBUTION || !JAWG_TILE_URL || !mapCenter || !mapZoom) return;
+
   return (
     <div ref={containerRef} className={className}>
       <div className="relative h-full z-10 rounded-2xl overflow-hidden">
@@ -177,16 +195,17 @@ export function PropertyMap({ className }: { className?: string }) {
           <MapViewController />
           <MapEventHandler />
 
-          <MarkerClusterGroup
+          {/* <MarkerClusterGroup
             chunkedLoading
             showCoverageOnHover={false}
             spiderfyOnMaxZoom={true}
             maxClusterRadius={50}
-          >
-            {validMarkers.map((marker) => (
-              <PropertyMarkerComponent key={marker.id} marker={marker} />
-            ))}
-          </MarkerClusterGroup>
+            iconCreateFunction={clusterIcon}
+          > */}
+          {validMarkers.map((marker) => (
+            <PropertyMarkerComponent key={marker.id} marker={marker} />
+          ))}
+          {/* </MarkerClusterGroup> */}
         </MapContainer>
 
         {/* Floating Property Card */}

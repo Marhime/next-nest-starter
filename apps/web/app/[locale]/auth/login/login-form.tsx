@@ -28,6 +28,8 @@ import { LoginFormSchema } from '@/lib/auth/type';
 import { toast } from 'sonner';
 import { useGlobalStore } from '../../store';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/router';
 
 export function LoginForm({
   className,
@@ -39,6 +41,8 @@ export function LoginForm({
   const tErrors = useTranslations('Errors.LoginForm');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { passwordResetEmail, clearPasswordResetEmail } = useGlobalStore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const form = useForm({
     defaultValues: {
@@ -73,6 +77,10 @@ export function LoginForm({
           error: (err) => err?.message || tErrors('loginFailed'),
         });
 
+        const redirectTo = searchParams.get('redirectTo') || '/';
+
+        router.push(redirectTo);
+
         return data;
       } catch (err) {
         console.error('Login error:', err);
@@ -85,6 +93,10 @@ export function LoginForm({
     const data = await authClient.signIn.social({
       provider,
     });
+    if (data) {
+      const redirectTo = searchParams.get('redirectTo') || '/';
+      router.push(redirectTo);
+    }
     console.log('Social sign-in data:', data);
   };
 

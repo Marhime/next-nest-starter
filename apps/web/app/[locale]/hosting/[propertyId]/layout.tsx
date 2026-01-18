@@ -10,6 +10,7 @@ import { useProperty } from '@/hooks/use-properties';
 import { usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import Image from 'next/image';
 
 export default function AddPropertyLayout({
   children,
@@ -21,7 +22,6 @@ export default function AddPropertyLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { propertyId } = params;
-  console.log('Params in layout:', params);
   const setIsOpen = useGlobalStore((state) => state.setIsOpen);
   const currentStep = useAddPropertyStore((state) => state.currentStep);
   const canProceed = useAddPropertyStore((state) => state.canProceed);
@@ -53,14 +53,28 @@ export default function AddPropertyLayout({
   // Afficher un loader pendant la vérification
 
   // Wizard order: location -> photos -> characteristics -> description -> pricing
-  const steps = ['location', 'photos', 'characteristics', 'description'];
+  const steps = [
+    'location',
+    'photos',
+    'characteristics',
+    'description',
+    'contact',
+  ];
   const maxSteps = steps.length - 1;
 
   return (
     <QueryProvider>
       <section className="min-h-screen flex flex-col relative">
         <div className="flex w-full justify-between p-4 xl:py-10 xl:px-12">
-          <Link href="/">Logo</Link>
+          <Link href="/">
+            <Image
+              src="/logo1.svg"
+              alt="Home image showcase"
+              width={170}
+              height={30}
+              priority
+            />
+          </Link>
           <div className="flex gap-4 xl:gap-6 items-center">
             <Button onClick={() => setIsOpen?.(true)}>
               {t('navigation.questions')}
@@ -110,7 +124,7 @@ export default function AddPropertyLayout({
                     router.push(nextUrl);
                   }
                 }}
-                disabled={!canProceed && currentStep !== 0}
+                disabled={!canProceed}
                 className="rounded-full px-10 py-6 text-md ml-auto"
               >
                 {currentStep === maxSteps

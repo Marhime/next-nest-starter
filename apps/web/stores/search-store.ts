@@ -3,6 +3,7 @@
  * Complete state management: filters, properties, map, UI, URL sync
  */
 
+import { ListingType, PropertyType } from '@/hooks/use-create-property';
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
@@ -79,10 +80,7 @@ export interface PropertyMarker {
   id: number;
   latitude: number;
   longitude: number;
-  salePrice?: string;
-  monthlyPrice?: string;
-  nightlyPrice?: string;
-  listingType?: string;
+  price: string;
   propertyType: string;
 }
 
@@ -161,13 +159,13 @@ export interface SearchState extends SearchFilters {
 }
 
 const initialFilters: SearchFilters = {
-  listingType: null,
   location: null,
   latitude: null,
   longitude: null,
   minPrice: null,
   maxPrice: null,
-  propertyType: null,
+  listingType: 'RENT',
+  propertyType: 'HOUSE',
   minBedrooms: null,
   maxBedrooms: null,
   minBathrooms: null,

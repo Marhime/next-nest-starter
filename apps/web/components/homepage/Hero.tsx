@@ -6,14 +6,14 @@ import { useTranslations } from 'next-intl';
 const Hero = () => {
   const t = useTranslations('Home');
   return (
-    <div className="relative flex items-end min-h-[50svh] ">
+    <div className="relative flex items-end min-h-[50svh] mb-12">
       <div className="overlay"></div>
       <Image
-        src="/home-01.jpg"
+        src="/home-03.png"
         alt="Home image showcase"
         width={1920}
         height={1080}
-        className="absolute inset-0 w-full h-full object-cover z-10"
+        className="absolute inset-0 w-full h-full object-cover object-center z-10 "
         priority
       />
       <div className="relative z-20 container w-full">

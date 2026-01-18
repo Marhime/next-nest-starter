@@ -24,8 +24,6 @@ export default function AddPropertyPage() {
   const { properties, isLoading } = useUserProperties();
   const router = useRouter();
 
-  console.log('properties:', properties);
-
   const handlePropertyCreated = (propertyId: number) => {
     router.push(`/hosting/${propertyId}`);
   };

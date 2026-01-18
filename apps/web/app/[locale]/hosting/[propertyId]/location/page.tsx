@@ -99,26 +99,13 @@ const LocationPage = () => {
   // Validation: allow proceeding if coordinates exist
   useEffect(() => {
     const isValid = coordinates !== null;
-
-    console.log('Location validation:', {
-      coordinates,
-      isValid,
-      addressForm,
-    });
-
     setCanProceed?.(isValid);
 
     // Mark location step complete when coordinates present
     if (isValid && propertyId) {
       setPropertyProgress?.(Number(propertyId), 0, true);
     }
-  }, [
-    coordinates,
-    addressForm,
-    setCanProceed,
-    propertyId,
-    setPropertyProgress,
-  ]);
+  }, [setCanProceed, propertyId, setPropertyProgress, coordinates]);
 
   // Load existing property data
   useEffect(() => {

@@ -1,5 +1,6 @@
+import BannerListing from '@/components/homepage/BannerListing';
 import Hero from '@/components/homepage/Hero';
-import RecentProperties from '@/components/homepage/RecentProperties';
+import RecentPropertiesSection from '@/components/homepage/RecentPropertiesSection';
 
 export default function Home() {
   return (
@@ -29,12 +30,11 @@ export default function Home() {
     //     </div>
     //   </div>
     // </main>
-    <main>
+    <main className="pb-12 md:pb-14">
       <Hero />
-      <section className="container pt-12 mt-12">
-        {/* <BannerListing /> */}
-        <RecentProperties />
-      </section>
+      <RecentPropertiesSection />
+      <RecentPropertiesSection listingType="RENT" />
+      <BannerListing />
     </main>
   );
 }

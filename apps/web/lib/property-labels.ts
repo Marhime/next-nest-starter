@@ -3,7 +3,7 @@
  * Centralized labels for property types and listing types
  */
 
-import type { ListingType, PropertyType } from '@/stores/search-store';
+import { ListingType, PropertyType } from '@/hooks/use-create-property';
 
 export const LISTING_TYPE_LABELS: Record<NonNullable<ListingType>, string> = {
   SALE: 'Vente',
@@ -16,13 +16,7 @@ export const PROPERTY_TYPE_LABELS: Record<
 > = {
   APARTMENT: 'Appartement',
   HOUSE: 'Maison',
-  STUDIO: 'Studio',
-  VILLA: 'Villa',
   LAND: 'Terrain',
-  TOWNHOUSE: 'Maison de ville',
-  DUPLEX: 'Duplex',
-  PENTHOUSE: 'Penthouse',
-  LOFT: 'Loft',
 };
 
 /**
@@ -46,7 +40,7 @@ export function getPropertyTypeLabel(type: string | undefined | null): string {
  * @param listingType - SALE or RENT
  * @returns Empty string for SALE, '/mois' for RENT
  */
-export function getPriceLabel(listingType: string | undefined | null): string {
+export function getPriceLabel(listingType: string): string {
   if (listingType === 'RENT') return '/mois';
   return ''; // No suffix for SALE
 }

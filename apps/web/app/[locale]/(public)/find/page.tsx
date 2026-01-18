@@ -6,9 +6,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { PropertySidebar } from '@/components/property-search/PropertySidebar';
+import { PropertyResultList } from '@/components/property-search/PropertyResultList';
 import { MobileListButton } from '@/components/property-search/MobileListButton';
-import { MobileSearchBar } from '@/components/property-search/MobileSearchBar';
 import '@/app/leaflet-clusters.css';
 
 // Dynamic import for map to avoid SSR issues with Leaflet
@@ -36,11 +35,11 @@ function PropertySearchContent() {
   return (
     <div className="relative md:flex min-h-screen">
       {/* PropertySidebar - Renders as drawer on mobile, sidebar on desktop */}
-      <PropertySidebar />
+      <PropertyResultList />
 
-      {/* Map Container - Fixed behind on mobile, flexible on desktop */}
-      <div className="fixed right-0 max-md:left-0 top-[69px] md:flex-1 md:sticky h-[calc(100vh-69px)] z-2 overflow-hidden">
-        <PropertyMap className="md:4 xl:p-10 w-full h-full" />
+      {/* Map Container - Fixed behind on <TileLayer mobile, flexible on desktop */}
+      <div className="fixed right-0 max-md:left-0 top-[89px] md:flex-1 md:sticky h-[calc(100vh-89px)] z-2 overflow-hidden">
+        <PropertyMap className="md:pr-4 xl:pr-12 xl:py-8 w-full h-full" />
       </div>
 
       {/* Mobile floating button to open drawer */}

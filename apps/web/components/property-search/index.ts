@@ -4,6 +4,6 @@
  */
 
 export { PropertyMap } from './PropertyMap';
-export { PropertySidebar } from './PropertySidebar';
+export { PropertyResultList } from './PropertyResultList';
 export { PropertyCard } from './PropertyCard';
 export { PropertyFilters } from './PropertyFilters';

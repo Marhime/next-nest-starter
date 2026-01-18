@@ -4,7 +4,7 @@ import useSWRMutation from 'swr/mutation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-export type PropertyType = 'HOUSE' | 'APARTMENT' | 'LAND' | 'ROOM';
+export type PropertyType = 'HOUSE' | 'APARTMENT' | 'LAND';
 export type ListingType = 'SALE' | 'RENT';
 
 interface CreatePropertyInput {

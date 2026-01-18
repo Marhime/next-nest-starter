@@ -27,17 +27,7 @@ export const addPropertySchema = z.object({
   description: z.string().max(5000).optional(),
 
   // Pricing (conditional based on listing type)
-  monthlyPrice: z
-    .string()
-    .or(z.number())
-    .transform((val) => (typeof val === 'string' ? parseFloat(val) : val))
-    .optional(),
-  nightlyPrice: z
-    .string()
-    .or(z.number())
-    .transform((val) => (typeof val === 'string' ? parseFloat(val) : val))
-    .optional(),
-  salePrice: z
+  price: z
     .string()
     .or(z.number())
     .transform((val) => (typeof val === 'string' ? parseFloat(val) : val))

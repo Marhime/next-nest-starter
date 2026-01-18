@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Button } from '../ui/button';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Input } from '../ui/input';
 import { DollarSign, MapPin, SearchIcon } from 'lucide-react';
+import Link from 'next/link';
 
 const SearchBarHome = () => {
   const t = useTranslations('Home');
@@ -56,7 +56,9 @@ const SearchBarHome = () => {
             <DollarSign className="" />
             <Input type="text" placeholder="Price" />
           </div>
-          <Button className="px-6 py-4 glassy-effect">{t('search')}</Button>
+          <Link href={'/find'} className="px-6 py-4 glassy-effect">
+            {t('search')}
+          </Link>
         </div>
       </div>
     </div>

@@ -88,13 +88,9 @@ export class PropertiesService {
 
     // Générer un titre par défaut basé sur le type de propriété
     const defaultTitles = {
-      HOUSE: 'New House',
-      APARTMENT: 'New Apartment',
-      LAND: 'New Land',
-      HOTEL: 'New Hotel',
-      HOSTEL: 'New Hostel',
-      GUESTHOUSE: 'New Guesthouse',
-      ROOM: 'New Room',
+      HOUSE: 'Nueva casa',
+      APARTMENT: 'Nuevo departamento',
+      LAND: 'Nuevo terreno',
     };
 
     // Générer un edit token pour les créations anonymes

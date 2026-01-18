@@ -15,6 +15,8 @@ import { LogoutButton } from '../LogoutButton';
 import { HelpButton } from '../ui/HelpButton';
 import { authClient } from '@/lib/auth/auth-client';
 import { AddPropertyButton } from '../AddPropertyButton';
+import { UserRound } from 'lucide-react';
+import { Button } from '../ui/button';
 
 const ProfileDropdown = () => {
   const { data: session, isPending: isLoading } = authClient.useSession();
@@ -28,12 +30,9 @@ const ProfileDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button>
-          <Avatar>
-            <AvatarImage src={user?.image || ''} />
-            <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
-          </Avatar>
-        </button>
+        <Button variant={'icon'} size={'icon'} className="">
+          <UserRound color="#000000" />
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={12}>
         {user?.role === 'ADMIN' && (

@@ -116,15 +116,6 @@ const AVAILABLE_AMENITIES = [
   { id: 'ventilator', labelKey: 'amenities.ventilator', icon: Wind },
 ];
 
-// Status options (labels are translation keys)
-const STATUS_OPTIONS = [
-  { value: 'DRAFT', labelKey: 'status.DRAFT', color: 'bg-gray-500' },
-  { value: 'ACTIVE', labelKey: 'status.ACTIVE', color: 'bg-green-500' },
-  { value: 'INACTIVE', labelKey: 'status.INACTIVE', color: 'bg-yellow-500' },
-  { value: 'RENTED', labelKey: 'status.RENTED', color: 'bg-blue-500' },
-  { value: 'SOLD', labelKey: 'status.SOLD', color: 'bg-purple-500' },
-];
-
 export function AboutPageClient({ property }: AboutPageClientProps) {
   const t = useTranslations('AboutPage');
   const tGen = useTranslations('Generic');
@@ -168,12 +159,22 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
   // Validate form whenever formData changes
   useEffect(() => {
     const isLand = property.propertyType === 'LAND';
+    const isRent = property.listingType === 'RENT';
+    const isSale = property.listingType === 'SALE';
 
-    const isValid =
-      // Characteristics: bedrooms, bathrooms and area/landSurface are required here
-      formData.bedrooms > 0 && formData.bathrooms > 0 && isLand
-        ? formData.landSurface !== undefined && formData.landSurface > 0
-        : true; // Add area/landSurface validation
+    let isValid;
+
+    if (isLand) {
+      isValid =
+        // Characteristics: bedrooms, bathrooms and area/landSurface are required here
+        formData.landSurface !== undefined &&
+        formData.landSurface > 0 &&
+        formData.price;
+    }
+    if (isRent || isSale) {
+      isValid =
+        formData.bedrooms > 0 && formData.bathrooms > 0 && formData.price;
+    }
 
     setCanProceed?.(isValid as boolean);
 
@@ -182,13 +183,13 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
       // Mark characteristics (step 2) as complete
       setPropertyProgress?.(property.id, 2, true);
     }
-    console.log(formData);
   }, [
     formData,
     setCanProceed,
     property.id,
     setPropertyProgress,
     property.propertyType,
+    property.listingType,
   ]); // Save and publish handler
 
   const handleSave = useCallback(async () => {
@@ -347,7 +348,9 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
               </p>
             </div>
           </div>
-          <div className={cn('flex items-center gap-3 relative h-full')}>
+          <div
+            className={cn('flex items-center gap-3 relative h-full text-right')}
+          >
             <Select
               onValueChange={(key) =>
                 setFormData((prev) => ({
@@ -358,7 +361,7 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
               defaultValue={property.propertyType}
             >
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Type" />
+                <SelectValue className="text-right" placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
                 {PropertyTypes.map((key) => (
@@ -385,23 +388,30 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
               </p>
             </div>
           </div>
-          <div className={cn('flex items-center gap-3 relative h-full w-32')}>
+          <div
+            className={cn(
+              'flex items-center gap-3 relative h-full',
+              formData.listingType === 'SALE' ? 'max-w-[11ch]' : 'max-w-[8ch]',
+            )}
+          >
             <Input
               id="price"
               value={formData.price}
-              type="number"
-              onChange={(e) =>
+              inputMode="numeric"
+              pattern="[0-9]*"
+              onChange={(e) => {
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
                 setFormData((prev) => ({
                   ...prev,
                   price: e.target.value,
-                }))
-              }
-              className="h-14"
+                }));
+              }}
+              className="text-right"
               placeholder={formData.listingType === 'SALE' ? '200000' : '5000'}
             />
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm font-semibold pointer-events-none">
+            {/* <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm font-semibold pointer-events-none">
               MXN
-            </div>
+            </span> */}
           </div>
         </div>
 
@@ -485,67 +495,73 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
                 </p>
               </div>
             </div>
-            <div className={cn('flex items-center gap-3 relative h-full w-32')}>
+            <div
+              className={cn(
+                'flex items-center gap-3 relative h-full max-w-[11ch]',
+              )}
+            >
               <Input
                 id="price"
                 value={formData.landSurface}
-                type="number"
-                onChange={(e) =>
+                type="text"
+                className="text-right"
+                onChange={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, '');
                   setFormData((prev) => ({
                     ...prev,
                     landSurface: +e.target.value || 0,
-                  }))
-                }
-                className="h-14"
+                  }));
+                }}
                 placeholder="250"
               />
-              <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm font-semibold pointer-events-none">
-                M2
-              </div>
             </div>
           </div>
         )}
       </Card>
       {/* Amenities */}
-      <Card className="p-6">
-        <CardHeader className="p-0">
-          <h2 className="text-xl font-semibold">
-            {t('amenities.title')} ({tGen('optional')})
-          </h2>
-          <p className="text-sm text-muted-foreground">{t('amenities.hint')}</p>
-        </CardHeader>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {AVAILABLE_AMENITIES.map((amenity) => {
-            const Icon = amenity.icon;
-            const isSelected = formData.amenities?.includes(amenity.id);
+      {formData.propertyType !== 'LAND' && (
+        <Card className="p-6">
+          <CardHeader className="p-0">
+            <h2 className="text-xl font-semibold">
+              {t('amenities.title')} ({tGen('optional')})
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {t('amenities.hint')}
+            </p>
+          </CardHeader>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {AVAILABLE_AMENITIES.map((amenity) => {
+              const Icon = amenity.icon;
+              const isSelected = formData.amenities?.includes(amenity.id);
 
-            return (
-              <button
-                key={amenity.id}
-                onClick={() => toggleAmenity(amenity.id)}
-                className={`
-                  flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left
-                  ${isSelected ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}
-                `}
-              >
-                <div
-                  className={`p-2 rounded-lg ${isSelected ? 'bg-primary/10' : 'bg-gray-100'}`}
+              return (
+                <button
+                  key={amenity.id}
+                  onClick={() => toggleAmenity(amenity.id)}
+                  className={`
+                    flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left
+                    ${isSelected ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}
+                  `}
                 >
-                  <Icon
-                    className={`h-5 w-5 ${isSelected ? 'text-primary' : 'text-gray-600'}`}
-                  />
-                </div>
-                <span className="flex-1 text-sm font-medium">
-                  {t(amenity.labelKey)}
-                </span>
-                {isSelected && (
-                  <CheckCircle2 className="h-4 w-4 text-primary" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </Card>
+                  <div
+                    className={`p-2 rounded-lg ${isSelected ? 'bg-primary/10' : 'bg-gray-100'}`}
+                  >
+                    <Icon
+                      className={`h-5 w-5 ${isSelected ? 'text-primary' : 'text-gray-600'}`}
+                    />
+                  </div>
+                  <span className="flex-1 text-sm font-medium">
+                    {t(amenity.labelKey)}
+                  </span>
+                  {isSelected && (
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       {/* Status */}
     </div>

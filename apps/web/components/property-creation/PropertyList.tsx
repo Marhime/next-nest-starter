@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { useUserProperties } from '@/hooks/use-properties';
+import { Property, useUserProperties } from '@/hooks/use-properties';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,30 +36,6 @@ import {
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { getPhotoUrl } from '@/lib/utils';
-
-interface Property {
-  id: number;
-  propertyType: string;
-  listingType?: string;
-  title: string;
-  description?: string;
-  status: string;
-  monthlyPrice?: string;
-  nightlyPrice?: string;
-  salePrice?: string;
-  currency?: string;
-  city?: string;
-  state?: string;
-  bedrooms?: number;
-  bathrooms?: number;
-  photos: Array<{
-    id: number;
-    url: string;
-    isPrimary: boolean;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-}
 
 interface PropertyCardProps {
   property: Property;
@@ -169,14 +145,9 @@ function PropertyCard({
   };
 
   const getPrice = () => {
-    if (property.nightlyPrice) {
-      return `${property.currency || 'MXN'} $${property.nightlyPrice}/${t('night')}`;
-    }
-    if (property.monthlyPrice) {
-      return `${property.currency || 'MXN'} $${property.monthlyPrice}/${t('month')}`;
-    }
-    if (property.salePrice) {
-      return `${property.currency || 'MXN'} $${property.salePrice}`;
+    console.log(property);
+    if (property.price) {
+      return `${property.currency || 'MXN'} $${property.price}`;
     }
     return t('priceNotSet');
   };
@@ -345,7 +316,7 @@ function PropertyCard({
   );
 }
 
-function PropertyCardSkeleton() {
+export function PropertyCardSkeleton() {
   return (
     <Card className="overflow-hidden">
       <Skeleton className="aspect-video w-full" />

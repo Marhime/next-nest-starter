@@ -63,7 +63,7 @@ button {
   --card-foreground: oklch(0.147 0.004 49.25);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.147 0.004 49.25);
-  --primary: #f48d51;
+  --primary: #2a9d8f;
   --primary-foreground: oklch(0.985 0.001 106.423);
   --secondary: oklch(0.97 0.001 106.424);
   --secondary-foreground: oklch(0.216 0.006 56.043);
@@ -88,6 +88,8 @@ button {
   --sidebar-accent-foreground: oklch(0.216 0.006 56.043);
   --sidebar-border: oklch(0.923 0.003 48.717);
   --sidebar-ring: oklch(0.709 0.01 56.259);
+
+  --grid-columns-breakpoints: 2;
 }
 
 .dark {
@@ -166,7 +168,7 @@ button {
   height: 50%;
   background: linear-gradient(
     0deg,
-    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0.75) 0%,
     rgba(0, 0, 0, 0) 100%
   );
   z-index: -1;
@@ -192,9 +194,79 @@ button {
   margin-inline: auto;
 }
 
+.container-fluid {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
 @media (min-width: 1280px) {
-  .container {
+  .container,
+  .container-fluid {
     padding-left: 3rem;
     padding-right: 3rem;
   }
+}
+
+@media (min-width: 1520px) {
+  :root {
+    --grid-columns-breakpoints: 3;
+  }
+}
+
+.airbnb-cluster {
+  background: none;
+  border: none;
+}
+
+.cluster-inner {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cluster-count {
+  font-weight: 700;
+  font-size: 18px;
+  z-index: 2;
+}
+
+.cluster-prices {
+  position: absolute;
+  inset: 0;
+}
+
+.cluster-prices span {
+  position: absolute;
+  background: #111;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Positionnement des 3 prix */
+.cluster-prices span:nth-child(1) {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.cluster-prices span:nth-child(2) {
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.cluster-prices span:nth-child(3) {
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
 }

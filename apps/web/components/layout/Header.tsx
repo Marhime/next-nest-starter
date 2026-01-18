@@ -2,15 +2,14 @@
 
 import React, { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
-import { SearchFiltersButton } from '../search/SearchFiltersButton';
 import { useLocale } from 'next-intl';
-import { cn } from '@/lib/utils';
 
-import { ArrowLeft, ArrowLeftIcon, SlidersHorizontal } from 'lucide-react';
 import LocaleSwitcher from '../LocaleSwitcher';
 import ProfileDropdown from './ProfileDropdown';
 import Link from 'next/link';
 import { AddPropertyButton } from '../AddPropertyButton';
+import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 const Header = () => {
   const pathname = usePathname();
@@ -30,20 +29,32 @@ const Header = () => {
   }, [pathname, locale]);
 
   return (
-    <div className="fixed top-0 left-0 right-0 p-4 xl:py-6 xl:px-12 z-20 max-w-[1824px] mx-auto">
-      <div className="flex justify-between">
+    <div
+      className={cn(
+        'sticky top-0 left-0 right-0 xl:py-6 z-20 mx-auto bg-white border-b',
+      )}
+    >
+      <div
+        className={cn(
+          'flex items-center justify-between mx-auto',
+          variant === 'home' ? 'container' : 'container-fluid',
+        )}
+      >
         {/* Logo */}
-        <Link href={'/'} className="text-primary text-2xl font-bold shrink-0">
-          MyLogo
+        <Link
+          href={'/'}
+          className="text-primary text-2xl font-bold shrink-0 flex items-center"
+        >
+          <Image
+            src="/logo1.svg"
+            alt="Home image showcase"
+            width={170}
+            height={30}
+            priority
+          />
         </Link>
 
         {/* Search Button - Conditional based on page */}
-        {/* <ModernSearchBar /> */}
-        {variant === 'find' && (
-          <div className="flex-1">
-            <ArrowLeft />
-          </div>
-        )}
 
         {/* <SearchFiltersButton variant={variant} className="bg-white" />
         {variant === 'find' && (

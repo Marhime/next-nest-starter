@@ -35,16 +35,14 @@ import {
   DrawerFooter,
 } from '@/components/ui/drawer';
 
-export function PropertySidebar() {
+export function PropertyResultList() {
   const {
     properties,
     isFetching,
     error,
     currentPage,
     setCurrentPage,
-    sidebarWidth,
     setSidebarWidth,
-    isSidebarCollapsed,
     isMobileDrawerOpen,
     setMobileDrawerOpen,
   } = useSearchStore();
@@ -52,7 +50,7 @@ export function PropertySidebar() {
   // Fetch properties data
   usePropertyData();
 
-  const isDesktop = useMediaQuery('(min-width: 768px)');
+  const isDesktop = useMediaQuery('(min-width: 990px)');
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -198,12 +196,9 @@ export function PropertySidebar() {
   return (
     <div
       ref={sidebarRef}
-      className={cn('relative flex flex-col  bg-white border-l transition-all')}
-      style={
-        {
-          width: isSidebarCollapsed ? '4rem' : `${sidebarWidth}%`,
-        } as React.CSSProperties
-      }
+      className={cn(
+        'w-3/5 max-w-[800px] relative flex flex-col bg-white border-l transition-all',
+      )}
     >
       {/* Property List */}
       <div className="flex-1">
@@ -212,10 +207,7 @@ export function PropertySidebar() {
           isError={isError}
           error={error}
           filteredProperties={paginatedProperties}
-          className={cn(
-            'p-4 md:p-10 md:pr-0 mt-[84px]',
-            isSidebarCollapsed && 'hidden',
-          )}
+          className={cn('p-4 xl:p-12 md:py-8 ')}
           currentPage={currentPage}
           totalPages={totalPages}
           totalResults={totalResults}
@@ -223,17 +215,6 @@ export function PropertySidebar() {
           scrollContainerRef={scrollContainerRef}
         />
       </div>
-
-      {/* Resize Handle */}
-      {!isSidebarCollapsed && (
-        <div
-          className={cn(
-            'absolute top-0 right-0 w-10 translate-x-full h-full cursor-col-resize group z-10 transition-colors',
-            isResizing && 'bg-primary',
-          )}
-          onMouseDown={handleResizeStart}
-        ></div>
-      )}
     </div>
   );
 }
@@ -264,6 +245,11 @@ function PropertyListContent({
   onPageChange,
   scrollContainerRef,
 }: PropertyListContentProps) {
+  const showProperties =
+    !isFetching &&
+    !isError &&
+    filteredProperties &&
+    filteredProperties.length > 0;
   return (
     <div ref={scrollContainerRef} className={cn(' h-full', className)}>
       {/* Loading State */}
@@ -314,150 +300,147 @@ function PropertyListContent({
       )}
 
       {/* Properties List */}
-      {!isFetching &&
-        !isError &&
-        filteredProperties &&
-        filteredProperties.length > 0 && (
-          <>
-            <p className="text-sm mb-4">
-              {totalResults} propriété{totalResults !== 1 ? 's' : ''} trouvée
-              {totalResults !== 1 ? 's' : ''} dans la zone de la carte
-            </p>
-            <div
-              className="grid gap-4 md:gap-y-10 md:gap-x-6 auto-rows-max"
-              style={{
-                gridTemplateColumns:
-                  'repeat(auto-fill, minmax(min(50%, 264px), 1fr))',
-              }}
-            >
-              {filteredProperties.map((property: Property, index) => (
-                <div
-                  key={property.id}
-                  className="animate-in fade-in-0 slide-in-from-bottom-10"
-                  style={{
-                    animationDelay: `${index * 50}ms`,
-                    animationDuration: '400ms',
-                    animationFillMode: 'backwards',
-                  }}
-                >
-                  <PropertyCard property={property} />
-                </div>
-              ))}
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="mt-8 flex justify-center">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (currentPage > 1) {
-                            onPageChange(currentPage - 1);
-                          }
-                        }}
-                        className={
-                          currentPage === 1
-                            ? 'pointer-events-none opacity-50'
-                            : ''
-                        }
-                      />
-                    </PaginationItem>
-
-                    {/* First page */}
-                    {currentPage > 3 && (
-                      <>
-                        <PaginationItem>
-                          <PaginationLink
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              onPageChange(1);
-                            }}
-                          >
-                            1
-                          </PaginationLink>
-                        </PaginationItem>
-                        {currentPage > 4 && (
-                          <PaginationItem>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        )}
-                      </>
-                    )}
-
-                    {/* Pages around current page */}
-                    {Array.from({ length: totalPages }, (_, i) => i + 1)
-                      .filter(
-                        (page) =>
-                          page === currentPage ||
-                          page === currentPage - 1 ||
-                          page === currentPage - 2 ||
-                          page === currentPage + 1 ||
-                          page === currentPage + 2,
-                      )
-                      .map((page) => (
-                        <PaginationItem key={page}>
-                          <PaginationLink
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              onPageChange(page);
-                            }}
-                            isActive={currentPage === page}
-                          >
-                            {page}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ))}
-
-                    {/* Last page */}
-                    {currentPage < totalPages - 2 && (
-                      <>
-                        {currentPage < totalPages - 3 && (
-                          <PaginationItem>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        )}
-                        <PaginationItem>
-                          <PaginationLink
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              onPageChange(totalPages);
-                            }}
-                          >
-                            {totalPages}
-                          </PaginationLink>
-                        </PaginationItem>
-                      </>
-                    )}
-
-                    <PaginationItem>
-                      <PaginationNext
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (currentPage < totalPages) {
-                            onPageChange(currentPage + 1);
-                          }
-                        }}
-                        className={
-                          currentPage === totalPages
-                            ? 'pointer-events-none opacity-50'
-                            : ''
-                        }
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
+      {showProperties && (
+        <>
+          <p className="text-sm mb-4">
+            {totalResults} propriété{totalResults !== 1 ? 's' : ''} trouvée
+            {totalResults !== 1 ? 's' : ''} dans la zone de la carte
+          </p>
+          <div
+            className="grid gap-4 md:gap-y-10 md:gap-x-6"
+            style={{
+              gridTemplateColumns:
+                'repeat(var(--grid-columns-breakpoints), minmax(0, 1fr))',
+            }}
+          >
+            {filteredProperties.map((property: Property, index) => (
+              <div
+                key={property.id}
+                className="animate-in fade-in-0 slide-in-from-bottom-10"
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                  animationDuration: '400ms',
+                  animationFillMode: 'backwards',
+                }}
+              >
+                <PropertyCard property={property} />
               </div>
-            )}
-          </>
-        )}
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (currentPage > 1) {
+                          onPageChange(currentPage - 1);
+                        }
+                      }}
+                      className={
+                        currentPage === 1
+                          ? 'pointer-events-none opacity-50'
+                          : ''
+                      }
+                    />
+                  </PaginationItem>
+
+                  {/* First page */}
+                  {currentPage > 3 && (
+                    <>
+                      <PaginationItem>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            onPageChange(1);
+                          }}
+                        >
+                          1
+                        </PaginationLink>
+                      </PaginationItem>
+                      {currentPage > 4 && (
+                        <PaginationItem>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      )}
+                    </>
+                  )}
+
+                  {/* Pages around current page */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(
+                      (page) =>
+                        page === currentPage ||
+                        page === currentPage - 1 ||
+                        page === currentPage - 2 ||
+                        page === currentPage + 1 ||
+                        page === currentPage + 2,
+                    )
+                    .map((page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            onPageChange(page);
+                          }}
+                          isActive={currentPage === page}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+
+                  {/* Last page */}
+                  {currentPage < totalPages - 2 && (
+                    <>
+                      {currentPage < totalPages - 3 && (
+                        <PaginationItem>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      )}
+                      <PaginationItem>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            onPageChange(totalPages);
+                          }}
+                        >
+                          {totalPages}
+                        </PaginationLink>
+                      </PaginationItem>
+                    </>
+                  )}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (currentPage < totalPages) {
+                          onPageChange(currentPage + 1);
+                        }
+                      }}
+                      className={
+                        currentPage === totalPages
+                          ? 'pointer-events-none opacity-50'
+                          : ''
+                      }
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
