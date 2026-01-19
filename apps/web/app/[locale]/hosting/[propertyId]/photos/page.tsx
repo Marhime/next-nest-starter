@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { PhotosPageClient } from './PhotosPageClient';
+import { useEditToken } from '@/hooks/use-edit-token';
 import type { Photo } from '@/types/photo';
 
 const PhotosPage = () => {
@@ -12,21 +13,19 @@ const PhotosPage = () => {
   }>();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
+  const { token: editToken } = useEditToken(propertyId);
 
   useEffect(() => {
-    console.log('yo');
     const fetchPhotos = async () => {
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
-      const tokenKey = `property-edit-token:${propertyId}`;
-      const editToken =
-        (typeof window !== 'undefined' && localStorage.getItem(tokenKey)) ||
-        undefined;
-      console.log(editToken);
+
+      // Use token directly from hook
       if (editToken) {
         headers['x-edit-token'] = editToken;
       }
+
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/photos/property/${propertyId}`,
@@ -51,7 +50,7 @@ const PhotosPage = () => {
     if (propertyId) {
       fetchPhotos();
     }
-  }, [propertyId]);
+  }, [propertyId, editToken]);
 
   if (loading) {
     return (

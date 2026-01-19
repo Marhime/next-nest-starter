@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useCreateProperty } from '@/hooks/use-create-property';
+import { useAddPropertyStore } from '@/app/[locale]/hosting/store';
 import {
   Dialog,
   DialogContent,
@@ -66,27 +67,15 @@ export function CreateNewProperty({ onSuccess }: CreateNewPropertyProps) {
   const router = useRouter();
   const t = useTranslations('PropertyTypeModal');
 
-  const handleSaveTokenAndContinue = (token: string, propertyId: string) => {
-    try {
-      const tokenKey = `property-edit-token:${propertyId}`;
-      localStorage.setItem(tokenKey, token);
-      // Also copy to clipboard for convenience
-      if (typeof navigator !== 'undefined' && navigator.clipboard) {
-        navigator.clipboard.writeText(token).catch(() => {});
-      }
-      router.push(`/hosting/${propertyId}`);
-    } catch {
-      // ignore
-      router.push(`/hosting/${propertyId}`);
-    }
-  };
-
   const handleSelectAndCreate = async (type: PropertyType) => {
+    console.log('=== CREATING PROPERTY ===');
+    console.log('Property type:', type);
     setSelectedType(type);
 
     try {
-      // createProperty may return an envelope { property, editToken } or just the property
+      console.log('Calling createProperty API...');
       const resp = await createProperty({ propertyType: type });
+      console.log('Create property response:', resp);
 
       // Normalize: get property object
       const createdProperty = (resp && (resp.property || resp)) as
@@ -98,24 +87,35 @@ export function CreateNewProperty({ onSuccess }: CreateNewPropertyProps) {
         ? String((createdProperty as Record<string, unknown>).id)
         : undefined;
 
-      // If backend returned an editToken (anonymous flow), show the token dialog and let user copy/save it
-      if (resp && (resp as Record<string, unknown>).editToken && createdId) {
-        handleSaveTokenAndContinue(
-          String((resp as Record<string, unknown>).editToken),
-          createdId,
-        );
-        return;
+      console.log('Created property ID:', createdId);
+
+      if (!createdId) {
+        throw new Error('No property ID returned');
+      }
+
+      // ✅ If backend returned an editToken (anonymous user only)
+      if (resp && (resp as Record<string, unknown>).editToken) {
+        console.log('Anonymous user - saving editToken');
+        const token = String((resp as Record<string, unknown>).editToken);
+
+        // Save token to sessionStorage via Zustand store
+        const { setEditToken } = useAddPropertyStore.getState();
+        setEditToken(parseInt(createdId), token);
+        console.log('Token saved to store for anonymous user');
+      } else {
+        console.log('Authenticated user - no editToken needed');
       }
 
       toast.success(t('successMessage'));
-      if (createdId) {
-        if (onSuccess) {
-          onSuccess(Number(createdId));
-        } else {
-          router.push(`/hosting/${createdId}`);
-        }
+
+      // Navigate to property wizard
+      if (onSuccess) {
+        onSuccess(Number(createdId));
+      } else {
+        router.push(`/hosting/${createdId}`);
       }
     } catch (error) {
+      console.error('Error creating property:', error);
       toast.error(error instanceof Error ? error.message : t('errorMessage'));
       setSelectedType(null);
     }

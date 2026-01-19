@@ -115,11 +115,16 @@ function PropertyTypeSelection({ className }: { className?: string }) {
 
       toast.success(t('successMessage'));
 
-      // Close modal
-      setIsOpen?.(false);
+      // Redirect first, then close modal after navigation starts
+      router.push(`/hosting/${property.id}/characteristics`);
 
-      // Redirect to the hosting flow
-      router.push(`/hosting/${property.id}`);
+      // Close modal after a brief delay to ensure navigation has started
+      setTimeout(() => {
+        setIsOpen?.(false);
+        // Reset states for next use
+        setListingChoice(null);
+        setSelectedType(null);
+      }, 100);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('errorMessage'));
       setSelectedType(null);

@@ -16,12 +16,11 @@ import {
 import { toast } from 'sonner';
 import { Loader2, MapPin } from 'lucide-react';
 import dynamic from 'next/dynamic';
-// LocationSearchInput removed: single-step map used instead
 import { AddressConfirmForm } from '@/components/location/AddressConfirmForm';
+import { useEditToken } from '@/hooks/use-edit-token';
 import 'leaflet/dist/leaflet.css';
 import '@/app/leaflet-custom.css';
 
-// Type temporaire pour les champs qui ne sont pas encore dans le type Property
 interface PropertyWithLocation extends Record<string, unknown> {
   address?: string;
   city?: string;
@@ -32,7 +31,6 @@ interface PropertyWithLocation extends Record<string, unknown> {
   longitude?: number | string;
 }
 
-// Dynamic import to avoid SSR issues with Leaflet
 const MapView = dynamic(
   () => import('@/components/location/MapView').then((mod) => mod.MapView),
   {
@@ -62,17 +60,18 @@ const LocationPage = () => {
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
   const setCanProceed = useAddPropertyStore((state) => state.setCanProceed);
   const setHandleNext = useAddPropertyStore((state) => state.setHandleNext);
-  const setPropertyProgress = useAddPropertyStore(
-    (state) => state.setPropertyProgress,
-  );
+
+  // Get edit token first
+  const { token: editToken, setToken } = useEditToken(propertyId as string);
+
   const {
     property,
     isLoading: isLoadingProperty,
     mutate,
-  } = useProperty(propertyId as string);
+  } = useProperty(propertyId as string, editToken);
 
-  // Single-step flow: user places/adjusts marker (point) or zone center, then optionally edits address
-  // Removed multi-phase state in favor of a single consolidated screen
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
   const [coordinates, setCoordinates] = useState<{
     lat: number;
     lng: number;
@@ -86,31 +85,22 @@ const LocationPage = () => {
     postalCode: '',
     city: '',
     state: '',
-    country: 'FR',
+    country: 'MX',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingAddress, setEditingAddress] = useState(false);
 
   useEffect(() => {
-    // Location is now step index 0 in the new flow
     setCurrentStep?.(0);
   }, [setCurrentStep]);
 
-  // Validation: allow proceeding if coordinates exist
   useEffect(() => {
     const isValid = coordinates !== null;
     setCanProceed?.(isValid);
+  }, [setCanProceed, coordinates]);
 
-    // Mark location step complete when coordinates present
-    if (isValid && propertyId) {
-      setPropertyProgress?.(Number(propertyId), 0, true);
-    }
-  }, [setCanProceed, propertyId, setPropertyProgress, coordinates]);
-
-  // Load existing property data
   useEffect(() => {
     if (property) {
-      const hasExistingData = property.address && property.city;
       const extendedProperty = property as unknown as PropertyWithLocation;
 
       setAddressForm({
@@ -127,7 +117,6 @@ const LocationPage = () => {
       const propLongitude = extendedProperty.longitude;
 
       if (propLatitude && propLongitude) {
-        // Convertir Decimal en number
         const lat =
           typeof propLatitude === 'number'
             ? propLatitude
@@ -138,17 +127,10 @@ const LocationPage = () => {
             : parseFloat(String(propLongitude));
 
         setCoordinates({ lat, lng });
-        // keep editingAddress false by default; user can open edit if they want
-        if (hasExistingData) {
-          // keep address displayed
-        }
       }
     }
   }, [property]);
 
-  // Note: location search input was removed in favour of the single-step map.
-
-  // Allow setting selection mode (point vs zone)
   const handleSelectionModeChange = (mode: 'point' | 'zone') => {
     setSelectionMode(mode);
   };
@@ -160,7 +142,6 @@ const LocationPage = () => {
   const handleMarkerDragEnd = async (lat: number, lng: number) => {
     setCoordinates({ lat, lng });
 
-    // Reverse geocoding pour mettre à jour l'adresse
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=en`,
@@ -185,7 +166,7 @@ const LocationPage = () => {
             data.address.village ||
             '',
           state: data.address.state || '',
-          country: data.address.country_code?.toUpperCase() || 'FR',
+          country: data.address.country_code?.toUpperCase() || 'MX',
         });
         toast.success(t('messages.addressUpdated'));
       } else {
@@ -201,7 +182,6 @@ const LocationPage = () => {
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      // Validation: require coordinates (either point or zone). Address is optional.
       if (!coordinates) {
         toast.error(t('messages.selectAddress'));
         return;
@@ -210,11 +190,7 @@ const LocationPage = () => {
       setIsSubmitting(true);
 
       try {
-        const API_URL =
-          process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
         const payload: Record<string, unknown> & { landSurface?: number } = {
-          // address fields are optional — include if present
           ...(addressForm.street ? { address: addressForm.street } : {}),
           ...(addressForm.city ? { city: addressForm.city } : {}),
           state: addressForm.state || null,
@@ -226,60 +202,47 @@ const LocationPage = () => {
           longitude: Number(coordinates.lng),
         };
 
-        // If the user selected a zone, include approximate area (store in landSurface as m²)
         if (selectionMode === 'zone' && zoneRadiusMeters > 0) {
           const areaMeters2 = Math.PI * Math.pow(zoneRadiusMeters, 2);
-          // round to 2 decimals
-          // store approx area in landSurface (backend currently supports this field)
           payload.landSurface = Number(areaMeters2.toFixed(2));
         }
-
-        console.log('Sending location data:', payload);
-
-        // Include edit token header if present in localStorage (anonymous flow)
-        const tokenKey = `property-edit-token:${propertyId}`;
-        const editToken =
-          (typeof window !== 'undefined' && localStorage.getItem(tokenKey)) ||
-          undefined;
 
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
         };
-        console.log(editToken);
+
         if (editToken) {
           headers['x-edit-token'] = editToken;
         }
 
-        const updatePromise = fetch(`${API_URL}/properties/${propertyId}`, {
+        const response = await fetch(`${API_URL}/properties/${propertyId}`, {
           method: 'PATCH',
           credentials: 'include',
           headers,
           body: JSON.stringify(payload),
-        }).then(async (response) => {
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to update property');
-          }
-          return response.json();
         });
 
-        try {
-          // Await the update and be silent on success. Surface errors only.
-          await updatePromise;
-        } catch (err) {
-          console.error('Failed to update property (location):', err);
-          const message =
-            err && typeof err === 'object' && 'message' in err
-              ? (err as Error).message
-              : String(err);
-          toast.error(message || t('messages.updateError'));
-          throw err;
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to update property');
         }
 
-        mutate(); // Refresh data
+        const data = await response.json();
 
-        // Navigate to next step
+        // Si le backend retourne un editToken, le sauvegarder
+        if (data && data.editToken) {
+          setToken(data.editToken);
+        }
+
+        mutate();
         router.push(`/hosting/${propertyId}/photos`);
+      } catch (err) {
+        console.error('Failed to update property (location):', err);
+        const message =
+          err && typeof err === 'object' && 'message' in err
+            ? (err as Error).message
+            : String(err);
+        toast.error(message || t('messages.updateError'));
       } finally {
         setIsSubmitting(false);
       }
@@ -293,10 +256,12 @@ const LocationPage = () => {
       t,
       selectionMode,
       zoneRadiusMeters,
+      editToken,
+      setToken,
+      API_URL,
     ],
   );
 
-  // Register Next handler: directly submit the single-step location form
   useEffect(() => {
     const handler = async () => {
       const syntheticEvent = { preventDefault: () => {} } as React.FormEvent;
@@ -324,7 +289,6 @@ const LocationPage = () => {
           <CardDescription>{t('descriptions.search')}</CardDescription>
         </CardHeader>
         <CardContent className="relative">
-          {/* Selection mode: exact point or approximate zone */}
           <div className="flex items-center gap-3 mb-4">
             <div className="flex gap-2">
               <Button
@@ -359,19 +323,8 @@ const LocationPage = () => {
               </div>
             )}
           </div>
-          {/* Single-step location UI */}
-          <div className="space-y-6">
-            {/* <LocationSearchInput
-              onLocationSelect={handleLocationSelect}
-              className="absolute top-5 left-1/2 transform -translate-x-1/2 w-[calc(100%-5rem)] shadow-md rounded-xl z-10 bg-white p-5"
-              defaultValue={
-                property?.address
-                  ? `${property.address}, ${property.city || ''}`
-                  : ''
-              }
-            /> */}
 
-            {/* Address summary / edit */}
+          <div className="space-y-6">
             <div className="p-4 bg-muted rounded-lg space-y-2">
               {!editingAddress ? (
                 <div className="flex items-start gap-3 justify-between">
@@ -411,7 +364,6 @@ const LocationPage = () => {
               )}
             </div>
 
-            {/* Map (marker or zone) */}
             <div className="rounded-lg overflow-hidden border">
               <MapView
                 latitude={coordinates?.lat || 15.865}
@@ -448,7 +400,7 @@ const LocationPage = () => {
                           state: data.address.state || '',
                           country: data.address.country_code
                             ? data.address.country_code.toUpperCase()
-                            : 'FR',
+                            : 'MX',
                         });
                         toast.success(t('messages.addressUpdated'));
                       }

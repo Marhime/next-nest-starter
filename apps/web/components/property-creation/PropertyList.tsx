@@ -36,6 +36,7 @@ import {
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { getPhotoUrl } from '@/lib/utils';
+import { authClient } from '@/lib/auth/auth-client';
 
 interface PropertyCardProps {
   property: Property;
@@ -51,14 +52,16 @@ function PropertyCard({
   onDelete,
 }: PropertyCardProps) {
   const t = useTranslations('PropertyList');
+  const router = useRouter();
   const [isPublishing, setIsPublishing] = React.useState(false);
   const [validationResult, setValidationResult] = React.useState<{
     isValid: boolean;
     missingFields: string[];
   } | null>(null);
 
-  const primaryPhoto =
-    property.photos?.find((p) => p.isPrimary) || property.photos?.[0];
+  const { data: session } = authClient.useSession();
+
+  const primaryPhoto = property.photos?.[0];
   const isDraft = property.status === 'DRAFT';
 
   const checkIfCanPublish = React.useCallback(async () => {
@@ -114,8 +117,8 @@ function PropertyCard({
         error: (err) => err.message || 'Erreur lors de la publication',
       });
 
-      // Recharger la liste des propriétés
-      window.location.reload();
+      // ✅ Redirect to confirmation page to show token
+      router.push(`/hosting/${property.id}/confirmation`);
     } finally {
       setIsPublishing(false);
     }

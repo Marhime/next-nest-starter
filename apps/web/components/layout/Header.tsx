@@ -31,7 +31,7 @@ const Header = () => {
   return (
     <div
       className={cn(
-        'sticky top-0 left-0 right-0 xl:py-6 z-20 mx-auto bg-white border-b',
+        'sticky top-0 left-0 right-0 p-4 xl:py-6 z-99 mx-auto bg-white border-b',
       )}
     >
       <div

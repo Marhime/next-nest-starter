@@ -625,5 +625,17 @@
       "PENTHOUSE": "Penthouse",
       "LOFT": "Loft"
     }
+  },
+  "EditTokenModal": {
+    "title": "Token sauvegardé avec succès",
+    "description": "Votre token a été sauvegardé. Vous pouvez continuer l'édition.",
+    "tokenLabel": "Token d'édition",
+    "tokenCopied": "Token copié dans le presse-papiers !",
+    "copyError": "Échec de la copie",
+    "warningTitle": "⚠️ Important :",
+    "warning1": "Sauvegardez ce token dans un endroit sécurisé",
+    "warning2": "Toute personne avec ce token peut modifier votre annonce",
+    "warning3": "Nous ne pouvons pas récupérer les tokens perdus",
+    "understood": "Continuer"
   }
 }

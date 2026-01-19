@@ -41,9 +41,10 @@ export class RateLimitGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const ip = this.getClientIp(request);
     const path: string = request.url || '';
+    const method: string = request.method || 'GET';
 
     // Déterminer la limite selon l'endpoint
-    const limit = this.getLimitForPath(path);
+    const limit = this.getLimitForPath(path, method);
     const key = `${ip}:${limit.type}`; // Clé unique par IP et type
 
     const now = Date.now();
@@ -84,11 +85,34 @@ export class RateLimitGuard implements CanActivate {
   /**
    * Détermine la limite selon le type d'endpoint
    */
-  private getLimitForPath(path: string): {
+  private getLimitForPath(
+    path: string,
+    method: string,
+  ): {
     maxRequests: number;
     windowMs: number;
     type: string;
   } {
+    // 🎯 PHOTOS: Limites spéciales pour uploads
+    if (path.includes('/photos')) {
+      if (method === 'POST') {
+        // Upload de photos: très généreux (5MB files)
+        return {
+          maxRequests: 100, // 100 uploads/15min
+          windowMs: 15 * 60 * 1000,
+          type: 'photo-upload',
+        };
+      }
+      if (method === 'GET') {
+        // Fetch photos: très généreux
+        return {
+          maxRequests: 200, // 200 fetches/15min
+          windowMs: 15 * 60 * 1000,
+          type: 'photo-get',
+        };
+      }
+    }
+
     // Endpoints très légers (GET rapides)
     if (
       path.includes('/map-markers') ||
@@ -100,9 +124,9 @@ export class RateLimitGuard implements CanActivate {
 
     // Endpoints stricts (POST/PATCH/DELETE)
     if (
-      path.includes('POST') ||
-      path.includes('PATCH') ||
-      path.includes('DELETE') ||
+      method === 'POST' ||
+      method === 'PATCH' ||
+      method === 'DELETE' ||
       path.includes('/publish')
     ) {
       return { ...this.limits.strict, type: 'strict' };

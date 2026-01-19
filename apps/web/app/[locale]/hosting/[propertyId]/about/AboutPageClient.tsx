@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAddPropertyStore } from '../../store';
@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { toast } from 'sonner';
+import { usePropertyForm } from '@/hooks/use-property-form';
 import {
   Bed,
   Bath,
@@ -124,9 +124,6 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
   const setCanProceed = useAddPropertyStore((state) => state.setCanProceed);
   const setHandleNext = useAddPropertyStore((state) => state.setHandleNext);
-  const setPropertyProgress = useAddPropertyStore(
-    (state) => state.setPropertyProgress,
-  );
 
   const [formData, setFormData] = useState({
     title: property.title || '',
@@ -135,7 +132,7 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
     bathrooms: property.bathrooms || 0,
     capacity: property.capacity || 1,
     floor: property.floor || 0,
-    area: property.area || undefined, // Don't default to 0, use undefined
+    area: property.area || undefined,
     constructionYear:
       (property as unknown as { constructionYear?: number })
         ?.constructionYear || undefined,
@@ -149,113 +146,39 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
     listingType: property.listingType,
   });
 
+  const isLand = property.propertyType === 'LAND';
+  const isRent = property.listingType === 'RENT';
+  const isSale = property.listingType === 'SALE';
+
+  // ✅ Validation correcte: vérifie que price est une string non-vide avec un nombre valide
+  const hasValidPrice =
+    formData.price && parseFloat(formData.price.toString()) > 0;
+
+  let isValid;
+  if (isLand) {
+    isValid =
+      formData.landSurface !== undefined &&
+      formData.landSurface > 0 &&
+      hasValidPrice;
+  } else {
+    isValid = formData.bedrooms > 0 && formData.bathrooms > 0 && hasValidPrice;
+  }
+
+  usePropertyForm({
+    propertyId: property.id,
+    stepIndex: 2,
+    isValid: isValid as boolean,
+    payload: formData,
+    onSuccess: () => {
+      router.push(`/${locale}/hosting/${property.id}/description`);
+    },
+  });
+
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
   useEffect(() => {
-    // Characteristics step is index 2 after location and photos
     setCurrentStep?.(2);
   }, [setCurrentStep]);
-
-  // Validate form whenever formData changes
-  useEffect(() => {
-    const isLand = property.propertyType === 'LAND';
-    const isRent = property.listingType === 'RENT';
-    const isSale = property.listingType === 'SALE';
-
-    let isValid;
-
-    if (isLand) {
-      isValid =
-        // Characteristics: bedrooms, bathrooms and area/landSurface are required here
-        formData.landSurface !== undefined &&
-        formData.landSurface > 0 &&
-        formData.price;
-    }
-    if (isRent || isSale) {
-      isValid =
-        formData.bedrooms > 0 && formData.bathrooms > 0 && formData.price;
-    }
-
-    setCanProceed?.(isValid as boolean);
-
-    // Mark step as complete when form is valid
-    if (isValid) {
-      // Mark characteristics (step 2) as complete
-      setPropertyProgress?.(property.id, 2, true);
-    }
-  }, [
-    formData,
-    setCanProceed,
-    property.id,
-    setPropertyProgress,
-    property.propertyType,
-    property.listingType,
-  ]); // Save and publish handler
-
-  const handleSave = useCallback(async () => {
-    const isLand = property.propertyType === 'LAND';
-
-    // Validate required surface depending on property type
-    if (isLand) {
-      if (!formData.landSurface || formData.landSurface <= 0) {
-        toast.error(t('areaRequired'));
-        return;
-      }
-    }
-
-    // Register Next handler: directly submit the single-step location form
-
-    // Save characteristics changes (do not force publication here)
-    const dataToSave = {
-      ...formData,
-    };
-
-    const publishPromise = fetch(`${API_URL}/properties/${property.id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(dataToSave),
-    }).then(async (response) => {
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.message
-          ? Array.isArray(errorData.message)
-            ? errorData.message.join(', ')
-            : errorData.message
-          : t('publishError');
-        throw new Error(errorMessage);
-      }
-      return response.json();
-    });
-
-    try {
-      // Perform the PATCH silently for step navigation. Only surface errors.
-      await publishPromise;
-      return true;
-    } catch (error) {
-      // Surface error to the user but avoid success toasts between steps
-      const message =
-        error instanceof Error ? error.message : t('publishError');
-      toast.error(message);
-      console.error('Publication failed:', error);
-    }
-  }, [API_URL, property.id, formData, t, property.propertyType]);
-
-  useEffect(() => {
-    const handler = async () => {
-      const success = await handleSave();
-      if (success) {
-        // Navigate to next step (adjust route as needed)
-        router.push(`/${locale}/hosting/${property.id}/description`);
-      }
-    };
-
-    setHandleNext?.(handler);
-
-    return () => setHandleNext?.(undefined);
-  }, [setHandleNext, handleSave, router, locale, property.id]);
 
   const incrementValue = (
     field: 'bedrooms' | 'bathrooms' | 'capacity' | 'floor',

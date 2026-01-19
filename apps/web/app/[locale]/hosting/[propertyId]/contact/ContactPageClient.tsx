@@ -1,18 +1,18 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAddPropertyStore } from '../../store';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PhoneInput } from '@/components/forms/PhoneInput';
-import { toast } from 'sonner';
 import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 import { authClient } from '@/lib/auth/auth-client';
 import { Phone, User } from 'lucide-react';
 import type { Value as PhoneValue } from 'react-phone-number-input';
+import { usePropertyForm } from '@/hooks/use-property-form';
+import { useAddPropertyStore } from '../../store';
 
 interface Property {
   id: number;
@@ -26,20 +26,13 @@ interface ContactPageClientProps {
 }
 
 export function ContactPageClient({ property }: ContactPageClientProps) {
-  const router = useRouter();
   const locale = useLocale();
   const t = useTranslations('PropertyForm.Contact');
   const tGen = useTranslations('Generic');
+  const router = useRouter();
 
   const { data: session, isPending: isSessionPending } =
     authClient.useSession();
-
-  const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
-  const setCanProceed = useAddPropertyStore((state) => state.setCanProceed);
-  const setHandleNext = useAddPropertyStore((state) => state.setHandleNext);
-  const setPropertyProgress = useAddPropertyStore(
-    (state) => state.setPropertyProgress,
-  );
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -47,15 +40,10 @@ export function ContactPageClient({ property }: ContactPageClientProps) {
     phone: '' as PhoneValue,
   });
 
-  const [isLoading, setIsLoading] = useState(false);
-
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
-  // Initialize form data
+  // Initialiser le formulaire
   useEffect(() => {
     if (isSessionPending) return;
 
-    // For authenticated users: prefer user session data, fallback to property data
     if (session?.user) {
       const user = session.user as any;
       setFormData({
@@ -64,7 +52,6 @@ export function ContactPageClient({ property }: ContactPageClientProps) {
         phone: (user.phone || property.phone || '') as PhoneValue,
       });
     } else {
-      // For anonymous users: use property data if available
       setFormData({
         firstName: property.firstName || '',
         lastName: property.lastName || '',
@@ -73,97 +60,42 @@ export function ContactPageClient({ property }: ContactPageClientProps) {
     }
   }, [session, isSessionPending, property]);
 
+  // Validation
+  const isValid =
+    formData.firstName.trim().length > 0 &&
+    formData.lastName.trim().length > 0 &&
+    formData.phone.trim().length > 0;
+
+  // Utiliser le hook combiné pour gérer tout
+  usePropertyForm({
+    propertyId: property.id,
+    stepIndex: 4,
+    isValid,
+    payload: {
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      phone: formData.phone.toString().trim(),
+    },
+    onValidation: async (data) => {
+      return (
+        data.firstName &&
+        data.lastName &&
+        data.phone &&
+        data.firstName.trim().length > 0 &&
+        data.lastName.trim().length > 0 &&
+        data.phone.trim().length > 0
+      );
+    },
+    onSuccess: () => {
+      // Rediriger vers la page de confirmation avec le token
+      router.push(`/${locale}/hosting/${property.id}/confirmation`);
+    },
+  });
+
+  const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
   useEffect(() => {
     setCurrentStep?.(4);
   }, [setCurrentStep]);
-
-  // Validate form whenever formData changes
-  useEffect(() => {
-    const isValid =
-      formData.firstName.trim().length > 0 &&
-      formData.lastName.trim().length > 0 &&
-      formData.phone.trim().length > 0;
-
-    setCanProceed?.(isValid);
-
-    if (isValid) {
-      setPropertyProgress?.(property.id, 4, true);
-    }
-  }, [formData, setCanProceed, property.id, setPropertyProgress]);
-
-  const handleSave = useCallback(async () => {
-    if (
-      !formData.firstName.trim() ||
-      !formData.lastName.trim() ||
-      !formData.phone.trim()
-    ) {
-      toast.error(t('errors.required'));
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Get edit token from localStorage for anonymous flow
-      const tokenKey = `property-edit-token:${property.id}`;
-      const editToken =
-        (typeof window !== 'undefined' && localStorage.getItem(tokenKey)) ||
-        undefined;
-
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-
-      if (editToken) {
-        headers['x-edit-token'] = editToken;
-      }
-
-      // For authenticated users: update user profile and property
-      // For anonymous: update property only
-      const payload = {
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
-        phone: formData.phone.trim(),
-      };
-
-      const res = await fetch(`${API_URL}/properties/${property.id}`, {
-        method: 'PATCH',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || t('errors.saveFailed'));
-      }
-
-      toast.success(t('success'));
-      return true;
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : t('errors.saveFailed');
-      toast.error(message);
-      console.error('Contact save failed:', error);
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [API_URL, property.id, formData, t]);
-
-  useEffect(() => {
-    const handler = async () => {
-      const success = await handleSave();
-      if (success) {
-        // Navigate to next step or dashboard if this is the last step
-        router.push(`/${locale}/hosting`);
-      }
-    };
-
-    setHandleNext?.(handler);
-
-    return () => setHandleNext?.(undefined);
-  }, [setHandleNext, handleSave, router, locale]);
 
   if (isSessionPending) {
     return <div className="p-6">{tGen('loading')}</div>;
@@ -207,7 +139,6 @@ export function ContactPageClient({ property }: ContactPageClientProps) {
                 }
                 placeholder={t('firstName.placeholder')}
                 className="mt-2 text-base h-12"
-                disabled={isLoading}
               />
             </div>
 
@@ -226,7 +157,6 @@ export function ContactPageClient({ property }: ContactPageClientProps) {
                 }
                 placeholder={t('lastName.placeholder')}
                 className="mt-2 text-base h-12"
-                disabled={isLoading}
               />
             </div>
           </div>
@@ -262,7 +192,6 @@ export function ContactPageClient({ property }: ContactPageClientProps) {
               defaultCountry="MX"
               placeholder={t('phone.placeholder')}
               className="mt-2"
-              disabled={isLoading}
             />
           </div>
         </div>
@@ -277,7 +206,7 @@ export function ContactPageClient({ property }: ContactPageClientProps) {
         )}
 
         {!session?.user && (
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">{t('auth.anonymous')}</p>
           </div>
         )}

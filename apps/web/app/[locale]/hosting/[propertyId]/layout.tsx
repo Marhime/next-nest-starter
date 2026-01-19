@@ -12,6 +12,19 @@ import { useTranslations } from 'next-intl';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import Image from 'next/image';
 import { authClient } from '@/lib/auth/auth-client';
+import { PROPERTY_STEPS, MAX_STEP_INDEX } from '@/lib/step-config';
+import { useEditToken } from '@/hooks/use-edit-token';
+import { useTokenFromUrl } from '@/hooks/use-token-from-url';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function AddPropertyLayout({
   children,
@@ -28,26 +41,99 @@ export default function AddPropertyLayout({
   const canProceed = useAddPropertyStore((state) => state.canProceed);
   const handleNext = useAddPropertyStore((state) => state.handleNext);
 
-  // Vérifier si la propriété existe
-  const { property, isLoading, isError } = useProperty(propertyId as string);
+  // ✅ Extract token from URL if present (?token=xxx) with guard
+  const { pendingToken, acceptToken, rejectToken } =
+    useTokenFromUrl(propertyId);
+
+  // Get edit token - must be at top level, not inside useEffect
+  const { token: editToken, getToken } = useEditToken(propertyId as string);
+
+  // Debug: Vérifier le store directement
+  useEffect(() => {
+    if (propertyId) {
+      const storeState = useAddPropertyStore.getState();
+      console.log('Store editTokens:', storeState.editTokens);
+      console.log('Token for property', propertyId, ':', editToken);
+
+      // Vérifier sessionStorage directement
+      try {
+        const storageKey = 'add-property-storage';
+        const stored = sessionStorage.getItem(storageKey);
+        console.log('SessionStorage raw:', stored);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          console.log(
+            'SessionStorage parsed editTokens:',
+            parsed.state?.editTokens,
+          );
+        }
+      } catch (e) {
+        console.error('Error reading sessionStorage:', e);
+      }
+    }
+  }, [propertyId, editToken]);
+
+  // Vérifier si la propriété existe - passer le token pour qu'il soit retourné par l'API
+  // Utiliser 'editToken' au lieu de 'getToken()' pour éviter une boucle infinie
+  const { property, isLoading, isError } = useProperty(
+    propertyId as string,
+    editToken,
+  );
 
   // get user
   const { data: session } = authClient.useSession();
 
+  // Vérifier les permissions d'accès à la propriété
   useEffect(() => {
-    if (property) {
-      const tokenKey = `property-edit-token:${property.id}`;
-      const editToken =
-        (typeof window !== 'undefined' && localStorage.getItem(tokenKey)) ||
-        undefined;
-      if (
-        editToken === property?.editToken &&
-        session?.user?.id !== property.userId
-      ) {
-        router.replace(`/`);
-      }
+    if (!property) return;
+
+    // ⚠️ Ne pas vérifier les permissions si un token est en attente de confirmation
+    if (pendingToken) {
+      console.log('Skipping permission check: token pending confirmation');
+      return;
     }
-  }, [property, router, session]);
+
+    const isAuthenticated = !!session?.user;
+    const isOwner = session?.user?.id === property.userId;
+
+    console.log('Permission check:', {
+      isAuthenticated,
+      isOwner,
+      propertyUserId: property.userId,
+      sessionUserId: session?.user?.id,
+    });
+
+    // ✅ Si authentifié : doit être propriétaire
+    if (isAuthenticated) {
+      if (!isOwner) {
+        console.log('Redirecting: authenticated but not owner');
+        router.replace('/');
+        return;
+      }
+      console.log('Access granted: authenticated owner');
+      return;
+    }
+
+    // ✅ Si anonyme : doit avoir un token valide
+    const editToken = getToken();
+    const hasValidToken = editToken && editToken === property.editToken;
+
+    console.log('Anonymous user check:', {
+      editToken: editToken ? `${editToken.substring(0, 20)}...` : 'none',
+      propertyEditToken: property.editToken
+        ? `${property.editToken.substring(0, 20)}...`
+        : 'none',
+      hasValidToken,
+    });
+
+    if (!hasValidToken) {
+      console.log('Redirecting: anonymous without valid token');
+      router.replace('/');
+      return;
+    }
+
+    console.log('Access granted: anonymous with valid token');
+  }, [property, session, router, getToken, pendingToken]);
 
   useEffect(() => {
     // Si propertyId est undefined, vide, ou 'undefined' string
@@ -68,18 +154,6 @@ export default function AddPropertyLayout({
       router.replace('/hosting');
     }
   }, [propertyId, isLoading, isError, property, router, pathname]);
-
-  // Afficher un loader pendant la vérification
-
-  // Wizard order: location -> photos -> characteristics -> description -> pricing
-  const steps = [
-    'location',
-    'photos',
-    'characteristics',
-    'description',
-    'contact',
-  ];
-  const maxSteps = steps.length - 1;
 
   return (
     <QueryProvider>
@@ -106,55 +180,52 @@ export default function AddPropertyLayout({
         <div className="flex-1 pb-[96px]">{children}</div>
         <div className="fixed bottom-0 left-0 right-0 p-4 xl:py-6 xl:px-12 bg-white">
           <div className="flex justify-between items-center">
-            {currentStep !== undefined && steps[currentStep - 1] && (
-              <Button variant="link" className="underline text-md">
-                <Link href={`/hosting/${propertyId}/${steps[currentStep - 1]}`}>
-                  {t('navigation.back')}
-                </Link>
-              </Button>
-            )}
+            {currentStep !== undefined &&
+              currentStep > 0 &&
+              PROPERTY_STEPS !== undefined &&
+              PROPERTY_STEPS[currentStep - 1] && (
+                <Button variant="link" className="underline text-md">
+                  <Link
+                    href={`/hosting/${propertyId}/${PROPERTY_STEPS[currentStep - 1]?.route}`}
+                  >
+                    {t('navigation.back')}
+                  </Link>
+                </Button>
+              )}
             <>
               <Button
                 onClick={async (e) => {
                   e.preventDefault();
-                  console.log('Next button clicked, handleNext:', handleNext);
-                  console.log('canProceed:', canProceed);
-                  console.log('currentStep:', currentStep);
-
-                  if (currentStep !== undefined)
-                    console.log({
-                      steps,
-                      currentStep: steps[currentStep],
-                      currentStepPlusOne: steps[currentStep + 1],
-                    });
-
                   if (handleNext) {
-                    console.log('Calling handleNext');
                     await handleNext();
                   } else {
-                    console.log('No handleNext, using fallback navigation');
-                    // Fallback: navigation directe si pas de handler
-                    let nextUrl;
-                    if (currentStep !== undefined && steps[currentStep])
-                      nextUrl = `/hosting/${propertyId}/${steps[currentStep + 1]}`;
-                    else nextUrl = '/';
-
-                    console.log('Navigating to:', nextUrl);
-                    router.push(nextUrl);
+                    // Fallback: navigation directe
+                    if (
+                      currentStep !== undefined &&
+                      currentStep < MAX_STEP_INDEX
+                    ) {
+                      router.push(
+                        `/hosting/${propertyId}/${PROPERTY_STEPS[currentStep + 1]?.route}`,
+                      );
+                    } else {
+                      router.push('/hosting');
+                    }
                   }
                 }}
                 disabled={!canProceed}
                 className="rounded-full px-10 py-6 text-md ml-auto"
               >
-                {currentStep === maxSteps
+                {currentStep === MAX_STEP_INDEX
                   ? t('navigation.publish')
                   : t('navigation.next')}
               </Button>
-              {currentStep !== undefined && steps[currentStep] && (
+              {currentStep !== undefined && (
                 <div className="absolute top-0 left-0 w-full">
                   <Progress
                     className="rounded-none"
-                    value={currentStep ? (currentStep / maxSteps) * 100 : 0}
+                    value={
+                      currentStep ? (currentStep / MAX_STEP_INDEX) * 100 : 0
+                    }
                   />
                 </div>
               )}
@@ -162,6 +233,39 @@ export default function AddPropertyLayout({
           </div>
         </div>
       </section>
+
+      {/* Token Confirmation Dialog */}
+      <AlertDialog open={!!pendingToken}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Utiliser le token d&apos;édition ?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                Vous avez ouvert un lien contenant un token d&apos;édition pour
+                cette annonce.
+              </p>
+              <p className="text-amber-600 font-medium">
+                En acceptant, vous pourrez modifier cette annonce. Le token sera
+                enregistré dans votre session.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Token :{' '}
+                <code className="bg-muted px-2 py-1 rounded">
+                  {pendingToken?.token.substring(0, 20)}...
+                </code>
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={rejectToken}>Refuser</AlertDialogCancel>
+            <AlertDialogAction onClick={acceptToken}>
+              Accepter et continuer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </QueryProvider>
   );
 }

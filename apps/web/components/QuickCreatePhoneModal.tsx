@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useGlobalStore } from '@/app/[locale]/store';
+import { useAddPropertyStore } from '@/app/[locale]/hosting/store';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { PropertyType, useCreateProperty } from '@/hooks/use-create-property';
 import { useRouter } from 'next/navigation';
@@ -27,6 +28,7 @@ import { cn } from '@/lib/utils';
 import { Home, Building2, LandPlot, KeyRound, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth/auth-client';
+import { useEditToken } from '@/hooks/use-edit-token';
 
 interface PropertyTypeOption {
   type: PropertyType;
@@ -79,12 +81,18 @@ function QuickCreateContent({ className }: { className?: string }) {
     null,
   );
   const [phone, setPhone] = React.useState('');
+  const [createdPropertyId, setCreatedPropertyId] = React.useState<
+    string | undefined
+  >();
 
   const { createProperty, isCreating } = useCreateProperty();
   const setIsOpen = useGlobalStore((s) => s.setIsQuickCreatePhoneModalOpen);
   const router = useRouter();
   const t = useTranslations('QuickCreatePhone');
   const { data: session } = authClient.useSession();
+
+  // Initialize hook with propertyId once it's created
+  const { setToken } = useEditToken(createdPropertyId);
 
   const propertyTypes: PropertyTypeOption[] = [
     {
@@ -108,20 +116,38 @@ function QuickCreateContent({ className }: { className?: string }) {
   ];
 
   const handleSaveTokenAndContinue = (token: string, propertyId: string) => {
+    console.log(
+      '🚀 QuickCreatePhone - handleSaveTokenAndContinue called with:',
+      { propertyId }, // ❌ DON'T LOG TOKEN for security
+    );
+
     try {
-      const tokenKey = `property-edit-token:${propertyId}`;
-      localStorage.setItem(tokenKey, token);
-      // copy to clipboard
-      if (typeof navigator !== 'undefined' && navigator.clipboard) {
-        navigator.clipboard.writeText(token).catch(() => {});
-      }
+      // Update state first
+      setCreatedPropertyId(propertyId);
+
+      // ✅ Save token to sessionStorage via Zustand store (invisibly)
+      const { setEditToken } = useAddPropertyStore.getState();
+      setEditToken(parseInt(propertyId), token);
+      console.log('✅ Token saved to store (hidden for security)');
+
+      // ❌ DON'T copy to clipboard - token should only be shown at publication
+      // User will get it when they publish the property
+
+      console.log('🔄 Navigating to /hosting/' + propertyId);
+      // Navigate to property
       router.push(`/hosting/${propertyId}`);
-    } catch {
+    } catch (error) {
+      console.error('❌ Error in handleSaveTokenAndContinue:', error);
       router.push(`/hosting/${propertyId}`);
     }
   };
 
   const handleCreate = async (type: PropertyType) => {
+    console.log('=== QUICK CREATE PROPERTY ===');
+    console.log('Property type:', type);
+    console.log('Listing choice:', listingChoice);
+    console.log('User session:', session?.user ? 'Authenticated' : 'Anonymous');
+
     setSelectedType(type);
 
     try {
@@ -143,7 +169,9 @@ function QuickCreateContent({ className }: { className?: string }) {
         payload.phone = phone;
       }
 
+      console.log('📞 Calling createProperty API with payload:', payload);
       const resp = await createProperty(payload);
+      console.log('📦 Create property response:', resp);
 
       // backend may return { property } or { property, editToken }
       const createdProperty = (resp && (resp.property || resp)) as
@@ -153,8 +181,15 @@ function QuickCreateContent({ className }: { className?: string }) {
         ? String(createdProperty.id)
         : undefined;
 
+      console.log('🆔 Created property ID:', createdId);
+      console.log(
+        '🔑 Edit token in response:',
+        (resp as Record<string, unknown>)?.editToken,
+      );
+
       // If editToken returned (anonymous create), show token dialog
       if (resp && (resp as Record<string, unknown>).editToken && createdId) {
+        console.log('✅ Anonymous flow - saving token and navigating');
         handleSaveTokenAndContinue(
           String((resp as Record<string, unknown>).editToken),
           createdId,
@@ -164,11 +199,13 @@ function QuickCreateContent({ className }: { className?: string }) {
 
       // For authenticated flow, just navigate
       if (createdId) {
+        console.log('✅ Authenticated flow - closing modal and navigating');
         // close modal then navigate
         setIsOpen?.(false);
         router.push(`/hosting/${createdId}`);
       }
     } catch (err) {
+      console.error('❌ Error creating property:', err);
       const message = err instanceof Error ? err.message : t('error');
       toast.error(message);
       setSelectedType(null);
@@ -178,7 +215,9 @@ function QuickCreateContent({ className }: { className?: string }) {
   return (
     <div className={cn('grid gap-4', className)}>
       <div>
-        <h3 className="text-lg font-semibold">{t('heading')}</h3>
+        <DialogTitle className="text-lg font-semibold">
+          {t('heading')}
+        </DialogTitle>
         <p className="text-muted-foreground">{t('hint')}</p>
       </div>
 

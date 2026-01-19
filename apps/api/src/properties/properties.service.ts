@@ -23,8 +23,8 @@ export class PropertiesService {
   async create(createPropertyDto: CreatePropertyDto, userId?: string) {
     const { amenities, ...data } = createPropertyDto;
 
-    // Générer un edit token pour permettre l'édition sans compte
-    const editToken = randomUUID();
+    // ✅ Générer un edit token UNIQUEMENT pour les utilisateurs anonymes
+    const editToken = !userId ? randomUUID() : undefined;
 
     // Si userId est fourni, vérifier que l'utilisateur existe
     let owner = null;
@@ -40,7 +40,7 @@ export class PropertiesService {
         ...data,
         // n'ajouter userId dans la création que s'il est présent
         ...(userId && { userId }),
-        editToken,
+        ...(editToken && { editToken }),
         amenities: amenities || [],
         status: data.status || PropertyStatus.DRAFT, // Par défaut en brouillon
         currency: data.currency || Currency.MXN,
@@ -58,15 +58,15 @@ export class PropertiesService {
       },
     });
 
-    // Si création anonyme, retourner aussi le token pour que le créateur puisse l'enregistrer
-    if (!userId) {
+    // ✅ Si création anonyme, retourner aussi le token
+    if (!userId && editToken) {
       return {
         property: this.sanitizeProperty(created),
         editToken,
       };
     }
 
-    // Pour les créations authentifiées, ne jamais exposer l'editToken
+    // ✅ Pour les créations authentifiées, ne jamais exposer l'editToken
     return this.sanitizeProperty(created);
   }
 
@@ -289,9 +289,17 @@ export class PropertiesService {
   }
 
   // Public: sanitized property without secret fields (editToken)
-  async findOne(id: number) {
+  // Si editToken fourni et valide, on le retourne pour que le client puisse le garder
+  async findOne(id: number, editToken?: string) {
     const prop = await this.getPropertyRaw(id);
-    return this.sanitizeProperty(prop);
+    const sanitized = this.sanitizeProperty(prop);
+
+    // Si l'utilisateur a fourni un editToken valide, on le retourne
+    if (editToken && (prop as any).editToken === editToken) {
+      sanitized.editToken = (prop as any).editToken;
+    }
+
+    return sanitized;
   }
 
   // Allow update with either owner userId or editToken
@@ -386,7 +394,13 @@ export class PropertiesService {
       },
     });
 
-    return this.sanitizeProperty(updated);
+    // Si l'utilisateur s'est authentifié avec un editToken, on le retourne
+    // (pour qu'il puisse le garder en sessionStorage)
+    const sanitized = this.sanitizeProperty(updated);
+    if (editToken && (property as any).editToken === editToken) {
+      sanitized.editToken = (property as any).editToken;
+    }
+    return sanitized;
   }
 
   async remove(id: number, userId?: string, editToken?: string) {

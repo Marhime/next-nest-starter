@@ -640,5 +640,17 @@
       "PENTHOUSE": "Penthouse",
       "LOFT": "Loft"
     }
+  },
+  "EditTokenModal": {
+    "title": "Token Saved Successfully",
+    "description": "Your token has been saved. You can now continue editing.",
+    "tokenLabel": "Edit Token",
+    "tokenCopied": "Token copied to clipboard!",
+    "copyError": "Failed to copy",
+    "warningTitle": "⚠️ Important:",
+    "warning1": "Save this token in a secure location",
+    "warning2": "Anyone with this token can edit your listing",
+    "warning3": "We cannot recover lost tokens",
+    "understood": "Continue"
   }
 }

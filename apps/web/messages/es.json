@@ -619,5 +619,17 @@
       "PENTHOUSE": "Penthouse",
       "LOFT": "Loft"
     }
+  },
+  "EditTokenModal": {
+    "title": "Token guardado exitosamente",
+    "description": "Tu token ha sido guardado. Puedes continuar editando.",
+    "tokenLabel": "Token de edición",
+    "tokenCopied": "¡Token copiado al portapapeles!",
+    "copyError": "Error al copiar",
+    "warningTitle": "⚠️ Importante:",
+    "warning1": "Guarda este token en un lugar seguro",
+    "warning2": "Cualquier persona con este token puede editar tu anuncio",
+    "warning3": "No podemos recuperar tokens perdidos",
+    "understood": "Continuar"
   }
 }

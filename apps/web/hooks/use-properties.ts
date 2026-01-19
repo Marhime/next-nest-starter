@@ -47,6 +47,28 @@ const fetcher = async (url: string) => {
   return response.json();
 };
 
+// Fetcher avec token optionnel pour les requêtes authentifiées avec editToken
+const fetcherWithToken = async (url: string, token?: string) => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers['x-edit-token'] = token;
+  }
+
+  const response = await fetch(url, {
+    credentials: 'include',
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch property');
+  }
+
+  return response.json();
+};
+
 export function useUserProperties() {
   const { data, error, isLoading, mutate } = useSWR<Property[]>(
     `${API_URL}/properties/user/me`,
@@ -97,10 +119,11 @@ export function useLatestProperties(listingType?: string) {
   };
 }
 
-export function useProperty(id: number | string) {
+export function useProperty(id: number | string, editToken?: string) {
   const { data, error, isLoading, mutate } = useSWR<Property>(
-    id ? `${API_URL}/properties/${id}` : null,
-    fetcher,
+    id ? [`${API_URL}/properties/${id}`, editToken] : null,
+    ([url, token]: [string, string | undefined]) =>
+      fetcherWithToken(url, token),
   );
 
   return {

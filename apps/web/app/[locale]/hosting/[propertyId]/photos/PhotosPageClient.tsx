@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useAddPropertyStore } from '../../store';
+import { useEditToken } from '@/hooks/use-edit-token';
 import { PhotoUploadZone } from '@/components/photos/PhotoUploadZone';
 import { getPhotoUrl } from '@/lib/utils';
 import type { Photo } from '@/types/photo';
@@ -23,92 +24,86 @@ export function PhotosPageClient({
   const [loading, setLoading] = useState(false);
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
   const setCanProceed = useAddPropertyStore((state) => state.setCanProceed);
-  const setPropertyProgress = useAddPropertyStore(
-    (state) => state.setPropertyProgress,
-  );
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const MINIMUM_PHOTOS = 2;
 
-  const tokenKey = `property-edit-token:${propertyId}`;
-  const editToken =
-    (typeof window !== 'undefined' && localStorage.getItem(tokenKey)) ||
-    undefined;
-  const headers: Record<string, string> = {};
-
-  if (editToken) {
-    headers['x-edit-token'] = editToken;
-  }
+  const { token: editToken } = useEditToken(propertyId);
 
   useEffect(() => {
-    // Photos step is index 1 in the new flow (0=location,1=photos,2=characteristics...)
     setCurrentStep?.(1);
   }, [setCurrentStep]);
 
-  // Validation: minimum 5 photos
   useEffect(() => {
     const isValid = photos.length >= MINIMUM_PHOTOS;
     setCanProceed?.(isValid);
+  }, [photos.length, setCanProceed]);
 
-    // Mark step as complete when we have at least 5 photos (step 1)
-    if (isValid) {
-      setPropertyProgress?.(propertyId, 1, true);
+  const getHeaders = (): Record<string, string> => {
+    const headers: Record<string, string> = {};
+    if (editToken) {
+      headers['x-edit-token'] = editToken;
     }
-  }, [photos.length, setCanProceed, propertyId, setPropertyProgress]);
+    return headers;
+  };
 
-  // Upload photos
   const handleUpload = async (files: File[]) => {
     setLoading(true);
 
     try {
-      const uploadPromises = files.map(async (file) => {
+      // ✅ Upload sequentially to avoid rate limiting (100 req/15min)
+      const uploadedPhotos: Photo[] = [];
+
+      for (const file of files) {
         const formData = new FormData();
         formData.append('file', file);
 
-        console.log('hi');
+        try {
+          const response = await fetch(
+            `${API_URL}/photos/property/${propertyId}`,
+            {
+              method: 'POST',
+              body: formData,
+              credentials: 'include',
+              headers: getHeaders(),
+            },
+          );
 
-        const response = await fetch(
-          `${API_URL}/photos/property/${propertyId}`,
-          {
-            method: 'POST',
-            body: formData,
-            credentials: 'include',
-            headers,
-          },
-        );
+          if (!response.ok) {
+            console.error(`Failed to upload ${file.name}:`, response.status);
+            toast.error(`Échec de l'upload de ${file.name}`);
+            continue; // Skip this file, continue with others
+          }
 
-        console.log('ho');
-
-        if (!response.ok) {
-          throw new Error(`Échec de l'upload de ${file.name}`);
+          const uploadedPhoto = await response.json();
+          uploadedPhotos.push(uploadedPhoto);
+        } catch (error) {
+          console.error(`Error uploading ${file.name}:`, error);
+          toast.error(`Erreur: ${file.name}`);
         }
+      }
 
-        const uploadedPhoto = await response.json();
-        console.log('Photo uploadée:', uploadedPhoto);
-        return uploadedPhoto;
-      });
-
-      const uploadedPhotos = await Promise.all(uploadPromises);
-      setPhotos((prev) => [...prev, ...uploadedPhotos]);
+      if (uploadedPhotos.length > 0) {
+        setPhotos((prev) => [...prev, ...uploadedPhotos]);
+        toast.success(`${uploadedPhotos.length} photo(s) ajoutée(s)`);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // Delete photo
   const handleDelete = async (photoId: number) => {
     try {
       const response = await fetch(`${API_URL}/photos/${photoId}`, {
         method: 'DELETE',
         credentials: 'include',
-        headers,
+        headers: getHeaders(),
       });
 
       if (!response.ok) {
         throw new Error(t('deleteError'));
       }
 
-      // Update UI silently on success
       setPhotos((prev) => prev.filter((p) => p.id !== photoId));
     } catch (err) {
       console.error('Delete photo failed', err);
@@ -116,20 +111,18 @@ export function PhotosPageClient({
     }
   };
 
-  // Set primary photo
   const handleSetPrimary = async (photoId: number) => {
     try {
       const response = await fetch(`${API_URL}/photos/${photoId}/primary`, {
         method: 'PATCH',
         credentials: 'include',
-        headers,
+        headers: getHeaders(),
       });
 
       if (!response.ok) {
         throw new Error(t('updateError'));
       }
 
-      // Update UI silently on success
       setPhotos((prev) =>
         prev.map((p) => ({
           ...p,
@@ -182,18 +175,15 @@ export function PhotosPageClient({
             {t('coverPhotoInfo')}
           </p>
 
-          {/* Grid Layout - Airbnb Style */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 auto-rows-fr">
             {photos
               .sort((a, b) => {
-                // Primary photo first
                 if (a.isPrimary && !b.isPrimary) return -1;
                 if (!a.isPrimary && b.isPrimary) return 1;
-                // Then by order
                 return a.order - b.order;
               })
               .map((photo, index) => {
-                const isCover = index === 0; // First photo is always cover
+                const isCover = index === 0;
 
                 return (
                   <div
@@ -222,14 +212,12 @@ export function PhotosPageClient({
                       />
                     </div>
 
-                    {/* Cover badge */}
                     {isCover && (
                       <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs px-3 py-1.5 rounded font-semibold shadow-lg">
                         {t('coverBadge')}
                       </div>
                     )}
 
-                    {/* Actions overlay */}
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 flex-wrap p-4">
                       {!isCover && (
                         <button

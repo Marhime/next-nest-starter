@@ -206,8 +206,11 @@ export class PropertiesController {
   @ApiOperation({ summary: 'Get a property by ID' })
   @ApiResponse({ status: 200, description: 'Property retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Property not found' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.propertiesService.findOne(id);
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Headers('x-edit-token') editToken?: string,
+  ) {
+    return this.propertiesService.findOne(id, editToken);
   }
 
   @Patch(':id')

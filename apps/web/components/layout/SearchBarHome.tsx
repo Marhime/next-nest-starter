@@ -56,7 +56,10 @@ const SearchBarHome = () => {
             <DollarSign className="" />
             <Input type="text" placeholder="Price" />
           </div>
-          <Link href={'/find'} className="px-6 py-4 glassy-effect">
+          <Link
+            href={'/find'}
+            className="px-6 py-1 glassy-effect bg-primary rounded-lg text-white"
+          >
             {t('search')}
           </Link>
         </div>
