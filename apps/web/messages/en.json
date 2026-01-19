@@ -320,6 +320,39 @@
       "next": "Next",
       "preview": "Preview",
       "publish": "Publish listing"
+    },
+    "Contact": {
+      "header": {
+        "title": "Contact information",
+        "subtitle": "Add your contact details so interested buyers can reach you"
+      },
+      "name": {
+        "title": "Full name",
+        "subtitle": "Your full name will be visible on the listing"
+      },
+      "firstName": {
+        "label": "First name",
+        "placeholder": "Ex: John"
+      },
+      "lastName": {
+        "label": "Last name",
+        "placeholder": "Ex: Doe"
+      },
+      "phone": {
+        "title": "Phone",
+        "subtitle": "Your phone number will be used for contact inquiries",
+        "label": "Phone number",
+        "placeholder": "Ex: +1 555 123 4567"
+      },
+      "auth": {
+        "authenticated": "You are logged in as {name}. Your information will be saved to your profile.",
+        "anonymous": "You are not logged in. Your information will be stored only for this listing."
+      },
+      "errors": {
+        "required": "All fields are required",
+        "saveFailed": "Error saving contact information"
+      },
+      "success": "Contact information saved successfully!"
     }
   },
   "LocationForm": {

@@ -320,6 +320,39 @@
       "next": "Siguiente",
       "preview": "Vista previa",
       "publish": "Publicar anuncio"
+    },
+    "Contact": {
+      "header": {
+        "title": "Información de contacto",
+        "subtitle": "Agrega tus datos de contacto para que los interesados puedan comunicarse contigo"
+      },
+      "name": {
+        "title": "Nombre completo",
+        "subtitle": "Tu nombre completo será visible en el anuncio"
+      },
+      "firstName": {
+        "label": "Nombre",
+        "placeholder": "Ej: Juan"
+      },
+      "lastName": {
+        "label": "Apellido",
+        "placeholder": "Ej: García"
+      },
+      "phone": {
+        "title": "Teléfono",
+        "subtitle": "Tu número de teléfono se usará para contactarte",
+        "label": "Número de teléfono",
+        "placeholder": "Ej: 55 4567 890"
+      },
+      "auth": {
+        "authenticated": "Has iniciado sesión como {name}. Tu información se guardará en tu perfil.",
+        "anonymous": "No has iniciado sesión. Tu información se almacenará solo para este anuncio."
+      },
+      "errors": {
+        "required": "Todos los campos son requeridos",
+        "saveFailed": "Error al guardar la información de contacto"
+      },
+      "success": "¡Información de contacto guardada exitosamente!"
     }
   },
   "LocationForm": {

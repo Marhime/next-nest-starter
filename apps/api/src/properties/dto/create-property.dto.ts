@@ -22,6 +22,21 @@ export class CreatePropertyDto {
   @IsString()
   userId?: string;
 
+  @ApiPropertyOptional({ description: 'Contact phone number' })
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @ApiPropertyOptional({ description: 'Contact first name' })
+  @IsOptional()
+  @IsString()
+  firstName?: string;
+
+  @ApiPropertyOptional({ description: 'Contact last name' })
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
   @ApiProperty({ enum: PropertyType })
   @IsEnum(PropertyType)
   propertyType: PropertyType;

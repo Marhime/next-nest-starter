@@ -11,6 +11,7 @@ import { usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import Image from 'next/image';
+import { authClient } from '@/lib/auth/auth-client';
 
 export default function AddPropertyLayout({
   children,
@@ -29,6 +30,24 @@ export default function AddPropertyLayout({
 
   // Vérifier si la propriété existe
   const { property, isLoading, isError } = useProperty(propertyId as string);
+
+  // get user
+  const { data: session } = authClient.useSession();
+
+  useEffect(() => {
+    if (property) {
+      const tokenKey = `property-edit-token:${property.id}`;
+      const editToken =
+        (typeof window !== 'undefined' && localStorage.getItem(tokenKey)) ||
+        undefined;
+      if (
+        editToken === property?.editToken &&
+        session?.user?.id !== property.userId
+      ) {
+        router.replace(`/`);
+      }
+    }
+  }, [property, router, session]);
 
   useEffect(() => {
     // Si propertyId est undefined, vide, ou 'undefined' string

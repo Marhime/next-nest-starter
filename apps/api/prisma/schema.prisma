@@ -96,7 +96,11 @@ model Property {
   id     Int     @id @default(autoincrement())
   // Allow null userId for anonymous properties (v1 uses editToken to grant edit access)
   userId String?
-  phone  Int?
+  phone  String?
+
+  // Contact information (stored on property for both authenticated and anonymous users)
+  firstName String?
+  lastName  String?
 
   propertyType PropertyType @map("property_type")
   listingType  ListingType? @map("listing_type")

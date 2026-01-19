@@ -318,15 +318,61 @@ export class PropertiesService {
       throw new NotFoundException(`You do not own this property`);
     }
 
-    const { amenities, ...data } = updatePropertyDto;
+    const {
+      amenities,
+      firstName,
+      lastName,
+      phone,
+      price,
+      latitude,
+      longitude,
+      area,
+      landSurface,
+      ...data
+    } = updatePropertyDto;
+
+    // Prepare property update data
+    const propertyUpdateData: any = {
+      ...data,
+      ...(amenities && { amenities }),
+      updatedAt: new Date(),
+    };
+
+    // Convert Decimal fields (Prisma requires string for Decimal type)
+    if (price !== undefined)
+      propertyUpdateData.price = price ? String(price) : null;
+    if (latitude !== undefined)
+      propertyUpdateData.latitude = latitude ? String(latitude) : null;
+    if (longitude !== undefined)
+      propertyUpdateData.longitude = longitude ? String(longitude) : null;
+    if (area !== undefined)
+      propertyUpdateData.area = area ? String(area) : null;
+    if (landSurface !== undefined)
+      propertyUpdateData.landSurface = landSurface ? String(landSurface) : null;
+
+    // Always store contact info on property
+    if (firstName !== undefined) propertyUpdateData.firstName = firstName;
+    if (lastName !== undefined) propertyUpdateData.lastName = lastName;
+    if (phone !== undefined) propertyUpdateData.phone = phone;
+
+    // If authenticated user and contact info provided, also sync to user profile
+    if (
+      userId &&
+      (firstName !== undefined || lastName !== undefined || phone !== undefined)
+    ) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          ...(firstName !== undefined && { firstName }),
+          ...(lastName !== undefined && { lastName }),
+          ...(phone !== undefined && { phone }),
+        },
+      });
+    }
 
     const updated = await this.prisma.property.update({
       where: { id },
-      data: {
-        ...data,
-        ...(amenities && { amenities }),
-        updatedAt: new Date(), // Mettre à jour explicitement le timestamp
-      },
+      data: propertyUpdateData,
       include: {
         user: {
           select: {

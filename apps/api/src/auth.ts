@@ -76,10 +76,24 @@ export const auth = betterAuth({
       adminRoles: ['ADMIN'],
     }),
     customSession(async ({ user, session }) => {
+      // Fetch complete user data from database to include firstName, lastName, phone
+      const fullUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+        },
+      });
+
       return {
         user: {
           ...user,
           role: user.role,
+          firstName: fullUser?.firstName,
+          lastName: fullUser?.lastName,
+          phone: fullUser?.phone,
         },
         session,
       };

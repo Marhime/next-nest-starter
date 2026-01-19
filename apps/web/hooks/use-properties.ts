@@ -29,6 +29,7 @@ export interface Property {
   }>;
   createdAt: string;
   updatedAt: string;
+  editToken?: string;
 }
 
 const fetcher = async (url: string) => {

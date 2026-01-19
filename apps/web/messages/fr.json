@@ -327,6 +327,39 @@
       "next": "Suivant",
       "preview": "Aperçu",
       "publish": "Publier l'annonce"
+    },
+    "Contact": {
+      "header": {
+        "title": "Informations de contact",
+        "subtitle": "Ajoutez vos coordonnées pour que les intéressés puissent vous joindre"
+      },
+      "name": {
+        "title": "Nom complet",
+        "subtitle": "Votre nom complet sera visible sur l'annonce"
+      },
+      "firstName": {
+        "label": "Prénom",
+        "placeholder": "Ex: Jean"
+      },
+      "lastName": {
+        "label": "Nom",
+        "placeholder": "Ex: Dupont"
+      },
+      "phone": {
+        "title": "Téléphone",
+        "subtitle": "Votre numéro de téléphone sera utilisé pour les contacts",
+        "label": "Numéro de téléphone",
+        "placeholder": "Ex: 01 23 45 67 89"
+      },
+      "auth": {
+        "authenticated": "Vous êtes connecté en tant que {name}. Vos informations seront sauvegardées sur votre profil.",
+        "anonymous": "Vous n'êtes pas connecté. Vos informations seront stockées uniquement pour cette annonce."
+      },
+      "errors": {
+        "required": "Tous les champs sont requis",
+        "saveFailed": "Erreur lors de la sauvegarde des informations de contact"
+      },
+      "success": "Informations de contact sauvegardées avec succès !"
     }
   },
   "LocationForm": {
