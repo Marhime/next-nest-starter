@@ -11,6 +11,8 @@ import { PhotoUploadZone } from '@/components/photos/PhotoUploadZone';
 import { getPhotoUrl } from '@/lib/utils';
 import { usePropertyForm } from '@/hooks/use-property-form';
 import { STEP_PHOTOS, useStepValidation } from '@/hooks/use-step-validation';
+import { Card, CardTitle } from '@/components/ui/card';
+import { Camera, Star, Trash2, Check } from 'lucide-react';
 
 interface Photo {
   id: number;
@@ -189,117 +191,132 @@ export function PhotosPageClient({ property }: PhotosPageClientProps) {
       </div>
 
       {/* Status Card */}
-      <div className="bg-card border rounded-lg p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold">{t('progress')}</h2>
+      <Card className="p-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-primary/10 rounded-lg">
+            <Camera className="h-8 w-8 text-primary" />
+          </div>
+          <div className="flex-1">
+            <CardTitle className="text-lg font-medium">
+              {photos.length >= MINIMUM_PHOTOS
+                ? t('status.ready')
+                : t('status.addMore')}
+            </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
               {photos.length >= MINIMUM_PHOTOS
-                ? t('ready')
-                : `${MINIMUM_PHOTOS - photos.length} ${t('remaining')}`}
+                ? t('status.readyDescription')
+                : t('status.minimumRequired', { count: MINIMUM_PHOTOS - photos.length })}
             </p>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-bold">{photos.length}/20</div>
-            <div
-              className={`text-sm ${
-                photos.length >= MINIMUM_PHOTOS
-                  ? 'text-green-600'
-                  : 'text-amber-600'
-              }`}
-            >
-              {photos.length >= MINIMUM_PHOTOS
-                ? `✓ ${t('remaining')}`
-                : 'Minimum 2'}
-            </div>
+            <div className="text-3xl font-bold text-primary">{photos.length}</div>
+            <div className="text-sm text-muted-foreground">{t('status.maxPhotos')}</div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Upload Zone */}
-      <div className="bg-card border rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4">{t('uploadTitle')}</h3>
-        <PhotoUploadZone
-          onUpload={handleUpload}
-          maxFiles={20 - photos.length}
-          disabled={loading || photos.length >= 20}
-        />
-      </div>
+      <Card className="p-6">
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-lg font-semibold">{t('upload.title')}</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t('upload.description')}
+            </p>
+          </div>
+          <PhotoUploadZone
+            onUpload={handleUpload}
+            maxFiles={20 - photos.length}
+            disabled={loading || photos.length >= 20}
+          />
+        </div>
+      </Card>
 
       {/* Gallery */}
       {photos.length > 0 && (
-        <div className="bg-card border rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-2">
-            {t('yourPhotos')} ({photos.length})
-          </h3>
-          <p className="text-sm text-muted-foreground mb-6">
-            {t('coverPhotoInfo')}
-          </p>
+        <Card className="p-6">
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold">
+                {t('gallery.title')} ({photos.length})
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                {t('gallery.description')}
+              </p>
+            </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 auto-rows-fr">
-            {photos
-              .sort((a, b) => {
-                if (a.isPrimary && !b.isPrimary) return -1;
-                if (!a.isPrimary && b.isPrimary) return 1;
-                return a.order - b.order;
-              })
-              .map((photo, index) => {
-                const isCover = index === 0;
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 auto-rows-fr">
+              {photos
+                .sort((a, b) => {
+                  if (a.isPrimary && !b.isPrimary) return -1;
+                  if (!a.isPrimary && b.isPrimary) return 1;
+                  return a.order - b.order;
+                })
+                .map((photo, index) => {
+                  const isCover = index === 0;
 
-                return (
-                  <div
-                    key={photo.id}
-                    className={`relative group rounded-lg overflow-hidden border-2 hover:border-primary transition-colors ${
-                      isCover ? 'md:col-span-2 md:row-span-2' : 'aspect-square'
-                    }`}
-                  >
+                  return (
                     <div
-                      className={
-                        isCover ? 'h-full min-h-[400px]' : 'aspect-square'
-                      }
+                      key={photo.id}
+                      className={`relative group rounded-lg overflow-hidden border-2 hover:border-primary transition-all duration-300 ${
+                        isCover ? 'md:col-span-2 md:row-span-2 border-primary/50' : 'aspect-square hover:shadow-lg'
+                      }`}
                     >
-                      <Image
-                        src={getPhotoUrl(photo.url)}
-                        alt={`Photo ${index + 1}`}
-                        fill
-                        className="object-cover"
-                        sizes={
-                          isCover
-                            ? '(max-width: 768px) 100vw, 50vw'
-                            : '(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw'
+                      <div
+                        className={
+                          isCover ? 'h-full min-h-[400px]' : 'aspect-square'
                         }
-                        priority={isCover}
-                        unoptimized
-                      />
-                    </div>
-
-                    {isCover && (
-                      <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs px-3 py-1.5 rounded font-semibold shadow-lg">
-                        {t('coverBadge')}
-                      </div>
-                    )}
-
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 flex-wrap p-4">
-                      {!isCover && (
-                        <button
-                          onClick={() => handleSetPrimary(photo.id)}
-                          className="px-3 py-2 bg-white text-black rounded text-sm hover:bg-gray-100 font-medium shadow-lg"
-                        >
-                          {t('setCoverButton')}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDelete(photo.id)}
-                        className="px-3 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600 font-medium shadow-lg"
                       >
-                        {t('deleteButton')}
-                      </button>
+                        <Image
+                          src={getPhotoUrl(photo.url)}
+                          alt={`Photo ${index + 1}`}
+                          fill
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          sizes={
+                            isCover
+                              ? '(max-width: 768px) 100vw, 50vw'
+                              : '(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw'
+                          }
+                          priority={isCover}
+                          unoptimized
+                        />
+                      </div>
+
+                      {isCover && (
+                        <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs px-3 py-1.5 rounded-full font-medium shadow-lg flex items-center gap-1.5">
+                          <Star className="h-3 w-3 fill-current" />
+                          {t('gallery.coverBadge')}
+                        </div>
+                      )}
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-4">
+                        <div className="flex gap-2 w-full">
+                          {!isCover && (
+                            <button
+                              onClick={() => handleSetPrimary(photo.id)}
+                              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white text-black rounded-lg text-sm hover:bg-gray-100 font-medium shadow-lg transition-colors"
+                              title={t('gallery.setCoverButton')}
+                            >
+                              <Star className="h-4 w-4" />
+                              <span className="hidden sm:inline">{t('gallery.setCoverButton')}</span>
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDelete(photo.id)}
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 font-medium shadow-lg transition-colors"
+                            title={t('gallery.deleteButton')}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span className="hidden sm:inline">{t('gallery.deleteButton')}</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+            </div>
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );
