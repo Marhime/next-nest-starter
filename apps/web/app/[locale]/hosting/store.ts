@@ -16,6 +16,9 @@ type AddPropertyStore = Partial<AddPropertySchema> & {
   setHandleNext?: (handler: (() => void) | undefined) => void;
   isSaving?: boolean;
   setIsSaving?: (isSaving: boolean) => void;
+  // Navigation state to prevent race conditions
+  isNavigating?: boolean;
+  setIsNavigating?: (isNavigating: boolean) => void;
   // Edit tokens for anonymous property editing
   editTokens: Record<number, string>;
   setEditToken: (propertyId: number, token: string) => void;
@@ -42,6 +45,8 @@ export const useAddPropertyStore = create<AddPropertyStore>()(
       setHandleNext: (handler) => set({ handleNext: handler }),
       isSaving: false,
       setIsSaving: (isSaving) => set({ isSaving }),
+      isNavigating: false,
+      setIsNavigating: (isNavigating) => set({ isNavigating }),
       editTokens: {},
       setEditToken: (propertyId, token) =>
         set((state) => ({

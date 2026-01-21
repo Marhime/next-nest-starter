@@ -436,16 +436,27 @@
     }
   },
   "PhotoUpload": {
-    "title": "Agrega fotos",
-    "subtitle": "Mínimo 2 fotos • Máximo 20 fotos",
-    "ready": "✓ Listo",
-    "remaining": "restantes",
-    "uploadTitle": "Subir fotos",
-    "yourPhotos": "Tus fotos",
-    "coverPhotoInfo": "La primera foto es tu foto de portada (grande). Haz clic en otra foto para establecerla como portada.",
-    "coverBadge": "⭐ Foto de portada",
-    "setCoverButton": "Establecer como portada",
-    "deleteButton": "Eliminar",
+    "title": "Muestra tu propiedad",
+    "subtitle": "Añade fotos de alta calidad para atraer más huéspedes",
+    "status": {
+      "ready": "Galería de fotos lista",
+      "readyDescription": "Tu propiedad está bellamente presentada con fotos de calidad",
+      "addMore": "Añadir más fotos",
+      "minimumRequired": "Falta {count} foto para el mínimo requerido",
+      "maxPhotos": "de 20 máx"
+    },
+    "upload": {
+      "title": "Sube tus fotos",
+      "addMoreTitle": "Añadir más fotos",
+      "description": "Arrastra y suelta o haz clic para seleccionar. JPEG, PNG o WebP • Máx 10MB por foto"
+    },
+    "gallery": {
+      "title": "Tu galería de fotos",
+      "description": "La primera foto es tu imagen de portada. Haz clic en otra para establecerla como portada.",
+      "coverBadge": "Foto de Portada",
+      "setCoverButton": "Portada",
+      "deleteButton": "Eliminar"
+    },
     "maxFilesError": "Solo puedes subir {count} fotos a la vez.",
     "uploadingCount": "Subiendo {count} foto{plural}...",
     "uploadedCount": "{count} foto{plural} agregada{plural}",
@@ -666,6 +677,9 @@
   "Confirmation": {
     "title": "🎉 ¡Anuncio publicado con éxito!",
     "noTitle": "Anuncio sin título",
+    "photoGallery": "Galería de fotos",
+    "photoCount": "{count} fotos",
+    "coverPhoto": "Foto de portada",
     "needAccount": "¡No pierdas el acceso a tu anuncio!",
     "needAccountDesc": "Crea una cuenta gratuita para gestionar tus anuncios de forma segura sin preocuparte por los tokens.",
     "securityTitle": "Seguridad garantizada",

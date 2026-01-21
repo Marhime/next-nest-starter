@@ -442,16 +442,27 @@
     }
   },
   "PhotoUpload": {
-    "title": "Ajoutez des photos",
-    "subtitle": "Minimum 2 photos • Maximum 20 photos",
-    "ready": "✓ Prêt",
-    "remaining": "restantes",
-    "uploadTitle": "Uploader des photos",
-    "yourPhotos": "Vos photos",
-    "coverPhotoInfo": "La première photo est votre photo de couverture (grande). Cliquez sur une autre photo pour la définir comme couverture.",
-    "coverBadge": "⭐ Photo de couverture",
-    "setCoverButton": "Définir comme couverture",
-    "deleteButton": "Supprimer",
+    "title": "Mettez votre bien en valeur",
+    "subtitle": "Ajoutez des photos de qualité pour attirer plus de voyageurs",
+    "status": {
+      "ready": "Galerie photos prête",
+      "readyDescription": "Votre bien est magnifiquement présenté avec des photos de qualité",
+      "addMore": "Ajouter plus de photos",
+      "minimumRequired": "Il manque {count} photo{s} pour atteindre le minimum requis",
+      "maxPhotos": "sur 20 max"
+    },
+    "upload": {
+      "title": "Téléchargez vos photos",
+      "addMoreTitle": "Ajouter plus de photos",
+      "description": "Glissez-déposez ou cliquez pour sélectionner. JPEG, PNG ou WebP • Max 10Mo par photo"
+    },
+    "gallery": {
+      "title": "Votre galerie photos",
+      "description": "La première photo est votre image de couverture. Cliquez sur une autre pour la définir comme couverture.",
+      "coverBadge": "Photo de Couverture",
+      "setCoverButton": "Photo couverture",
+      "deleteButton": "Supprimer"
+    },
     "maxFilesError": "Vous ne pouvez télécharger que {count} photos à la fois.",
     "uploadingCount": "Upload de {count} photo{plural}...",
     "uploadedCount": "{count} photo{plural} ajoutée{plural}",
@@ -672,6 +683,9 @@
   "Confirmation": {
     "title": "🎉 Annonce publiée avec succès !",
     "noTitle": "Annonce sans titre",
+    "photoGallery": "Galerie de photos",
+    "photoCount": "{count} photos",
+    "coverPhoto": "Photo de couverture",
     "needAccount": "Ne perdez pas l'accès à votre annonce !",
     "needAccountDesc": "Créez un compte gratuit pour gérer vos annonces en toute sécurité sans vous soucier des tokens.",
     "securityTitle": "Sécurité garantie",

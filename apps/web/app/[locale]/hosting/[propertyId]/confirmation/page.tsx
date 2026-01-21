@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { authClient } from '@/lib/auth/auth-client';
 import { areAllStepsComplete } from '@/hooks/use-step-validation';
 import { useAddPropertyStore } from '@/app/[locale]/hosting/store';
+import { PropertyCard } from '@/components/property-search/PropertyCard';
 
 export default function ConfirmationPage() {
   const params = useParams();
@@ -114,13 +115,15 @@ export default function ConfirmationPage() {
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       {/* Success Header */}
       <div className="text-center space-y-3">
-        <div className="inline-flex p-3 bg-green-100 rounded-full">
-          <CheckCircle2 className="h-8 w-8 text-green-600" />
-        </div>
         <h1 className="text-3xl font-semibold">{t('title')}</h1>
         <p className="text-muted-foreground text-lg max-w-md mx-auto">
           {property.title || t('noTitle')}
         </p>
+      </div>
+
+      {/* Property Preview */}
+      <div className="flex justify-center">
+        <PropertyCard property={property as any} />
       </div>
 
       {/* Create Account CTA - Priority for anonymous users */}
@@ -136,7 +139,7 @@ export default function ConfirmationPage() {
                 {t('needAccountDesc')}
               </p>
 
-              <div className="space-y-3 mb-4">
+              <div className="space-y-3">
                 <div className="flex items-start gap-3">
                   <Shield className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <div>
@@ -158,14 +161,13 @@ export default function ConfirmationPage() {
                   </div>
                 </div>
               </div>
-
-              <Link href={`/${locale}/auth/signup`}>
-                <Button size="lg" className="w-full">
-                  {t('createAccount')}
-                </Button>
-              </Link>
             </div>
           </div>
+          <Link href={`/${locale}/auth/signup`}>
+            <Button size="lg" className="w-full">
+              {t('createAccount')}
+            </Button>
+          </Link>
         </Card>
       )}
 

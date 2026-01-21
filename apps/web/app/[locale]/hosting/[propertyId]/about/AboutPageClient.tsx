@@ -184,12 +184,9 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
 
   // ✅ Memoize success callback with stable propertyId
   const propertyId = property.id;
-  const handleSuccess = useCallback(
-    (_updatedProperty?: unknown) => {
-      router.push(`/hosting/${propertyId}/description`);
-    },
-    [router, propertyId],
-  );
+  const handleSuccess = useCallback(() => {
+    router.push(`/hosting/${propertyId}/description`);
+  }, [router, propertyId]);
 
   usePropertyForm({
     propertyId,

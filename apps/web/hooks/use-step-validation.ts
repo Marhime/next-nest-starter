@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useLocale } from 'next-intl';
+import { useAddPropertyStore } from '@/app/[locale]/hosting/store';
 
 // Step indices
 export const STEP_LOCATION = 0;
@@ -139,8 +140,15 @@ export function useStepValidation(
   const pathname = usePathname();
   const hasCheckedRef = useRef(false);
   const hasRedirectedRef = useRef(false);
+  const isNavigating = useAddPropertyStore((state) => state.isNavigating);
+  const isSaving = useAddPropertyStore((state) => state.isSaving);
 
   useEffect(() => {
+    // ✅ CRITICAL: Don't validate during navigation or saving to prevent race conditions
+    if (isNavigating || isSaving) {
+      return;
+    }
+
     // Don't validate while loading
     if (isLoading) {
       hasCheckedRef.current = false;
@@ -181,7 +189,17 @@ export function useStepValidation(
       hasRedirectedRef.current = true;
       router.replace(redirectPath);
     }
-  }, [currentStepIndex, property?.id, isLoading, router, locale, pathname]);
+  }, [
+    currentStepIndex,
+    property?.id,
+    isLoading,
+    router,
+    locale,
+    pathname,
+    isNavigating,
+    isSaving,
+    property,
+  ]);
 
   // Reset check when property ID changes
   const prevPropertyIdRef = useRef(property?.id);

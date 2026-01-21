@@ -311,25 +311,26 @@ export function LocationPageClient({ property }: LocationPageClientProps) {
             />
           </div>
 
-          <div className="flex items-end justify-between">
-            <div className="flex items-center gap-4">
-              <div>
-                <p className="text-lg font-medium">
-                  {useExactAddress
-                    ? t('modes.exactAddress')
-                    : t('modes.approximateZone')}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {useExactAddress
-                    ? `${addressData.address ? addressData.address + ', ' : ''}${addressData.city}, ${addressData.state}, ${addressData.postalCode}, ${addressData.country}`
-                    : t('modes.approximateZoneDescription')}
-                </p>
-              </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
+            <div className="flex-1">
+              <p className="text-lg font-medium">
+                {useExactAddress
+                  ? t('modes.exactAddress')
+                  : t('modes.approximateZone')}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {useExactAddress
+                  ? addressData.address && addressData.city
+                    ? `${addressData.address}${addressData.city ? ', ' + addressData.city : ''}${addressData.state ? ', ' + addressData.state : ''}${addressData.postalCode ? ', ' + addressData.postalCode : ''}${addressData.country ? ', ' + addressData.country : ''}`
+                    : t('modes.exactAddressDescription')
+                  : t('modes.approximateZoneDescription')}
+              </p>
             </div>
             <Switch
               id="address-mode"
               checked={!useExactAddress}
               onCheckedChange={(checked) => setUseExactAddress(!checked)}
+              className="flex-shrink-0"
             />
           </div>
         </div>

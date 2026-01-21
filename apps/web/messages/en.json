@@ -436,16 +436,27 @@
     }
   },
   "PhotoUpload": {
-    "title": "Add photos",
-    "subtitle": "Minimum 2 photos • Maximum 20 photos",
-    "ready": "✓ Ready",
-    "remaining": "remaining",
-    "uploadTitle": "Upload photos",
-    "yourPhotos": "Your photos",
-    "coverPhotoInfo": "The first photo is your cover photo (large). Click on another photo to set it as cover.",
-    "coverBadge": "⭐ Cover photo",
-    "setCoverButton": "Set as cover",
-    "deleteButton": "Delete",
+    "title": "Showcase your property",
+    "subtitle": "Add high-quality photos to attract more guests",
+    "status": {
+      "ready": "Photo gallery ready",
+      "readyDescription": "Your property is beautifully presented with quality photos",
+      "addMore": "Add more photos",
+      "minimumRequired": "{count} more photo(s) required",
+      "maxPhotos": "of 20 max"
+    },
+    "upload": {
+      "title": "Upload your photos",
+      "addMoreTitle": "Add more photos",
+      "description": "Drag and drop or click to select. JPEG, PNG or WebP • Max 10MB per photo"
+    },
+    "gallery": {
+      "title": "Your photo gallery",
+      "description": "The first photo is your cover image. Click another to set it as cover.",
+      "coverBadge": "Cover Photo",
+      "setCoverButton": "Cover Photo",
+      "deleteButton": "Delete"
+    },
     "maxFilesError": "You can only upload {count} photos at a time.",
     "uploadingCount": "Uploading {count} photo{plural}...",
     "uploadedCount": "{count} photo{plural} added",
@@ -675,6 +686,9 @@
   "Confirmation": {
     "title": "🎉 Listing published successfully!",
     "noTitle": "Untitled listing",
+    "photoGallery": "Photo gallery",
+    "photoCount": "{count} photos",
+    "coverPhoto": "Cover photo",
     "needAccount": "Don't lose access to your listing!",
     "needAccountDesc": "Create a free account to manage your listings securely without worrying about tokens.",
     "securityTitle": "Guaranteed security",

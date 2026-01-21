@@ -214,11 +214,13 @@ function PropertyTypeSelection({ className }: { className?: string }) {
             </p>
 
             <button
-              className="w-full p-4 rounded-lg border-2 hover:border-primary flex items-center gap-4 text-left"
+              className="w-full p-5 rounded-lg border-2 hover:border-primary transition-colors flex items-center gap-4 text-left"
               onClick={handleResumeDraft}
             >
               <div className="flex-1">
-                <p className="font-medium">{t('resumeDraft.resume')}</p>
+                <p className="font-semibold text-base mb-1">
+                  {t('resumeDraft.resume')}
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {t('resumeDraft.resumeDesc')}
                 </p>
@@ -226,11 +228,13 @@ function PropertyTypeSelection({ className }: { className?: string }) {
             </button>
 
             <button
-              className="w-full p-4 rounded-lg border-2 hover:border-destructive flex items-center gap-4 text-left border-destructive/20"
+              className="w-full p-5 rounded-lg border-2 border-destructive/30 hover:border-destructive transition-colors flex items-center gap-4 text-left"
               onClick={handleCreateNew}
             >
               <div className="flex-1">
-                <p className="font-medium">{t('resumeDraft.createNew')}</p>
+                <p className="font-semibold text-base mb-1 text-destructive">
+                  {t('resumeDraft.createNew')}
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {t('resumeDraft.createNewDesc')}
                 </p>
@@ -241,46 +245,53 @@ function PropertyTypeSelection({ className }: { className?: string }) {
 
         {/* Step: Listing choice */}
         {!showResumeDraft && !listingChoice && (
-          <div className="grid grid-cols-1 gap-3">
-            <div className="grid grid-cols-2 gap-3 pt-3">
-              <button
-                className="p-4 rounded-lg border-2 hover:border-primary flex flex-col items-center gap-4"
-                onClick={() => setListingChoice('SALE')}
-              >
-                <DollarSign size={48} />
-                <div className="font-medium">{t('listing.sale')}</div>
-              </button>
+          <div className="space-y-3">
+            <button
+              className="w-full p-5 rounded-lg border-2 hover:border-primary transition-colors flex items-center gap-4 text-left group"
+              onClick={() => setListingChoice('SALE')}
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <DollarSign className="h-6 w-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-base">{t('listing.sale')}</p>
+                <p className="text-sm text-muted-foreground">
+                  Vente de bien immobilier
+                </p>
+              </div>
+            </button>
 
-              <button
-                className="p-4 rounded-lg border-2 hover:border-primary flex flex-col items-center gap-4"
-                onClick={() => setListingChoice('RENT')}
-              >
-                <KeyRound size={48} />
-                <div className="font-medium">{t('listing.rent')}</div>
-              </button>
-            </div>
+            <button
+              className="w-full p-5 rounded-lg border-2 hover:border-primary transition-colors flex items-center gap-4 text-left group"
+              onClick={() => setListingChoice('RENT')}
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <KeyRound className="h-6 w-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-base">{t('listing.rent')}</p>
+                <p className="text-sm text-muted-foreground">
+                  Location longue durée
+                </p>
+              </div>
+            </button>
           </div>
         )}
 
         {/* Step: Property type selection (shown after listing choice) */}
         {!showResumeDraft && listingChoice && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <button
-                  className="text-sm text-muted-foreground underline"
-                  onClick={() => setListingChoice(null)}
-                >
-                  {t('back')}
-                </button>
-              </div>
-            </div>
+          <div className="space-y-4">
+            <button
+              className="text-sm text-muted-foreground hover:text-foreground underline"
+              onClick={() => setListingChoice(null)}
+            >
+              ← {t('back')}
+            </button>
 
-            <div className="grid gap-4">
+            <div className="space-y-3">
               {propertyTypes.map((option) => {
                 const Icon = option.icon;
                 const isSelected = selectedType === option.type;
-                const isDisabled = isCreating && !isSelected;
 
                 return (
                   <button
@@ -288,24 +299,25 @@ function PropertyTypeSelection({ className }: { className?: string }) {
                     onClick={() => setSelectedType(option.type)}
                     disabled={isCreating}
                     className={cn(
-                      'flex items-start gap-4 rounded-lg border-2 p-4 text-left transition-all hover:border-primary',
-                      isSelected && 'border-primary bg-primary/5',
+                      'w-full flex items-center gap-4 rounded-lg border-2 p-5 text-left transition-all',
+                      isSelected
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary',
                       isCreating && 'opacity-50 cursor-not-allowed',
-                      !isCreating && !isSelected && 'hover:bg-accent',
                     )}
                   >
                     <div
                       className={cn(
-                        'flex h-12 w-12 items-center justify-center rounded-lg',
+                        'flex h-12 w-12 items-center justify-center rounded-lg transition-colors',
                         isSelected
                           ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted',
+                          : 'bg-primary/10',
                       )}
                     >
                       <Icon className="h-6 w-6" />
                     </div>
-                    <div className="flex-1 space-y-1">
-                      <p className="font-medium leading-none">
+                    <div className="flex-1">
+                      <p className="font-semibold text-base mb-1">
                         {t(option.labelKey)}
                       </p>
                       <p className="text-sm text-muted-foreground">

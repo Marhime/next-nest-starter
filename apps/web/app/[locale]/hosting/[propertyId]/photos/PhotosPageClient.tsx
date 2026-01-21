@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useEditToken } from '@/hooks/use-edit-token';
 import { PhotoUploadZone } from '@/components/photos/PhotoUploadZone';
-import { getPhotoUrl } from '@/lib/utils';
+import { cn, getPhotoUrl } from '@/lib/utils';
 import { usePropertyForm } from '@/hooks/use-property-form';
 import { STEP_PHOTOS, useStepValidation } from '@/hooks/use-step-validation';
 import { Card, CardTitle } from '@/components/ui/card';
@@ -59,12 +59,9 @@ export function PhotosPageClient({ property }: PhotosPageClientProps) {
 
   // ✅ Memoize success callback - accepts updatedProperty to avoid stale data
   const propertyIdStable = property.id;
-  const handleSuccess = useCallback(
-    (_?: unknown) => {
-      router.push(`/hosting/${propertyIdStable}/about`);
-    },
-    [router, propertyIdStable],
-  );
+  const handleSuccess = useCallback(() => {
+    router.push(`/hosting/${propertyIdStable}/about`);
+  }, [router, propertyIdStable]);
 
   // Property form integration - photos don't need payload, just validation
   usePropertyForm({
@@ -182,6 +179,8 @@ export function PhotosPageClient({ property }: PhotosPageClientProps) {
     }
   };
 
+  console.log(MINIMUM_PHOTOS - photos.length, photos.length, MINIMUM_PHOTOS);
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
       {/* Header */}
@@ -190,39 +189,35 @@ export function PhotosPageClient({ property }: PhotosPageClientProps) {
         <p className="text-muted-foreground text-lg">{t('subtitle')}</p>
       </div>
 
-      {/* Status Card */}
-      <Card className="p-6">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-primary/10 rounded-lg">
-            <Camera className="h-8 w-8 text-primary" />
-          </div>
-          <div className="flex-1">
-            <CardTitle className="text-lg font-medium">
-              {photos.length >= MINIMUM_PHOTOS
-                ? t('status.ready')
-                : t('status.addMore')}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              {photos.length >= MINIMUM_PHOTOS
-                ? t('status.readyDescription')
-                : t('status.minimumRequired', { count: MINIMUM_PHOTOS - photos.length })}
-            </p>
-          </div>
-          <div className="text-right">
-            <div className="text-3xl font-bold text-primary">{photos.length}</div>
-            <div className="text-sm text-muted-foreground">{t('status.maxPhotos')}</div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Upload Zone */}
+      {/* Upload Zone - Shown after gallery or first if no photos */}
       <Card className="p-6">
         <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold">{t('upload.title')}</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t('upload.description')}
-            </p>
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold">
+                {photos.length > 0
+                  ? t('upload.addMoreTitle')
+                  : t('upload.title')}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                {t('upload.description')}
+              </p>
+            </div>
+            <div className="text-right">
+              <div
+                className={cn(
+                  'text-3xl font-bold',
+                  photos.length >= MINIMUM_PHOTOS && ' text-primary',
+                )}
+              >
+                {photos.length >= MINIMUM_PHOTOS
+                  ? `${photos.length}`
+                  : `${photos.length}/${2}`}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {t('status.maxPhotos')}
+              </div>
+            </div>
           </div>
           <PhotoUploadZone
             onUpload={handleUpload}
@@ -232,13 +227,17 @@ export function PhotosPageClient({ property }: PhotosPageClientProps) {
         </div>
       </Card>
 
-      {/* Gallery */}
+      {/* Gallery - Shown FIRST if photos exist */}
       {photos.length > 0 && (
         <Card className="p-6">
           <div className="space-y-4">
             <div>
               <h3 className="text-lg font-semibold">
-                {t('gallery.title')} ({photos.length})
+                {t('gallery.title')} (
+                {photos.length >= MINIMUM_PHOTOS
+                  ? `${photos.length}`
+                  : `${photos.length}/${2}`}
+                )
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {t('gallery.description')}
@@ -259,7 +258,9 @@ export function PhotosPageClient({ property }: PhotosPageClientProps) {
                     <div
                       key={photo.id}
                       className={`relative group rounded-lg overflow-hidden border-2 hover:border-primary transition-all duration-300 ${
-                        isCover ? 'md:col-span-2 md:row-span-2 border-primary/50' : 'aspect-square hover:shadow-lg'
+                        isCover
+                          ? 'md:col-span-2 md:row-span-2 border-primary/50'
+                          : 'aspect-square hover:shadow-lg'
                       }`}
                     >
                       <div
@@ -290,7 +291,7 @@ export function PhotosPageClient({ property }: PhotosPageClientProps) {
                       )}
 
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-4">
-                        <div className="flex gap-2 w-full">
+                        <div className="flex flex-col gap-2 w-full">
                           {!isCover && (
                             <button
                               onClick={() => handleSetPrimary(photo.id)}
@@ -298,7 +299,9 @@ export function PhotosPageClient({ property }: PhotosPageClientProps) {
                               title={t('gallery.setCoverButton')}
                             >
                               <Star className="h-4 w-4" />
-                              <span className="hidden sm:inline">{t('gallery.setCoverButton')}</span>
+                              <span className="hidden sm:inline">
+                                {t('gallery.setCoverButton')}
+                              </span>
                             </button>
                           )}
                           <button
@@ -307,7 +310,9 @@ export function PhotosPageClient({ property }: PhotosPageClientProps) {
                             title={t('gallery.deleteButton')}
                           >
                             <Trash2 className="h-4 w-4" />
-                            <span className="hidden sm:inline">{t('gallery.deleteButton')}</span>
+                            <span className="hidden sm:inline">
+                              {t('gallery.deleteButton')}
+                            </span>
                           </button>
                         </div>
                       </div>

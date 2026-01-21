@@ -35,6 +35,7 @@ export function usePropertyForm({
   const { update } = usePropertyUpdate({ propertyId });
   const setIsSaving = useAddPropertyStore((state) => state.setIsSaving);
   const isSaving = useAddPropertyStore((state) => state.isSaving);
+  const setIsNavigating = useAddPropertyStore((state) => state.setIsNavigating);
   const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
 
   // ✅ Set current step automatically - DRY principle
@@ -71,9 +72,13 @@ export function usePropertyForm({
       // ✅ Wait for data refresh to ensure layout sees updated data
       await mutate();
 
+      // ⚠️ CRITICAL: Wait for React to propagate the updated data through the context
+      // This ensures the new page's useStepValidation receives fresh data
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       toast.success(t('updateSuccess'));
 
-      // ✅ Navigate after mutate is complete
+      // ✅ Navigate after mutate is complete AND data propagation
       if (onSuccessRef.current) {
         onSuccessRef.current(data);
       }
@@ -92,10 +97,19 @@ export function usePropertyForm({
 
   // ✅ Create stable handleNavigateNext with useCallback
   const handleNavigateNext = useCallback(async () => {
-    const success = await handleSave();
-    // onSuccess is now called inside handleSave after mutate
-    return success;
-  }, [handleSave]);
+    // Mark navigation as in progress to block step validations
+    setIsNavigating?.(true);
+    try {
+      const success = await handleSave();
+      // onSuccess is now called inside handleSave after mutate
+      return success;
+    } finally {
+      // Reset navigation state after a delay to ensure new page mounts with correct data
+      setTimeout(() => {
+        setIsNavigating?.(false);
+      }, 200);
+    }
+  }, [handleSave, setIsNavigating]);
   // ✅ handleSave changes when payload changes, which is expected and correct
 
   // ✅ Pass handleNavigateNext to usePropertyStep so it registers with the store

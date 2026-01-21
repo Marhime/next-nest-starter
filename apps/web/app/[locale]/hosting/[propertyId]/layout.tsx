@@ -84,6 +84,20 @@ export default function AddPropertyLayout({
     editToken,
   );
 
+  // ✅ Synchronize isSaving with loading state to block validations during data refresh
+  const setIsSaving = useAddPropertyStore((state) => state.setIsSaving);
+  useEffect(() => {
+    if (isLoading) {
+      setIsSaving?.(true);
+    } else {
+      // Keep isSaving true for a short delay after loading to ensure data propagation
+      const timer = setTimeout(() => {
+        setIsSaving?.(false);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, setIsSaving]);
+
   const isConfirmationStep = pathname.endsWith('/confirmation');
 
   // get user
