@@ -13,14 +13,17 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { useSearchStore } from '@/stores/search-store';
+import { Property, useSearchStore } from '@/stores/search-store';
 import { Card } from '../ui/card';
 
-export function PropertyDetailsModal() {
-  const { selectedPropertyId, properties, selectProperty } = useSearchStore();
+export function PropertyDetailsModal({
+  selectedProperty,
+}: {
+  selectedProperty: Property | null;
+}) {
+  const { selectProperty } = useSearchStore();
 
-  const selectedProperty = properties.find((p) => p.id === selectedPropertyId);
-  const isOpen = selectedPropertyId !== null && selectedProperty !== undefined;
+  const isOpen = selectedProperty !== undefined;
 
   const handleClose = () => {
     selectProperty(null);

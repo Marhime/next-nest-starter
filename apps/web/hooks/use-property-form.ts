@@ -76,8 +76,6 @@ export function usePropertyForm({
       // This ensures the new page's useStepValidation receives fresh data
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      toast.success(t('updateSuccess'));
-
       // ✅ Navigate after mutate is complete AND data propagation
       if (onSuccessRef.current) {
         onSuccessRef.current(data);

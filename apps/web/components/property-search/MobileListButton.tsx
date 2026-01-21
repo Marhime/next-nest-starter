@@ -11,7 +11,7 @@ import { useSearchStore } from '@/stores/search-store';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 export function MobileListButton() {
-  const { properties, setMobileDrawerOpen } = useSearchStore();
+  const { mapMarkers, setMobileDrawerOpen } = useSearchStore();
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
   // Only show on mobile
@@ -19,7 +19,7 @@ export function MobileListButton() {
     return null;
   }
 
-  const propertiesCount = properties?.length ?? 0;
+  const propertiesCount = mapMarkers?.length ?? 0;
 
   return (
     <Button

@@ -14,7 +14,7 @@ const Footer = () => {
               aria-label="Brand"
             >
               <Image
-                src="/logo.svg"
+                src="/logo1.svg"
                 alt="Home image showcase"
                 width={170}
                 height={30}

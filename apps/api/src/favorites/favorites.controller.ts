@@ -7,7 +7,7 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { FavoritesService } from './favorites.service';
-import { Session } from '@/auth';
+import { Session } from '@thallesp/nestjs-better-auth';
 
 @Controller('favorites')
 export class FavoritesController {

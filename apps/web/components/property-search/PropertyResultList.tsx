@@ -16,7 +16,8 @@ import { Home, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { usePropertyData } from '@/hooks/use-property-data';
+import { useMapMarkers } from '@/hooks/use-map-markers';
+import { usePropertyDetails } from '@/hooks/use-property-details';
 import {
   Pagination,
   PaginationContent,
@@ -37,41 +38,49 @@ import {
 
 export function PropertyResultList() {
   const {
-    properties,
-    isFetching,
-    error,
+    mapMarkers,
+    isMarkersLoading,
     currentPage,
+    itemsPerPage,
     setCurrentPage,
     setSidebarWidth,
     isMobileDrawerOpen,
     setMobileDrawerOpen,
   } = useSearchStore();
 
-  // Fetch properties data
-  usePropertyData();
+  // Fetch markers (Single Source of Truth)
+  const { isFetching: isMarkersFetching } = useMapMarkers();
 
   const isDesktop = useMediaQuery('(min-width: 990px)');
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const isError = error !== null;
-
-  // Client-side pagination (20 items per page) - Memoized for performance
-  const ITEMS_PER_PAGE = 20;
-
+  // Derive paginated IDs from markers
   const paginationData = useMemo(() => {
-    const allProperties = properties || [];
-    const totalResults = allProperties.length;
-    const totalPages = Math.ceil(totalResults / ITEMS_PER_PAGE);
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    const paginatedProperties = allProperties.slice(startIndex, endIndex);
+    const allMarkerIds = mapMarkers.map((m) => m.id);
+    const totalResults = allMarkerIds.length;
+    const totalPages = Math.ceil(totalResults / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedIds = allMarkerIds.slice(startIndex, endIndex);
 
-    return { totalResults, totalPages, paginatedProperties };
-  }, [properties, currentPage]);
+    return { totalResults, totalPages, paginatedIds };
+  }, [mapMarkers, currentPage, itemsPerPage]);
 
-  const { totalResults, totalPages, paginatedProperties } = paginationData;
+  const { totalResults, totalPages, paginatedIds } = paginationData;
+
+  // Fetch full details for visible IDs only
+  const {
+    properties,
+    isLoading: isDetailsLoading,
+    isFetching: isDetailsFetching,
+    error,
+  } = usePropertyDetails(paginatedIds);
+
+  // Combined fetching state
+  const isFetching = isMarkersFetching || isDetailsFetching;
+  const isError = error !== null;
 
   // Handle page change with scroll to top
   const handlePageChange = (newPage: number) => {
@@ -146,10 +155,6 @@ export function PropertyResultList() {
     };
   }, [isResizing, setSidebarWidth]);
 
-  const handleResizeStart = () => {
-    setIsResizing(true);
-  };
-
   // Mobile: Drawer with swipe-to-dismiss (no overlay)
   if (!isDesktop) {
     return (
@@ -164,7 +169,7 @@ export function PropertyResultList() {
             <DrawerTitle>Recherche de propriétés</DrawerTitle>
             <div className="flex items-center gap-2 pt-2">
               {isFetching && (
-                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               )}
             </div>
           </DrawerHeader>
@@ -173,7 +178,7 @@ export function PropertyResultList() {
             isFetching={isFetching}
             isError={isError}
             error={error}
-            filteredProperties={paginatedProperties}
+            filteredProperties={properties}
             className="px-4 pt-2 max-md:overflow-y-auto"
             currentPage={currentPage}
             totalPages={totalPages}
@@ -206,7 +211,7 @@ export function PropertyResultList() {
           isFetching={isFetching}
           isError={isError}
           error={error}
-          filteredProperties={paginatedProperties}
+          filteredProperties={properties}
           className={cn('p-4 xl:p-12 md:py-8 ')}
           currentPage={currentPage}
           totalPages={totalPages}
@@ -257,7 +262,7 @@ function PropertyListContent({
         <>
           <Skeleton className="h-4 w-48 mb-4 font-semibold" />
           <div
-            className="grid gap-4 md:gap-y-10 md:gap-x-6 auto-rows-max"
+            className="grid gap-4 md:gap-y-6 md:gap-x-6 auto-rows-max"
             style={{
               gridTemplateColumns:
                 'repeat(auto-fill, minmax(min(50%, 300px), 1fr))',
@@ -307,7 +312,7 @@ function PropertyListContent({
             {totalResults !== 1 ? 's' : ''} dans la zone de la carte
           </p>
           <div
-            className="grid gap-4 md:gap-y-10 md:gap-x-6"
+            className="grid gap-4 md:gap-y-6 md:gap-x-6"
             style={{
               gridTemplateColumns:
                 'repeat(var(--grid-columns-breakpoints), minmax(0, 1fr))',

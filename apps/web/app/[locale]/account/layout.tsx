@@ -7,6 +7,7 @@ import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { useRouter, usePathname } from 'next/navigation';
 import { authClient } from '@/lib/auth/auth-client';
 import { cn } from '@/lib/utils';
+import Header from '@/components/layout/Header';
 
 export default function AccountLayout({
   children,
@@ -34,54 +35,57 @@ export default function AccountLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Sidebar */}
-          <aside className="w-full md:w-64">
-            <div className="bg-card p-4 rounded-lg sticky top-6">
-              <nav className="space-y-2">
-                <Link
-                  href="/account/listings"
-                  className={cn(
-                    'block py-2 px-3 rounded hover:bg-muted transition-colors',
-                    pathname?.includes('/account/listings') &&
-                      'bg-muted font-medium',
-                  )}
-                >
-                  {t('nav.listings')}
-                </Link>
-                <Link
-                  href="/account/favorites"
-                  className={cn(
-                    'block py-2 px-3 rounded hover:bg-muted transition-colors',
-                    pathname?.includes('/account/favorites') &&
-                      'bg-muted font-medium',
-                  )}
-                >
-                  {t('nav.favorites')}
-                </Link>
-                <Link
-                  href="/account/settings"
-                  className={cn(
-                    'block py-2 px-3 rounded hover:bg-muted transition-colors',
-                    pathname?.includes('/account/settings') &&
-                      'bg-muted font-medium',
-                  )}
-                >
-                  {t('nav.settings')}
-                </Link>
-              </nav>
-            </div>
-          </aside>
+    <>
+      <Header />
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Sidebar */}
+            <aside className="w-full md:w-64">
+              <div className="bg-card p-4 rounded-lg sticky top-6">
+                <nav className="space-y-2">
+                  <Link
+                    href="/account/listings"
+                    className={cn(
+                      'block py-2 px-3 rounded hover:bg-muted transition-colors',
+                      pathname?.includes('/account/listings') &&
+                        'bg-muted font-medium',
+                    )}
+                  >
+                    {t('nav.listings')}
+                  </Link>
+                  <Link
+                    href="/account/favorites"
+                    className={cn(
+                      'block py-2 px-3 rounded hover:bg-muted transition-colors',
+                      pathname?.includes('/account/favorites') &&
+                        'bg-muted font-medium',
+                    )}
+                  >
+                    {t('nav.favorites')}
+                  </Link>
+                  <Link
+                    href="/account/settings"
+                    className={cn(
+                      'block py-2 px-3 rounded hover:bg-muted transition-colors',
+                      pathname?.includes('/account/settings') &&
+                        'bg-muted font-medium',
+                    )}
+                  >
+                    {t('nav.settings')}
+                  </Link>
+                </nav>
+              </div>
+            </aside>
 
-          {/* Main content */}
-          <main className="flex-1">{children}</main>
+            {/* Main content */}
+            <main className="flex-1">{children}</main>
+          </div>
         </div>
-      </div>
 
-      {/* Mobile nav */}
-      <MobileBottomNav />
-    </div>
+        {/* Mobile nav */}
+        <MobileBottomNav />
+      </div>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 import React from 'react';
-import SearchBarHome from '../layout/SearchBarHome';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import SearchBarHome from '../layout/SearchBarHome';
 
 const Hero = () => {
   const t = useTranslations('Home');

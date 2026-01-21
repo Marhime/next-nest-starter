@@ -133,9 +133,9 @@ export class PropertiesController {
   @Get('map-markers')
   @AllowAnonymous()
   @ApiOperation({
-    summary: 'Get all property markers within map bounds',
+    summary: 'Get all property markers within map bounds with filters',
     description:
-      'Returns lightweight property data (id, coordinates, price) for map display without pagination',
+      'Returns lightweight property data (id, coordinates, price) for map display without pagination. Applies all filters.',
   })
   @ApiQuery({
     name: 'north',
@@ -166,18 +166,33 @@ export class PropertiesController {
     @Query('south') southStr: string,
     @Query('east') eastStr: string,
     @Query('west') westStr: string,
+    @Query() query: QueryPropertyDto,
   ) {
     const north = parseFloat(northStr);
     const south = parseFloat(southStr);
     const east = parseFloat(eastStr);
     const west = parseFloat(westStr);
 
-    return this.propertiesService.getMapMarkers({
-      north,
-      south,
-      east,
-      west,
-    });
+    return this.propertiesService.getMapMarkers(
+      { north, south, east, west },
+      query,
+    );
+  }
+
+  @Post('by-ids')
+  @AllowAnonymous()
+  @ApiOperation({
+    summary: 'Get full property details by IDs',
+    description:
+      'Returns complete property information for specific property IDs. Used for paginated list display.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Properties retrieved successfully',
+  })
+  @HttpCode(HttpStatus.OK)
+  getByIds(@Body() body: { ids: number[] }) {
+    return this.propertiesService.findByIds(body.ids);
   }
 
   @Get('user/me')

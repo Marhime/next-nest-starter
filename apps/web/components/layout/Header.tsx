@@ -3,13 +3,14 @@
 import React, { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { useLocale } from 'next-intl';
-
-import LocaleSwitcher from '../LocaleSwitcher';
-import ProfileDropdown from './ProfileDropdown';
 import Link from 'next/link';
 import { AddPropertyButton } from '../AddPropertyButton';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { HeaderSearchBar } from '../search/HeaderSearchBar';
+import { TextAlignJustify } from 'lucide-react';
+import LocaleSwitcher from '../LocaleSwitcher';
+import ProfileDropdown from './ProfileDropdown';
 
 const Header = () => {
   const pathname = usePathname();
@@ -31,43 +32,54 @@ const Header = () => {
   return (
     <div
       className={cn(
-        'sticky top-0 left-0 right-0 p-4 xl:py-6 z-99 mx-auto bg-white border-b',
+        'sticky top-0 left-0 right-0 py-4 xl:py-6 z-99 mx-auto bg-white border-b',
       )}
     >
       <div
         className={cn(
-          'flex items-center justify-between mx-auto',
+          'flex justify-between items-center gap-2 md:gap-4 mx-auto w-full',
           variant === 'home' ? 'container' : 'container-fluid',
         )}
       >
         {/* Logo */}
-        <Link
-          href={'/'}
-          className="text-primary text-2xl font-bold shrink-0 flex items-center"
-        >
-          <Image
-            src="/logo1.svg"
-            alt="Home image showcase"
-            width={170}
-            height={30}
-            priority
-          />
-        </Link>
+        <div className="flex gap-2 md:gap-4 items-center">
+          <TextAlignJustify size={28} className="relative text-primary" />
+          <Link
+            href={'/'}
+            className="text-primary text-2xl font-bold shrink-0 flex items-center"
+          >
+            <Image
+              src="/logo.svg"
+              alt="Logo"
+              width={34}
+              height={34}
+              priority
+              className="block md:hidden"
+            />
+            <Image
+              src="/logo1.svg"
+              alt="Logo"
+              width={170}
+              height={30}
+              priority
+              className="hidden md:block"
+            />
+          </Link>
+        </div>
 
-        {/* Search Button - Conditional based on page */}
-
-        {/* <SearchFiltersButton variant={variant} className="bg-white" />
-        {variant === 'find' && (
-          <div className="flex-1 flex justify-end">
-            <SlidersHorizontal />
-          </div>
-        )} */}
+        {/* Header Search Bar - Shows only on /find page */}
+        <HeaderSearchBar />
 
         {/* Right Actions */}
-        <div className="text-white flex justify-end items-center gap-4 shrink-0">
-          <AddPropertyButton className="rounded-full" variant="default" />
+        <div className="text-white flex gap-2 md:gap-4 justify-end items-center shrink-0">
+          <AddPropertyButton
+            className="rounded-full"
+            variant={'default'}
+            icon={true}
+          />
+
           <LocaleSwitcher className="hidden md:block" />
-          <ProfileDropdown />
+          {/* <ProfileDropdown /> */}
         </div>
       </div>
     </div>

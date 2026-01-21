@@ -86,18 +86,13 @@ export interface PropertyMarker {
 
 // Main store state
 export interface SearchState extends SearchFilters {
-  // Properties data (for list with pagination)
-  properties: Property[];
-  isLoading: boolean;
-  isFetching: boolean; // ✅ True during any fetch (initial or refetch)
-  error: Error | null;
-  currentPage: number; // ✅ Current page number
-  totalPages: number; // ✅ Total number of pages
-  totalResults: number; // ✅ Total number of results
-
-  // Map markers (lightweight data, no pagination)
+  // Map markers (lightweight data, no pagination) - SINGLE SOURCE OF TRUTH
   mapMarkers: PropertyMarker[];
   isMarkersLoading: boolean;
+
+  // Pagination state (for list display, derived from markers)
+  currentPage: number;
+  itemsPerPage: number;
 
   // Map state
   mapCenter: [number, number];
@@ -124,17 +119,11 @@ export interface SearchState extends SearchFilters {
   toggleAmenity: (amenity: string) => void;
   setMapBounds: (bounds: MapBounds | null) => void;
 
-  // Properties Actions
-  setProperties: (properties: Property[]) => void;
-  setLoading: (loading: boolean) => void;
-  setFetching: (fetching: boolean) => void;
-  setError: (error: Error | null) => void;
+  // Pagination Actions
   setCurrentPage: (page: number) => void;
-  setTotalPages: (totalPages: number) => void;
-  setTotalResults: (totalResults: number) => void;
-  resetProperties: () => void; // ✅ Reset list when filters change
+  setItemsPerPage: (items: number) => void;
 
-  // Map Markers Actions
+  // Map Markers Actions (Single Source of Truth)
   setMapMarkers: (markers: PropertyMarker[]) => void;
   setMarkersLoading: (loading: boolean) => void;
 
@@ -159,9 +148,9 @@ export interface SearchState extends SearchFilters {
 }
 
 const initialFilters: SearchFilters = {
-  location: null,
-  latitude: null,
-  longitude: null,
+  location: 'Puerto Escondido, Oaxaca',
+  latitude: 15.8671,
+  longitude: -97.0524,
   minPrice: null,
   maxPrice: null,
   listingType: 'RENT',
@@ -186,22 +175,17 @@ export const useSearchStore = create<SearchState>()(
         // Initial state - Filters
         ...initialFilters,
 
-        // Initial state - Properties (list with pagination)
-        properties: [],
-        isLoading: false,
-        isFetching: false,
-        error: null,
-        currentPage: 1,
-        totalPages: 0,
-        totalResults: 0,
-
-        // Initial state - Map markers (lightweight, no pagination)
+        // Map markers (SINGLE SOURCE OF TRUTH)
         mapMarkers: [],
         isMarkersLoading: false,
 
-        // Initial state - Map (Puerto Escondido, Mexico)
-        mapCenter: [15.8651, -97.0737], // Puerto Escondido by default
-        mapZoom: 10,
+        // Pagination
+        currentPage: 1,
+        itemsPerPage: 20,
+
+        // Map state - Centered on Puerto Escondido
+        mapCenter: [15.8671, -97.0524] as [number, number],
+        mapZoom: 13,
 
         // Initial state - Selection
         selectedPropertyId: null,
@@ -285,27 +269,15 @@ export const useSearchStore = create<SearchState>()(
           }
         },
 
-        // Properties actions
-        setProperties: (properties) => set({ properties }),
-        setLoading: (isLoading) => set({ isLoading }),
-        setFetching: (isFetching: boolean) => set({ isFetching }),
-        setError: (error) => set({ error }),
+        // Pagination actions
         setCurrentPage: (page) => set({ currentPage: page }),
-        setTotalPages: (totalPages) => set({ totalPages }),
-        setTotalResults: (totalResults) => set({ totalResults }),
-        resetProperties: () =>
-          set({
-            properties: [],
-            currentPage: 1,
-            totalPages: 0,
-            totalResults: 0,
-          }),
+        setItemsPerPage: (items) => set({ itemsPerPage: items }),
 
-        // Map markers actions
+        // Map markers actions (Single Source of Truth)
         setMapMarkers: (markers) => set({ mapMarkers: markers }),
         setMarkersLoading: (loading) => set({ isMarkersLoading: loading }),
 
-        // Map actions
+        // Map state actions
         setMapCenter: (center) => set({ mapCenter: center }),
         setMapZoom: (zoom) => set({ mapZoom: zoom }),
 

@@ -29,7 +29,7 @@ const RecentPropertiesList = ({ listingType }: RecentPropertiesListProps) => {
   }
 
   return (
-    <div className="pt-12 grid grid-cols-4 gap-6">
+    <div className="pt-8 md:pt-12 grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {properties.map((property) => (
         <PropertyCard key={property.id} property={property} />
       ))}

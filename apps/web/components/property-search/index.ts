@@ -10,4 +10,3 @@
 // export { PropertyMap } from './PropertyMap'; // ❌ Removed - causes SSR errors
 export { PropertyResultList } from './PropertyResultList';
 export { PropertyCard } from './PropertyCard';
-export { PropertyFilters } from './PropertyFilters';

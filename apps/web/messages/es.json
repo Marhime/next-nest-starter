@@ -669,6 +669,7 @@
     "maxPricePlaceholderRent": "20,000 MXN",
     "perMonth": "/mes",
     "propertyType": "Tipo de propiedad",
+    "bedroomsBathrooms": "Recámaras y baños",
     "allTypes": "Todos los tipos",
     "bedrooms": "Recámaras",
     "bathrooms": "Baños",

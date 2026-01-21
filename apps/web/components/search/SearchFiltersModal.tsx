@@ -12,10 +12,18 @@ import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LocationSearchBar } from '@/components/shared/LocationSearchBar';
-import { Home, Key } from 'lucide-react';
+import {
+  Home,
+  Key,
+  MapPin,
+  DollarSign,
+  BedDouble,
+  Maximize2,
+} from 'lucide-react';
 import { useSearchStore } from '@/stores/search-store';
 import type { GeocodingResult } from '@/hooks/use-geocoding';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -113,83 +121,67 @@ export const FiltersContent: React.FC<FiltersContentProps> = ({
   setLocalMaxArea,
 }: FiltersContentProps) => {
   return (
-    <div className="overflow-y-auto p-4 md:px-0 space-y-6">
+    <div className="overflow-y-auto p-4 md:px-0 space-y-4">
       {/* Type de transaction */}
-      <div className="space-y-2">
-        <label className="text-sm font-semibold">{t('lookingFor')}</label>
-        <div className="grid grid-cols-2 gap-2">
-          {LISTING_TYPES.map(({ value, icon: Icon }) => (
-            <Button
+      <div className="grid grid-cols-2 gap-2">
+        {LISTING_TYPES.map(({ value, icon: Icon }) => {
+          const isActive = selectedType === value;
+          return (
+            <button
               key={value}
               type="button"
-              variant={selectedType === value ? 'default' : 'outline'}
-              className="flex items-center justify-center gap-2 h-12"
               onClick={() => setSelectedType(value)}
+              className={cn(
+                'flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all',
+                isActive
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border hover:border-primary/50',
+              )}
             >
-              <Icon className="h-5 w-5" />
-              <span className="text-sm font-medium">
+              <Icon className="h-4 w-4" />
+              <span className="text-sm">
                 {value === 'SALE' ? t('buy') : t('rent')}
               </span>
-            </Button>
-          ))}
-        </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Localisation */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold">{t('location')}</label>
+        <label className="text-sm font-medium">{t('location')}</label>
         <LocationSearchBar
           onLocationSelect={handleLocationSelect}
           placeholder={t('locationPlaceholder')}
           defaultValue={searchLocation}
-          showCurrentLocationButton={true}
+          className="h-9"
         />
       </div>
 
       {/* Prix adapté selon SALE ou RENT */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold">
+        <label className="text-sm font-medium">
           {selectedType === 'SALE' ? t('budgetBuy') : t('budgetRent')}
         </label>
         <div className="grid grid-cols-2 gap-2">
-          <div>
-            <Input
-              type="number"
-              placeholder={
-                selectedType === 'SALE'
-                  ? t('minPricePlaceholderBuy')
-                  : t('minPricePlaceholderRent')
-              }
-              value={localMinPrice}
-              onChange={(e) => setLocalMinPrice(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {t('minPrice')}
-              {selectedType === 'RENT' ? t('perMonth') : ''}
-            </p>
-          </div>
-          <div>
-            <Input
-              type="number"
-              placeholder={
-                selectedType === 'SALE'
-                  ? t('maxPricePlaceholderBuy')
-                  : t('maxPricePlaceholderRent')
-              }
-              value={localMaxPrice}
-              onChange={(e) => setLocalMaxPrice(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {t('maxPrice')}
-              {selectedType === 'RENT' ? t('perMonth') : ''}
-            </p>
-          </div>
+          <Input
+            type="number"
+            placeholder={t('minPrice')}
+            value={localMinPrice}
+            onChange={(e) => setLocalMinPrice(e.target.value)}
+          />
+          <Input
+            type="number"
+            placeholder={t('maxPrice')}
+            value={localMaxPrice}
+            onChange={(e) => setLocalMaxPrice(e.target.value)}
+          />
         </div>
       </div>
 
       {/* Type de propriété */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold">{t('propertyType')}</label>
+        <label className="text-sm font-medium">{t('propertyType')}</label>
         <Select
           value={selectedPropertyType || 'all'}
           onValueChange={(value) =>
@@ -214,44 +206,47 @@ export const FiltersContent: React.FC<FiltersContentProps> = ({
 
       {/* Chambres et Salles de bain (sauf pour terrains) */}
       {selectedPropertyType !== 'LAND' && (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-semibold">{t('bedrooms')}</label>
-            <Select
-              value={selectedMinBedrooms}
-              onValueChange={setSelectedMinBedrooms}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={t('all')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('all')}</SelectItem>
-                <SelectItem value="1">1+</SelectItem>
-                <SelectItem value="2">2+</SelectItem>
-                <SelectItem value="3">3+</SelectItem>
-                <SelectItem value="4">4+</SelectItem>
-                <SelectItem value="5">5+</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">
+            {t('bedroomsBathrooms')}
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Select
+                value={selectedMinBedrooms}
+                onValueChange={setSelectedMinBedrooms}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t('bedrooms')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('all')}</SelectItem>
+                  <SelectItem value="1">1+</SelectItem>
+                  <SelectItem value="2">2+</SelectItem>
+                  <SelectItem value="3">3+</SelectItem>
+                  <SelectItem value="4">4+</SelectItem>
+                  <SelectItem value="5">5+</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-semibold">{t('bathrooms')}</label>
-            <Select
-              value={selectedMinBathrooms}
-              onValueChange={setSelectedMinBathrooms}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={t('all')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('all')}</SelectItem>
-                <SelectItem value="1">1+</SelectItem>
-                <SelectItem value="2">2+</SelectItem>
-                <SelectItem value="3">3+</SelectItem>
-                <SelectItem value="4">4+</SelectItem>
-              </SelectContent>
-            </Select>
+            <div>
+              <Select
+                value={selectedMinBathrooms}
+                onValueChange={setSelectedMinBathrooms}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t('bathrooms')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('all')}</SelectItem>
+                  <SelectItem value="1">1+</SelectItem>
+                  <SelectItem value="2">2+</SelectItem>
+                  <SelectItem value="3">3+</SelectItem>
+                  <SelectItem value="4">4+</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       )}
@@ -259,24 +254,20 @@ export const FiltersContent: React.FC<FiltersContentProps> = ({
       {/* Surface pour les terrains */}
       {selectedPropertyType === 'LAND' && (
         <div className="space-y-2">
-          <label className="text-sm font-semibold">{t('area')}</label>
+          <label className="text-sm font-medium">{t('area')}</label>
           <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Input
-                type="number"
-                placeholder={t('minArea')}
-                value={localMinArea}
-                onChange={(e) => setLocalMinArea(e.target.value)}
-              />
-            </div>
-            <div>
-              <Input
-                type="number"
-                placeholder={t('maxArea')}
-                value={localMaxArea}
-                onChange={(e) => setLocalMaxArea(e.target.value)}
-              />
-            </div>
+            <Input
+              type="number"
+              placeholder={t('minArea')}
+              value={localMinArea}
+              onChange={(e) => setLocalMinArea(e.target.value)}
+            />
+            <Input
+              type="number"
+              placeholder={t('maxArea')}
+              value={localMaxArea}
+              onChange={(e) => setLocalMaxArea(e.target.value)}
+            />
           </div>
         </div>
       )}
@@ -458,8 +449,8 @@ export function SearchFiltersModal({
             setLocalMaxArea={setLocalMaxArea}
           />
 
-          <DrawerFooter className="pt-4 border-t">
-            <Button className="w-full h-12" size="lg" onClick={handleSearch}>
+          <DrawerFooter className="pt-2">
+            <Button className="w-full" onClick={handleSearch}>
               {t('search')}
             </Button>
             <DrawerClose asChild>
@@ -502,7 +493,7 @@ export function SearchFiltersModal({
           setLocalMaxArea={setLocalMaxArea}
         />
 
-        <DialogFooter className="pt-4 border-t">
+        <DialogFooter className="pt-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t('cancel')}
           </Button>

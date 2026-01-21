@@ -676,26 +676,77 @@ export class PropertiesService {
 
   /**
    * Get all property markers (id, lat, lng, price) within bounds for map display
-   * Returns lightweight data for all properties (no pagination)
+   * Returns lightweight data with ALL filters applied (no pagination)
    */
-  async getMapMarkers(bounds: {
-    north: number;
-    south: number;
-    east: number;
-    west: number;
-  }) {
-    const properties = await this.prisma.property.findMany({
-      where: {
-        latitude: {
-          gte: bounds.south,
-          lte: bounds.north,
-        },
-        longitude: {
-          gte: bounds.west,
-          lte: bounds.east,
-        },
-        status: 'ACTIVE',
+  async getMapMarkers(
+    bounds: {
+      north: number;
+      south: number;
+      east: number;
+      west: number;
+    },
+    query?: QueryPropertyDto,
+  ) {
+    // Build where clause with filters (same as findAll)
+    const where: Prisma.PropertyWhereInput = {
+      latitude: {
+        gte: bounds.south,
+        lte: bounds.north,
       },
+      longitude: {
+        gte: bounds.west,
+        lte: bounds.east,
+      },
+      status: 'ACTIVE',
+    };
+
+    // Apply all filters if query provided
+    if (query) {
+      if (query.listingType) {
+        where.listingType = query.listingType;
+      }
+
+      if (query.propertyType) {
+        where.propertyType = query.propertyType;
+      }
+
+      if (query.minPrice !== undefined || query.maxPrice !== undefined) {
+        where.price = {};
+        if (query.minPrice !== undefined) {
+          where.price.gte = String(query.minPrice);
+        }
+        if (query.maxPrice !== undefined) {
+          where.price.lte = String(query.maxPrice);
+        }
+      }
+
+      if (query.minBedrooms !== undefined) {
+        where.bedrooms = { gte: query.minBedrooms };
+      }
+
+      if (query.minBathrooms !== undefined) {
+        where.bathrooms = { gte: query.minBathrooms };
+      }
+
+      if (query.minArea !== undefined || query.maxArea !== undefined) {
+        where.area = {};
+        if (query.minArea !== undefined) {
+          where.area.gte = query.minArea;
+        }
+        if (query.maxArea !== undefined) {
+          where.area.lte = query.maxArea;
+        }
+      }
+
+      if (query.amenities && query.amenities.length > 0) {
+        where.amenities = {
+          array_contains: query.amenities,
+        } as any;
+      }
+    }
+
+    const properties = await this.prisma.property.findMany({
+      where,
       select: {
         id: true,
         latitude: true,
@@ -707,6 +758,61 @@ export class PropertiesService {
     });
 
     return properties;
+  }
+
+  /**
+   * Get full property details by IDs
+   * Used for paginated list display
+   */
+  async findByIds(ids: number[]) {
+    if (!ids || ids.length === 0) {
+      return {
+        data: [],
+        meta: {
+          total: 0,
+          ids: [],
+        },
+      };
+    }
+
+    const properties = await this.prisma.property.findMany({
+      where: {
+        id: { in: ids },
+        status: 'ACTIVE',
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        photos: {
+          orderBy: {
+            isPrimary: 'desc',
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    // Sanitize and return in the order of the requested IDs
+    const sanitized = properties.map(this.sanitizeProperty.bind(this));
+    const orderedProperties = ids
+      .map((id) => sanitized.find((p: any) => p.id === id))
+      .filter((p): p is any => p !== undefined);
+
+    return {
+      data: orderedProperties,
+      meta: {
+        total: orderedProperties.length,
+        ids: orderedProperties.map((p: any) => p.id),
+      },
+    };
   }
 
   // Utility: remove sensitive/internal-only fields before exposing to API clients

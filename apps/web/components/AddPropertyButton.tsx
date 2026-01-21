@@ -17,6 +17,7 @@ interface AddPropertyButtonProps {
   size?: 'default' | 'sm' | 'lg' | 'icon';
   className?: string;
   children?: React.ReactNode;
+  icon?: boolean;
 }
 
 export function AddPropertyButton({
@@ -24,6 +25,7 @@ export function AddPropertyButton({
   size = 'lg',
   className,
   children,
+  icon = false,
 }: AddPropertyButtonProps) {
   const setIsOpen = useGlobalStore((state) => state.setIsPropertyTypeModalOpen);
   const t = useTranslations('AddPropertyButton');
@@ -35,7 +37,7 @@ export function AddPropertyButton({
       className={cn(className, 'font-bold rounded-lg')}
       onClick={() => setIsOpen?.(true)}
     >
-      <Plus className="size-5" />
+      {icon && <Plus className="size-5" />}
       {children || t('label')}
     </Button>
   );

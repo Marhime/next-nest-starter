@@ -18,13 +18,14 @@ import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import {
   useSearchStore,
-  type Property,
   type PropertyMarker as PropertyMarkerType,
 } from '@/stores/search-store';
 import { JAWG_TILE_URL, JAWG_ATTRIBUTION } from '@/lib/constants';
 import { PropertyCardFloating } from './PropertyCardFloating';
 import 'leaflet/dist/leaflet.css';
 import { PropertyDetailsModal } from './PropertyDetailsModal';
+import { useMapMarkers } from '@/hooks/use-map-markers';
+import { usePropertyDetails } from '@/hooks/use-property-details';
 
 // Component to update map view based on store state
 function MapViewController() {
@@ -59,14 +60,17 @@ function MapViewController() {
   return null;
 }
 
-const clusterIcon = (cluster: any) => {
+const clusterIcon = (cluster: L.MarkerCluster) => {
   const markers = cluster.getAllChildMarkers();
   const count = cluster.getChildCount();
 
-  const price = markers
-    .map((m: any) => m.options.price)
-    .sort((a: number, b: number) => a - b)
-    .slice(0, 1);
+  // Get lowest price in cluster
+  const prices = markers
+    .map((m: L.Marker) => (m.options as { price?: number }).price)
+    .filter((p): p is number => p !== undefined)
+    .sort((a, b) => a - b);
+
+  const lowestPrice = prices[0];
 
   return L.divIcon({
     className: 'cluster',
@@ -151,21 +155,18 @@ const PropertyMarkerComponent = React.memo(function PropertyMarkerComponent({
 });
 
 export function PropertyMap({ className }: { className?: string }) {
-  const {
-    mapCenter,
-    mapZoom,
-    properties,
-    mapMarkers,
-    selectedPropertyId,
-    selectProperty,
-  } = useSearchStore();
+  const { mapCenter, mapZoom, mapMarkers, selectedPropertyId, selectProperty } =
+    useSearchStore();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Get selected property for floating card (from full properties list)
-  const selectedProperty = useMemo(
-    () => properties.find((p: Property) => p.id === selectedPropertyId),
-    [properties, selectedPropertyId],
+  // Fetch markers (Single Source of Truth)
+  useMapMarkers();
+
+  // Fetch full details for selected property only
+  const { properties: selectedProperties } = usePropertyDetails(
+    selectedPropertyId ? [selectedPropertyId] : [],
   );
+  const selectedProperty = selectedProperties[0] || null;
 
   // Use mapMarkers for displaying all points on the map (lightweight)
   const validMarkers = useMemo(
@@ -215,7 +216,7 @@ export function PropertyMap({ className }: { className?: string }) {
             onClose={() => selectProperty(null)}
           />
         )}
-        <PropertyDetailsModal />
+        <PropertyDetailsModal selectedProperty={selectedProperty} />
       </div>
     </div>
   );

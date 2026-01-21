@@ -4,7 +4,14 @@ import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Input } from '../ui/input';
-import { DollarSign, MapPin, SearchIcon } from 'lucide-react';
+import {
+  BadgeDollarSignIcon,
+  CircleDollarSign,
+  DollarSign,
+  DollarSignIcon,
+  MapPin,
+  SearchIcon,
+} from 'lucide-react';
 import Link from 'next/link';
 
 const SearchBarHome = () => {
@@ -43,18 +50,24 @@ const SearchBarHome = () => {
             <Button className="rounded-full px-6 py-4">{t('search')}</Button>
           </InputGroupAddon>
         </InputGroup> */}
-        <div className="flex gap-4 p-4 shadow-md rounded-b-lg rounded-tr-lg bg-white">
-          <div className="flex flex-1 items-center gap-2">
-            <SearchIcon className="" />
+        <div className="flex flex-col md:flex-row gap-4 p-4 shadow-md rounded-b-lg rounded-tr-lg bg-white">
+          <div className="flex flex-1 items-center gap-2 relative">
             <Input type="text" placeholder="Search" />
+            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-semibold text-muted-foreground pointer-events-none">
+              <SearchIcon className="block" />
+            </span>
           </div>
-          <div className="flex flex-1 items-center gap-2">
-            <MapPin className="" />
+          <div className="flex flex-1 items-center gap-2 relative">
             <Input type="text" placeholder="Location" />
+            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-semibold text-muted-foreground pointer-events-none">
+              <MapPin className=":block" />
+            </span>
           </div>
-          <div className="flex flex-1 items-center gap-2">
-            <DollarSign className="" />
+          <div className="flex flex-1 items-center gap-2 relative">
             <Input type="text" placeholder="Price" />
+            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-semibold text-muted-foreground pointer-events-none">
+              <CircleDollarSign className="block" />
+            </span>
           </div>
           <Link
             href={'/find'}

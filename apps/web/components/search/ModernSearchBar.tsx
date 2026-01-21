@@ -33,6 +33,7 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { Input } from '../ui/input';
+import { ListingType, PropertyType } from '@/hooks/use-create-property';
 
 // SeLoger-style: Only SALE and RENT (no SHORT_TERM/Airbnb)
 const LISTING_TYPES = [
@@ -202,7 +203,6 @@ export function ModernSearchBar({ className }: { className?: string }) {
                 onLocationSelect={handleLocationSelect}
                 placeholder="Paris, Lyon, Marseille..."
                 defaultValue={searchLocation}
-                showCurrentLocationButton={true}
               />
             </div>
 
@@ -269,7 +269,9 @@ export function ModernSearchBar({ className }: { className?: string }) {
                 onValueChange={(value) => {
                   const propertyType =
                     value === 'all' ? null : (value as PropertyType);
-                  useSearchStore.getState().setPropertyType(propertyType);
+                  useSearchStore
+                    .getState()
+                    .setPropertyType(propertyType || 'HOUSE');
                 }}
               >
                 <SelectTrigger>

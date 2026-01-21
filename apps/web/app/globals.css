@@ -89,7 +89,7 @@ button {
   --sidebar-border: oklch(0.923 0.003 48.717);
   --sidebar-ring: oklch(0.709 0.01 56.259);
 
-  --grid-columns-breakpoints: 2;
+  --grid-columns-breakpoints: 1;
 }
 
 .dark {
@@ -204,6 +204,12 @@ button {
   .container-fluid {
     padding-left: 3rem;
     padding-right: 3rem;
+  }
+}
+
+@media (min-width: 640px) {
+  :root {
+    --grid-columns-breakpoints: 2;
   }
 }
 

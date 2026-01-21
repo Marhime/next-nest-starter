@@ -690,6 +690,7 @@
     "maxPricePlaceholderRent": "20,000 MXN",
     "perMonth": "/month",
     "propertyType": "Property type",
+    "bedroomsBathrooms": "Bedrooms & Bathrooms",
     "allTypes": "All types",
     "bedrooms": "Bedrooms",
     "bathrooms": "Bathrooms",
