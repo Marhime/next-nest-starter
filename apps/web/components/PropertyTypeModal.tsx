@@ -180,15 +180,13 @@ function PropertyTypeSelection({ className }: { className?: string }) {
         setEditToken(propertyId, editToken);
       }
 
-      toast.success(t('successMessage'));
-
       // Close modal, reset and navigate
       setIsOpen?.(false);
       setListingChoice(null);
       setSelectedType(null);
 
       // ✅ V1 Solution: Add token to URL if present so layout can pick it up immediately
-      const url = `/hosting/${propertyId}/characteristics`;
+      const url = `/hosting/${propertyId}`;
       router.push(url);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('errorMessage'));

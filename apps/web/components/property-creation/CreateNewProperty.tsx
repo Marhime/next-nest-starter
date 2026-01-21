@@ -106,8 +106,6 @@ export function CreateNewProperty({ onSuccess }: CreateNewPropertyProps) {
         console.log('Authenticated user - no editToken needed');
       }
 
-      toast.success(t('successMessage'));
-
       // Navigate to property wizard
       if (onSuccess) {
         onSuccess(Number(createdId));

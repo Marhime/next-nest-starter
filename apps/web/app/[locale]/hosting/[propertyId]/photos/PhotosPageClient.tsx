@@ -58,7 +58,7 @@ export function PhotosPageClient({ property }: PhotosPageClientProps) {
   // ✅ Memoize success callback - accepts updatedProperty to avoid stale data
   const propertyIdStable = property.id;
   const handleSuccess = useCallback(
-    (_updatedProperty?: unknown) => {
+    (_?: unknown) => {
       router.push(`/hosting/${propertyIdStable}/about`);
     },
     [router, propertyIdStable],
@@ -111,7 +111,6 @@ export function PhotosPageClient({ property }: PhotosPageClientProps) {
           );
 
           if (!response.ok) {
-            console.error(`Failed to upload ${file.name}:`, response.status);
             toast.error(`Échec de l'upload de ${file.name}`);
             continue;
           }
@@ -126,7 +125,6 @@ export function PhotosPageClient({ property }: PhotosPageClientProps) {
 
       if (uploadedPhotos.length > 0) {
         setPhotos((prev) => [...prev, ...uploadedPhotos]);
-        toast.success(`${uploadedPhotos.length} photo(s) ajoutée(s)`);
       }
     } finally {
       setLoading(false);
@@ -149,7 +147,6 @@ export function PhotosPageClient({ property }: PhotosPageClientProps) {
       }
 
       setPhotos((prev) => prev.filter((p) => p.id !== photoId));
-      toast.success(t('deleteSuccess'));
     } catch (err) {
       console.error('Delete photo failed', err);
       toast.error(err instanceof Error ? err.message : t('deleteError'));
@@ -177,7 +174,6 @@ export function PhotosPageClient({ property }: PhotosPageClientProps) {
           isPrimary: p.id === photoId,
         })),
       );
-      toast.success(t('primarySuccess'));
     } catch (err) {
       console.error('Set primary failed', err);
       toast.error(err instanceof Error ? err.message : t('updateError'));

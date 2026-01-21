@@ -5,12 +5,25 @@ import L from 'leaflet';
 import { JAWG_TILE_URL, JAWG_ATTRIBUTION } from '@/lib/constants';
 import 'leaflet/dist/leaflet.css';
 
-// Fix Leaflet default icon issue with Next.js
-const iconRetinaUrl =
-  'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png';
-const iconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
-const shadowUrl =
-  'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
+// Custom minimal marker icon with SVG
+const customMarkerIcon = L.divIcon({
+  html: `
+    <svg width="38px" height="38px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+       <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Dribbble-Light-Preview" transform="translate(-423.000000, -5399.000000)" fill="#2a9d8f">
+            <g id="icons" transform="translate(56.000000, 160.000000)">
+                <path d="M374,5248.219 C372.895,5248.219 372,5247.324 372,5246.219 C372,5245.114 372.895,5244.219 374,5244.219 C375.105,5244.219 376,5245.114 376,5246.219 C376,5247.324 375.105,5248.219 374,5248.219 M374,5239 C370.134,5239 367,5242.134 367,5246 C367,5249.866 370.134,5259 374,5259 C377.866,5259 381,5249.866 381,5246 C381,5242.134 377.866,5239 374,5239" id="pin_fill_rounded_circle-[#629]">
+                </path>
+            </g>
+        </g>
+    </g>
+    </svg>
+  `,
+  className: 'custom-marker-icon',
+  iconSize: [32, 40],
+  iconAnchor: [16, 40],
+  popupAnchor: [0, -40],
+});
 
 interface MapViewProps {
   latitude: number;
@@ -50,13 +63,6 @@ export function MapView({
 
     // Initialize map only once
     if (!mapRef.current) {
-      // Configure default icon
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl,
-        iconUrl,
-        shadowUrl,
-      });
-
       // Create map
       const map = L.map(containerRef.current, {
         center: [latitude, longitude],
@@ -77,6 +83,7 @@ export function MapView({
         marker = L.marker([latitude, longitude], {
           draggable: draggableMarker,
           title: markerTitle,
+          icon: customMarkerIcon,
         }).addTo(map);
 
         marker.bindPopup(markerTitle).openPopup();
@@ -132,6 +139,7 @@ export function MapView({
         const m = L.marker([latitude, longitude], {
           draggable: draggableMarker,
           title: markerTitle,
+          icon: customMarkerIcon,
         }).addTo(map);
 
         if (draggableMarker && onMarkerDragEnd) {

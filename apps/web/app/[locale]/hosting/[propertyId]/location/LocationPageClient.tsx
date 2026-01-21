@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { MapPin, Loader2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { LocationSearchBar } from '@/components/shared/LocationSearchBar';
 import type { GeocodingResult } from '@/hooks/use-geocoding';
 import { useAddPropertyStore } from '../../store';
@@ -40,7 +40,7 @@ const MapView = dynamic(
   },
 );
 
-const FIXED_ZONE_RADIUS = 500;
+const FIXED_ZONE_RADIUS = 250;
 
 interface LocationPageClientProps {
   property: PropertyWithLocation;
@@ -132,6 +132,46 @@ export function LocationPageClient({ property }: LocationPageClientProps) {
     }
   }, [property]);
 
+  // Get address from coordinates if not using exact address
+  useEffect(() => {
+    if (!useExactAddress && coordinates) {
+      const fetchAddress = async () => {
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coordinates.lat}&lon=${coordinates.lng}&accept-language=en`,
+          );
+
+          if (!response.ok) {
+            throw new Error('Reverse geocoding failed');
+          }
+
+          const data = await response.json();
+
+          if (data.address) {
+            setAddressData({
+              address:
+                `${data.address.house_number || ''} ${data.address.road || ''}`.trim(),
+              city:
+                data.address.city ||
+                data.address.town ||
+                data.address.village ||
+                '',
+              state: data.address.state || '',
+              postalCode: data.address.postcode || '',
+              country: data.address.country_code
+                ? data.address.country_code.toUpperCase()
+                : 'MX',
+            });
+          }
+        } catch (error) {
+          console.error('Reverse geocoding error:', error);
+        }
+      };
+
+      fetchAddress();
+    }
+  }, [useExactAddress, coordinates]);
+
   // Handle location select from search
   const handleLocationSelect = useCallback(
     async (location: GeocodingResult) => {
@@ -151,10 +191,9 @@ export function LocationPageClient({ property }: LocationPageClientProps) {
         postalCode: address.postcode || '',
         country: address.country_code?.toUpperCase() || 'MX',
       });
-
-      toast.success(t('messages.addressUpdated'));
     },
-    [t],
+
+    [],
   );
 
   // Handle marker drag on map
@@ -185,13 +224,9 @@ export function LocationPageClient({ property }: LocationPageClientProps) {
           postalCode: data.address.postcode || '',
           country: data.address.country_code?.toUpperCase() || 'MX',
         });
-        toast.success(t('messages.addressUpdated'));
-      } else {
-        toast.info(t('messages.positionUpdated'));
       }
     } catch (error) {
       console.error('Reverse geocoding error:', error);
-      toast.info(t('messages.positionUpdated'));
     }
   };
 
@@ -218,11 +253,10 @@ export function LocationPageClient({ property }: LocationPageClientProps) {
             postalCode: data.address.postcode || '',
             country: data.address.country_code?.toUpperCase() || 'MX',
           });
-          toast.success(t('messages.addressUpdated'));
         }
       }
     } catch {
-      toast.info(t('messages.positionUpdated'));
+      toast.error(t('messages.positionUpdateError'));
     }
   };
 
@@ -287,7 +321,7 @@ export function LocationPageClient({ property }: LocationPageClientProps) {
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {useExactAddress
-                    ? t('modes.exactAddressDescription')
+                    ? `${addressData.address ? addressData.address + ', ' : ''}${addressData.city}, ${addressData.state}, ${addressData.postalCode}, ${addressData.country}`
                     : t('modes.approximateZoneDescription')}
                 </p>
               </div>
