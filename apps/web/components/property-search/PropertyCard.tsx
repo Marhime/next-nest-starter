@@ -19,6 +19,7 @@ import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Property } from '@/hooks/use-properties';
+import { useTranslations } from 'next-intl';
 
 interface PropertyCardProps {
   property: Property;
@@ -29,12 +30,11 @@ export const PropertyCard = React.memo(function PropertyCard({
 }: PropertyCardProps) {
   const { hoverProperty } = useSearchStore();
   const [isFavorite, setIsFavorite] = useState(false);
-  console.log('wejnfkjwen');
-
+  const t = useTranslations('SearchFilters');
   const primaryPhoto =
     property.photos.find((p) => p.isPrimary) || property.photos[0];
 
-  const priceLabel = getPriceLabel(property.listingType || '');
+  const priceLabel = getPriceLabel(property.listingType || '', t('perMonth'));
 
   const handleFavoriteClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();

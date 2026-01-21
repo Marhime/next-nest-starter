@@ -1,38 +1,34 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { AboutPageClient } from './AboutPageClient';
-import type { AboutProperty } from './AboutPageClient';
+import { Loader2 } from 'lucide-react';
 import { useProperty } from '@/hooks/use-properties';
+import { useEditToken } from '@/hooks/use-edit-token';
 import { useTranslations } from 'next-intl';
+import { AboutPageClient } from './AboutPageClient';
 
 export default function AboutPage() {
-  const params = useParams();
-  const { propertyId } = params as { propertyId?: string };
-  const { property, isLoading, isError } = useProperty(propertyId || '');
   const t = useTranslations('PropertyForm');
+  const { propertyId } = useParams<{ propertyId: string }>();
+  const { token: editToken } = useEditToken(propertyId);
 
-  if (isLoading) return <div className="p-6">{t('messages.loading')}</div>;
-  if (isError || !property)
-    return <div className="p-6">{t('messages.updateError')}</div>;
+  const { property, isLoading } = useProperty(propertyId, editToken);
 
-  const p = property as unknown as Partial<AboutProperty> & { id: number };
+  if (isLoading) {
+    return (
+      <div className="flex w-full h-full justify-center items-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
-  const safeProperty: AboutProperty = {
-    id: p.id,
-    title: p.title || '',
-    description: p.description,
-    bedrooms: p.bedrooms,
-    bathrooms: p.bathrooms,
-    capacity: p.capacity,
-    floor: p.floor,
-    area: p.area,
-    amenities: p.amenities,
-    status: (p.status as string) || 'DRAFT',
-    propertyType: (p.propertyType as string) || 'HOUSE',
-    listingType: p.listingType,
-    price: p.price || 0,
-  };
+  if (!property) {
+    return (
+      <div className="flex w-full h-full justify-center items-center">
+        <p className="text-muted-foreground">{t('messages.updateError')}</p>
+      </div>
+    );
+  }
 
-  return <AboutPageClient property={safeProperty} />;
+  return <AboutPageClient property={property as any} />;
 }

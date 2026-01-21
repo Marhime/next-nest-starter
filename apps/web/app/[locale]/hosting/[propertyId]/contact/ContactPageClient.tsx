@@ -1,18 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PhoneInput } from '@/components/forms/PhoneInput';
-import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 import { authClient } from '@/lib/auth/auth-client';
 import { Phone, User } from 'lucide-react';
 import type { Value as PhoneValue } from 'react-phone-number-input';
 import { usePropertyForm } from '@/hooks/use-property-form';
-import { useAddPropertyStore } from '../../store';
+import {
+  useStepValidation,
+  STEP_CONTACT,
+  areAllStepsComplete,
+} from '@/hooks/use-step-validation';
 
 interface Property {
   id: number;
@@ -26,13 +29,15 @@ interface ContactPageClientProps {
 }
 
 export function ContactPageClient({ property }: ContactPageClientProps) {
-  const locale = useLocale();
   const t = useTranslations('PropertyForm.Contact');
   const tGen = useTranslations('Generic');
   const router = useRouter();
 
   const { data: session, isPending: isSessionPending } =
     authClient.useSession();
+
+  // Validate step access
+  useStepValidation(STEP_CONTACT, property, isSessionPending);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -45,7 +50,11 @@ export function ContactPageClient({ property }: ContactPageClientProps) {
     if (isSessionPending) return;
 
     if (session?.user) {
-      const user = session.user as any;
+      const user = session.user as {
+        firstName?: string;
+        lastName?: string;
+        phone?: string;
+      };
       setFormData({
         firstName: user.firstName || property.firstName || '',
         lastName: user.lastName || property.lastName || '',
@@ -66,36 +75,53 @@ export function ContactPageClient({ property }: ContactPageClientProps) {
     formData.lastName.trim().length > 0 &&
     formData.phone.trim().length > 0;
 
-  // Utiliser le hook combiné pour gérer tout
-  usePropertyForm({
-    propertyId: property.id,
-    stepIndex: 4,
-    isValid,
-    payload: {
+  // ✅ Memoize payload to prevent infinite loops
+  const payload = useMemo(
+    () => ({
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
       phone: formData.phone.toString().trim(),
-    },
-    onValidation: async (data) => {
-      return (
-        data.firstName &&
-        data.lastName &&
-        data.phone &&
-        data.firstName.trim().length > 0 &&
-        data.lastName.trim().length > 0 &&
-        data.phone.trim().length > 0
-      );
-    },
-    onSuccess: () => {
-      // Rediriger vers la page de confirmation avec le token
-      router.push(`/${locale}/hosting/${property.id}/confirmation`);
-    },
-  });
+      status: 'ACTIVE',
+    }),
+    [formData.firstName, formData.lastName, formData.phone],
+  );
 
-  const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
-  useEffect(() => {
-    setCurrentStep?.(4);
-  }, [setCurrentStep]);
+  // ✅ Memoize validation callback
+  const handleValidation = useCallback(async (data: Record<string, string>) => {
+    return !!(
+      data.firstName &&
+      data.lastName &&
+      data.phone &&
+      data.firstName.trim().length > 0 &&
+      data.lastName.trim().length > 0 &&
+      data.phone.trim().length > 0
+    );
+  }, []);
+
+  // ✅ Memoize success callback with stable propertyId
+  const propertyId = property.id;
+  const handleSuccess = useCallback(
+    (updatedProperty: Property | null) => {
+      // Use the updated property data from the API response
+      if (areAllStepsComplete(updatedProperty)) {
+        router.push(`/hosting/${propertyId}/confirmation`);
+      } else {
+        console.error('Cannot go to confirmation: not all steps complete');
+        console.log('Updated property:', updatedProperty);
+      }
+    },
+    [router, propertyId],
+  );
+
+  // Utiliser le hook combiné pour gérer tout
+  usePropertyForm({
+    propertyId,
+    stepIndex: 4,
+    isValid,
+    payload,
+    onValidation: handleValidation,
+    onSuccess: handleSuccess,
+  });
 
   if (isSessionPending) {
     return <div className="p-6">{tGen('loading')}</div>;

@@ -8,7 +8,6 @@ import '../globals.css';
 import { HelpModal } from '@/components/HelpModal';
 import { PropertyTypeModal } from '@/components/PropertyTypeModal';
 import { LoginModal } from '@/components/LoginModal';
-import { QuickCreatePhoneModal } from '@/components/QuickCreatePhoneModal';
 import { Toaster } from '@/components/ui/sonner';
 import Footer from '@/components/layout/Footer';
 
@@ -54,7 +53,6 @@ export default async function LocaleLayout({
           <HelpModal />
           <PropertyTypeModal />
           {/* <LoginModal /> */}
-          <QuickCreatePhoneModal />
         </NextIntlClientProvider>
         <Toaster position="top-center" />
         {/* <Footer /> */}

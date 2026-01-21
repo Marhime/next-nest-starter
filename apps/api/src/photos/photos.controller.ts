@@ -91,8 +91,13 @@ export class PhotosController {
   async deletePhoto(
     @Param('photoId', ParseIntPipe) photoId: number,
     @Session() session: UserSession,
+    @Headers('x-edit-token') editToken?: string,
   ) {
-    return this.photosService.deletePhoto(photoId, session?.user?.id);
+    return this.photosService.deletePhoto(
+      photoId,
+      session?.user?.id,
+      editToken,
+    );
   }
 
   @Patch('property/:propertyId/reorder')
@@ -111,10 +116,16 @@ export class PhotosController {
 
   @Patch(':photoId/primary')
   @ApiOperation({ summary: 'Set a photo as primary' })
+  @AllowAnonymous()
   async setPrimaryPhoto(
     @Param('photoId', ParseIntPipe) photoId: number,
     @Session() session: UserSession,
+    @Headers('x-edit-token') editToken?: string,
   ) {
-    return this.photosService.setPrimaryPhoto(photoId, session.user.id);
+    return this.photosService.setPrimaryPhoto(
+      photoId,
+      session?.user?.id,
+      editToken,
+    );
   }
 }

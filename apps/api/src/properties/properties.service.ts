@@ -702,6 +702,7 @@ export class PropertiesService {
         longitude: true,
         listingType: true,
         propertyType: true,
+        price: true,
       },
     });
 

@@ -40,8 +40,11 @@ export function getPropertyTypeLabel(type: string | undefined | null): string {
  * @param listingType - SALE or RENT
  * @returns Empty string for SALE, '/mois' for RENT
  */
-export function getPriceLabel(listingType: string): string {
-  if (listingType === 'RENT') return '/mois';
+export function getPriceLabel(
+  listingType: string,
+  translatedSuffix: string,
+): string {
+  if (listingType === 'RENT') return translatedSuffix;
   return ''; // No suffix for SALE
 }
 

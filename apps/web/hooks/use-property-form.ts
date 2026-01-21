@@ -1,9 +1,10 @@
-import { useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useCallback, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { usePropertyUpdate } from './use-property-update';
 import { usePropertyStep } from './use-property-step';
+import { usePropertyContext } from '@/app/[locale]/hosting/[propertyId]/PropertyContext';
+import { useAddPropertyStore } from '@/app/[locale]/hosting/store';
 
 interface UsePropertyFormOptions {
   propertyId: number;
@@ -27,44 +28,75 @@ export function usePropertyForm({
   onSuccess,
   onValidation,
 }: UsePropertyFormOptions) {
-  const router = useRouter();
-  const locale = useLocale();
-  const { update } = usePropertyUpdate({ propertyId, onSuccess });
+  const t = useTranslations('PropertyForm.messages');
+  // ✅ Use shared property instance from context - single source of truth!
+  const { mutate } = usePropertyContext();
+  // ✅ Don't pass onSuccess to usePropertyUpdate - handle it after mutate()
+  const { update } = usePropertyUpdate({ propertyId });
+  const setIsSaving = useAddPropertyStore((state) => state.setIsSaving);
+  const isSaving = useAddPropertyStore((state) => state.isSaving);
+  const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
+
+  // ✅ Set current step automatically - DRY principle
+  useEffect(() => {
+    setCurrentStep?.(stepIndex);
+  }, [setCurrentStep, stepIndex]);
+
+  // ✅ Use refs for callbacks to avoid them being in handleSave deps
+  // This prevents cascade of recreations while keeping fresh values
+  const onSuccessRef = useRef(onSuccess);
+  const onValidationRef = useRef(onValidation);
+
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+    onValidationRef.current = onValidation;
+  }, [onSuccess, onValidation]);
 
   const handleSave = useCallback(async () => {
     if (!payload) return false;
 
     // Validation personnalisée avant sauvegarde
-    if (onValidation) {
-      const isFormValid = await onValidation(payload);
+    if (onValidationRef.current) {
+      const isFormValid = await onValidationRef.current(payload);
       if (!isFormValid) {
-        toast.error('Veuillez remplir tous les champs requis');
+        toast.error(t('validationError'));
         return false;
       }
     }
 
+    setIsSaving?.(true);
     try {
-      await update(payload);
-      toast.success('Annonce mise à jour');
+      const data = await update(payload);
+
+      // ✅ Wait for data refresh to ensure layout sees updated data
+      await mutate();
+
+      toast.success(t('updateSuccess'));
+
+      // ✅ Navigate after mutate is complete
+      if (onSuccessRef.current) {
+        onSuccessRef.current(data);
+      }
+
       return true;
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Erreur lors de la mise à jour';
+      const message = error instanceof Error ? error.message : t('updateError');
       toast.error(message);
       return false;
+    } finally {
+      setIsSaving?.(false);
     }
-  }, [payload, onValidation, update]);
+  }, [payload, update, t, mutate, setIsSaving]);
+  // ✅ payload MUST be in deps to avoid stale closure
+  // onValidation and onSuccess are in refs to prevent cascade of recreations
 
+  // ✅ Create stable handleNavigateNext with useCallback
   const handleNavigateNext = useCallback(async () => {
     const success = await handleSave();
-    if (success && onSuccess) {
-      // Use the onSuccess callback for navigation
-      return success;
-    }
+    // onSuccess is now called inside handleSave after mutate
     return success;
-  }, [handleSave, onSuccess]);
+  }, [handleSave]);
+  // ✅ handleSave changes when payload changes, which is expected and correct
 
   // ✅ Pass handleNavigateNext to usePropertyStep so it registers with the store
   const stepInfo = usePropertyStep({
@@ -77,6 +109,7 @@ export function usePropertyForm({
   return {
     handleSave,
     handleNavigateNext,
+    isSaving,
     ...stepInfo,
   };
 }

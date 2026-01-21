@@ -16,11 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LocationSearchBar } from '@/components/shared/LocationSearchBar';
 import { Home, Key } from 'lucide-react';
-import {
-  useSearchStore,
-  type ListingType,
-  type PropertyType,
-} from '@/stores/search-store';
+import { useSearchStore } from '@/stores/search-store';
 import type { GeocodingResult } from '@/hooks/use-geocoding';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import {
@@ -47,6 +43,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { ListingType, PropertyType } from '@/hooks/use-create-property';
 
 // SeLoger-style: Only SALE and RENT
 const LISTING_TYPES = [
@@ -197,7 +194,7 @@ export const FiltersContent: React.FC<FiltersContentProps> = ({
           value={selectedPropertyType || 'all'}
           onValueChange={(value) =>
             setSelectedPropertyType(
-              value === 'all' ? null : (value as PropertyType),
+              value === 'all' ? 'HOUSE' : (value as PropertyType),
             )
           }
         >

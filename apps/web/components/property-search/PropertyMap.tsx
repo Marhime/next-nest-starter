@@ -69,7 +69,7 @@ const clusterIcon = (cluster: any) => {
     .slice(0, 1);
 
   return L.divIcon({
-    className: 'airbnb-cluster',
+    className: 'cluster',
     html: `
       <div class="cluster-inner">
         <div class="cluster-count">${count}</div>
@@ -132,7 +132,7 @@ const PropertyMarkerComponent = React.memo(function PropertyMarkerComponent({
 
   const icon = L.divIcon({
     className: `price-marker ${selectedPropertyId === marker.id ? 'active' : ''}`,
-    html: `<span class="inline-flex items-center justify-center rounded-full border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden bg-white">€${marker.price}</span>`,
+    html: `<span class=" inline-flex items-center justify-center rounded-full border  px-2 py-0.5 text-sm font-bold w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden bg-white">$${marker.price} MXN</span>`,
     iconSize: [52, 30],
     iconAnchor: [26, 15],
   });
@@ -195,17 +195,17 @@ export function PropertyMap({ className }: { className?: string }) {
           <MapViewController />
           <MapEventHandler />
 
-          {/* <MarkerClusterGroup
+          <MarkerClusterGroup
             chunkedLoading
             showCoverageOnHover={false}
             spiderfyOnMaxZoom={true}
             maxClusterRadius={50}
             iconCreateFunction={clusterIcon}
-          > */}
-          {validMarkers.map((marker) => (
-            <PropertyMarkerComponent key={marker.id} marker={marker} />
-          ))}
-          {/* </MarkerClusterGroup> */}
+          >
+            {validMarkers.map((marker) => (
+              <PropertyMarkerComponent key={marker.id} marker={marker} />
+            ))}
+          </MarkerClusterGroup>
         </MapContainer>
 
         {/* Floating Property Card */}

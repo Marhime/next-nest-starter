@@ -197,7 +197,7 @@ export function PropertyResultList() {
     <div
       ref={sidebarRef}
       className={cn(
-        'w-3/5 max-w-[800px] relative flex flex-col bg-white border-l transition-all',
+        'w-3/5 max-w-[800px] xl:max-w-[1200px] relative flex flex-col bg-white border-l transition-all',
       )}
     >
       {/* Property List */}

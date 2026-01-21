@@ -1,58 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { PhotosPageClient } from './PhotosPageClient';
+import { useProperty } from '@/hooks/use-properties';
 import { useEditToken } from '@/hooks/use-edit-token';
-import type { Photo } from '@/types/photo';
+import { useTranslations } from 'next-intl';
+import PhotosPageClient from './PhotosPageClient';
 
 const PhotosPage = () => {
-  const { propertyId } = useParams<{
-    propertyId: string;
-  }>();
-  const [photos, setPhotos] = useState<Photo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const t = useTranslations('PhotoUpload');
+  const { propertyId } = useParams<{ propertyId: string }>();
   const { token: editToken } = useEditToken(propertyId);
 
-  useEffect(() => {
-    const fetchPhotos = async () => {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
+  const { property, isLoading } = useProperty(propertyId, editToken);
 
-      // Use token directly from hook
-      if (editToken) {
-        headers['x-edit-token'] = editToken;
-      }
-
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/photos/property/${propertyId}`,
-          {
-            credentials: 'include',
-            cache: 'no-store',
-            headers,
-          },
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          setPhotos(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch photos:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (propertyId) {
-      fetchPhotos();
-    }
-  }, [propertyId, editToken]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -60,12 +22,15 @@ const PhotosPage = () => {
     );
   }
 
-  return (
-    <PhotosPageClient
-      propertyId={parseInt(propertyId)}
-      initialPhotos={photos}
-    />
-  );
+  if (!property) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">{t('loadError')}</p>
+      </div>
+    );
+  }
+
+  return <PhotosPageClient property={property} />;
 };
 
 export default PhotosPage;

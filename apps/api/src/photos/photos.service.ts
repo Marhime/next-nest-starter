@@ -166,7 +166,7 @@ export class PhotosService {
   /**
    * Delete a photo
    */
-  async deletePhoto(photoId: number, userId: string) {
+  async deletePhoto(photoId: number, userId?: string, editToken?: string) {
     const photo = await this.prisma.photo.findUnique({
       where: { id: photoId },
       include: { property: true },
@@ -176,8 +176,16 @@ export class PhotosService {
       throw new NotFoundException('Photo not found');
     }
 
-    if (photo.property.userId !== userId) {
-      console.log('error: deletePhoto');
+    // Verify ownership via userId or editToken
+    if (userId) {
+      if (photo.property.userId !== userId) {
+        throw new BadRequestException('You do not own this property');
+      }
+    } else if (editToken) {
+      if ((photo.property as any).editToken !== editToken) {
+        throw new BadRequestException('Invalid edit token');
+      }
+    } else {
       throw new BadRequestException('You do not own this property');
     }
 
@@ -253,13 +261,13 @@ export class PhotosService {
       ),
     );
 
-    return this.getPropertyPhotos(propertyId, userId);
+    return this.getPropertyPhotos(propertyId, userId, undefined);
   }
 
   /**
    * Set a photo as primary
    */
-  async setPrimaryPhoto(photoId: number, userId: string) {
+  async setPrimaryPhoto(photoId: number, userId?: string, editToken?: string) {
     const photo = await this.prisma.photo.findUnique({
       where: { id: photoId },
       include: { property: true },
@@ -269,8 +277,16 @@ export class PhotosService {
       throw new NotFoundException('Photo not found');
     }
 
-    if (photo.property.userId !== userId) {
-      console.log('error: setPrimaryPhoto');
+    // Verify ownership via userId or editToken
+    if (userId) {
+      if (photo.property.userId !== userId) {
+        throw new BadRequestException('You do not own this property');
+      }
+    } else if (editToken) {
+      if ((photo.property as any).editToken !== editToken) {
+        throw new BadRequestException('Invalid edit token');
+      }
+    } else {
       throw new BadRequestException('You do not own this property');
     }
 
@@ -286,7 +302,7 @@ export class PhotosService {
       data: { isPrimary: true },
     });
 
-    return this.getPropertyPhotos(photo.propertyId, userId);
+    return this.getPropertyPhotos(photo.propertyId, userId, editToken);
   }
 
   /**

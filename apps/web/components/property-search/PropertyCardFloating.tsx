@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import { X, ExternalLink, MapPin, Bed, Bath, Square } from 'lucide-react';
 import { type Property } from '@/stores/search-store';
 import { cn, getPhotoUrl } from '@/lib/utils';
+import { getPriceLabel } from '@/lib/property-labels';
+import { useTranslations } from 'next-intl';
 
 interface PropertyCardFloatingProps {
   property: Property;
@@ -26,15 +28,10 @@ export function PropertyCardFloating({
 }: PropertyCardFloatingProps) {
   const primaryPhoto =
     property.photos.find((p) => p.isPrimary) || property.photos[0];
-  const price =
-    property.salePrice || property.monthlyPrice || property.nightlyPrice;
-  const priceLabel = property.salePrice
-    ? ''
-    : property.monthlyPrice
-      ? '/mois'
-      : property.nightlyPrice
-        ? '/nuit'
-        : '';
+  const price = property.price;
+  const t = useTranslations('SearchFilters');
+
+  const priceLabel = getPriceLabel(property.listingType || '', t('perMonth'));
 
   const handleViewDetails = () => {
     window.open(`/property/${property.id}`, '_blank');

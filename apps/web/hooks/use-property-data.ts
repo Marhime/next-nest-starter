@@ -160,7 +160,10 @@ async function fetchMapMarkers(
       throw new Error(`API error: ${response.status}`);
     }
 
-    return await response.json();
+    const markers = await response.json();
+    console.log('Fetched map markers successfully', markers);
+
+    return markers;
   } catch (error) {
     console.error('Error fetching map markers:', error);
     return [];

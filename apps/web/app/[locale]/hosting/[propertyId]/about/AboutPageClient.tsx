@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLocale, useTranslations } from 'next-intl';
-import { useAddPropertyStore } from '../../store';
+import { useTranslations } from 'next-intl';
 import { Card, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
@@ -46,12 +45,9 @@ import {
   KeyRound,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  ListingTypes,
-  PropertyTypeEnum,
-  PropertyTypes,
-} from '@/features/add-property/schema';
+import { ListingTypes, PropertyTypes } from '@/features/add-property/schema';
 import { ListingType, PropertyType } from '@/hooks/use-create-property';
+import { STEP_ABOUT, useStepValidation } from '@/hooks/use-step-validation';
 
 export interface AboutProperty {
   id: number;
@@ -67,6 +63,9 @@ export interface AboutProperty {
   propertyType: PropertyType;
   listingType?: ListingType;
   price: number;
+  photos?: Array<{ id: number }>; // Add photos for validation
+  latitude?: number | string | null;
+  longitude?: number | string | null;
 }
 
 export interface AboutPageClientProps {
@@ -120,96 +119,114 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
   const t = useTranslations('AboutPage');
   const tGen = useTranslations('Generic');
   const router = useRouter();
-  const locale = useLocale();
-  const setCurrentStep = useAddPropertyStore((state) => state.setCurrentStep);
-  const setCanProceed = useAddPropertyStore((state) => state.setCanProceed);
-  const setHandleNext = useAddPropertyStore((state) => state.setHandleNext);
 
-  const [formData, setFormData] = useState({
-    title: property.title || '',
-    description: property.description || '',
-    bedrooms: property.bedrooms || 0,
-    bathrooms: property.bathrooms || 0,
-    capacity: property.capacity || 1,
-    floor: property.floor || 0,
-    area: property.area || undefined,
-    constructionYear:
-      (property as unknown as { constructionYear?: number })
-        ?.constructionYear || undefined,
-    landSurface:
-      (property as unknown as { landSurface?: number })?.landSurface ||
-      undefined,
-    amenities: property.amenities || [],
-    status: property.status || 'DRAFT',
-    price: property.price || '',
-    propertyType: property.propertyType,
-    listingType: property.listingType,
-  });
+  // ✅ Separate primitive values from arrays for better memoization
+  const [listingType, setListingType] = useState<ListingType | undefined>(
+    property.listingType,
+  );
+  const [propertyType, setPropertyType] = useState<PropertyType>(
+    property.propertyType,
+  );
+  const [bedrooms, setBedrooms] = useState(property.bedrooms || 0);
+  const [bathrooms, setBathrooms] = useState(property.bathrooms || 0);
+  const [capacity, setCapacity] = useState(property.capacity || 1);
+  const [floor, setFloor] = useState(property.floor || 0);
+  const [landSurface, setLandSurface] = useState(
+    (property as unknown as { landSurface?: number })?.landSurface || undefined,
+  );
+  const [price, setPrice] = useState(property.price || '');
+  const [amenities, setAmenities] = useState<string[]>(
+    property.amenities || [],
+  );
 
-  const isLand = property.propertyType === 'LAND';
-  const isRent = property.listingType === 'RENT';
-  const isSale = property.listingType === 'SALE';
+  // ✅ Stabilize amenities array reference for memoization
+  const amenitiesKey = useMemo(() => amenities.sort().join(','), [amenities]);
+
+  const isLand = propertyType === 'LAND';
 
   // ✅ Validation correcte: vérifie que price est une string non-vide avec un nombre valide
-  const hasValidPrice =
-    formData.price && parseFloat(formData.price.toString()) > 0;
+  const hasValidPrice = price && parseFloat(price.toString()) > 0;
 
-  let isValid;
-  if (isLand) {
-    isValid =
-      formData.landSurface !== undefined &&
-      formData.landSurface > 0 &&
-      hasValidPrice;
-  } else {
-    isValid = formData.bedrooms > 0 && formData.bathrooms > 0 && hasValidPrice;
-  }
+  const isValid = useMemo(() => {
+    if (isLand) {
+      return !!(landSurface !== undefined && landSurface > 0 && hasValidPrice);
+    }
+    return !!(bedrooms > 0 && bathrooms > 0 && hasValidPrice);
+  }, [isLand, landSurface, bedrooms, bathrooms, hasValidPrice]);
+
+  // ✅ Memoize payload with proper dependencies
+  // ⚠️ Include listingType and propertyType for Characteristics step
+  const payload = useMemo(
+    () => ({
+      listingType,
+      propertyType,
+      bedrooms,
+      bathrooms,
+      capacity,
+      floor,
+      landSurface,
+      amenities, // Use the actual array, not amenitiesKey
+      price,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      listingType,
+      propertyType,
+      bedrooms,
+      bathrooms,
+      capacity,
+      floor,
+      landSurface,
+      price,
+      amenitiesKey, // ✅ Use string key for array stability
+    ],
+  );
+
+  // ✅ Memoize success callback with stable propertyId
+  const propertyId = property.id;
+  const handleSuccess = useCallback(
+    (_updatedProperty?: unknown) => {
+      router.push(`/hosting/${propertyId}/description`);
+    },
+    [router, propertyId],
+  );
 
   usePropertyForm({
-    propertyId: property.id,
+    propertyId,
     stepIndex: 2,
-    isValid: isValid as boolean,
-    payload: formData,
-    onSuccess: () => {
-      router.push(`/${locale}/hosting/${property.id}/description`);
-    },
+    isValid,
+    payload,
+    onSuccess: handleSuccess,
   });
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
-  useEffect(() => {
-    setCurrentStep?.(2);
-  }, [setCurrentStep]);
+  // Validate step access
+  useStepValidation(STEP_ABOUT, property, false);
 
   const incrementValue = (
     field: 'bedrooms' | 'bathrooms' | 'capacity' | 'floor',
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: (prev[field] || 0) + 1,
-    }));
+    if (field === 'bedrooms') setBedrooms((prev) => prev + 1);
+    else if (field === 'bathrooms') setBathrooms((prev) => prev + 1);
+    else if (field === 'capacity') setCapacity((prev) => prev + 1);
+    else if (field === 'floor') setFloor((prev) => prev + 1);
   };
 
   const decrementValue = (
     field: 'bedrooms' | 'bathrooms' | 'capacity' | 'floor',
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: Math.max(0, (prev[field] || 0) - 1),
-    }));
+    if (field === 'bedrooms') setBedrooms((prev) => Math.max(0, prev - 1));
+    else if (field === 'bathrooms')
+      setBathrooms((prev) => Math.max(0, prev - 1));
+    else if (field === 'capacity') setCapacity((prev) => Math.max(0, prev - 1));
+    else if (field === 'floor') setFloor((prev) => Math.max(0, prev - 1));
   };
 
   const toggleAmenity = (amenityId: string) => {
-    setFormData((prev) => {
-      const amenities = prev.amenities || [];
-      const hasAmenity = amenities.includes(amenityId);
-
-      return {
-        ...prev,
-        amenities: hasAmenity
-          ? amenities.filter((a) => a !== amenityId)
-          : [...amenities, amenityId],
-      };
-    });
+    setAmenities((prev) =>
+      prev.includes(amenityId)
+        ? prev.filter((id) => id !== amenityId)
+        : [...prev, amenityId],
+    );
   };
 
   return (
@@ -237,15 +254,10 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
           </div>
           <div className={cn('flex items-center gap-3 relative h-full')}>
             <Select
-              onValueChange={(key) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  listingType: key as ListingType,
-                }))
-              }
-              defaultValue={property.listingType}
+              value={listingType}
+              onValueChange={(value) => setListingType(value as ListingType)}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[200px] h-12">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
@@ -275,15 +287,10 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
             className={cn('flex items-center gap-3 relative h-full text-right')}
           >
             <Select
-              onValueChange={(key) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  propertyType: key as PropertyType,
-                }))
-              }
-              defaultValue={property.propertyType}
+              value={propertyType}
+              onValueChange={(value) => setPropertyType(value as PropertyType)}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[200px] h-12">
                 <SelectValue className="text-right" placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
@@ -305,7 +312,7 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
             <div>
               <p className="text-lg font-medium">{t('price.title')}</p>
               <p className="text-sm text-muted-foreground">
-                {formData.listingType === 'SALE'
+                {listingType === 'SALE'
                   ? t('price.hintSale')
                   : t('price.hintRent')}
               </p>
@@ -314,32 +321,29 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
           <div
             className={cn(
               'flex items-center gap-3 relative h-full',
-              formData.listingType === 'SALE' ? 'max-w-[11ch]' : 'max-w-[8ch]',
+              listingType === 'SALE' ? 'w-[180px]' : 'w-[140px]',
             )}
           >
             <Input
               id="price"
-              value={formData.price}
+              value={price}
               inputMode="numeric"
               pattern="[0-9]*"
               onChange={(e) => {
                 e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                setFormData((prev) => ({
-                  ...prev,
-                  price: e.target.value,
-                }));
+                setPrice(e.target.value);
               }}
-              className="text-right"
-              placeholder={formData.listingType === 'SALE' ? '200000' : '5000'}
+              className="text-right h-12 pr-14"
+              placeholder={listingType === 'SALE' ? '200000' : '5000'}
             />
-            {/* <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm font-semibold pointer-events-none">
+            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-semibold text-muted-foreground pointer-events-none">
               MXN
-            </span> */}
+            </span>
           </div>
         </div>
 
         {/* Bedrooms */}
-        {formData.propertyType !== 'LAND' ? (
+        {propertyType !== 'LAND' ? (
           <>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -356,13 +360,13 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => decrementValue('bedrooms')}
-                  disabled={formData.bedrooms <= 0}
+                  disabled={bedrooms <= 0}
                   className="h-12 w-12 rounded-full border-2 border-gray-300 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
                 >
                   <Minus className="h-5 w-5" />
                 </button>
                 <span className="text-2xl font-semibold w-12 text-center">
-                  {formData.bedrooms}
+                  {bedrooms}
                 </span>
                 <button
                   onClick={() => incrementValue('bedrooms')}
@@ -388,13 +392,13 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => decrementValue('bathrooms')}
-                  disabled={formData.bathrooms <= 0}
+                  disabled={bathrooms <= 0}
                   className="h-12 w-12 rounded-full border-2 border-gray-300 hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
                 >
                   <Minus className="h-5 w-5" />
                 </button>
                 <span className="text-2xl font-semibold w-12 text-center">
-                  {formData.bathrooms}
+                  {bathrooms}
                 </span>
                 <button
                   onClick={() => incrementValue('bathrooms')}
@@ -420,29 +424,31 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
             </div>
             <div
               className={cn(
-                'flex items-center gap-3 relative h-full max-w-[11ch]',
+                'flex items-center gap-3 relative h-full w-[140px]',
               )}
             >
               <Input
-                id="price"
-                value={formData.landSurface}
+                id="landSurface"
+                value={landSurface || ''}
                 type="text"
-                className="text-right"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                className="text-right h-12 pr-12"
                 onChange={(e) => {
                   e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                  setFormData((prev) => ({
-                    ...prev,
-                    landSurface: +e.target.value || 0,
-                  }));
+                  setLandSurface(+e.target.value || undefined);
                 }}
                 placeholder="250"
               />
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-semibold text-muted-foreground pointer-events-none">
+                m²
+              </span>
             </div>
           </div>
         )}
       </Card>
       {/* Amenities */}
-      {formData.propertyType !== 'LAND' && (
+      {property.propertyType !== 'LAND' && (
         <Card className="p-6">
           <CardHeader className="p-0">
             <h2 className="text-xl font-semibold">
@@ -455,7 +461,7 @@ export function AboutPageClient({ property }: AboutPageClientProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {AVAILABLE_AMENITIES.map((amenity) => {
               const Icon = amenity.icon;
-              const isSelected = formData.amenities?.includes(amenity.id);
+              const isSelected = amenities.includes(amenity.id);
 
               return (
                 <button

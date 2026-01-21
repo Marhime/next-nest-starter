@@ -18,9 +18,6 @@ type GlobalStore = {
   // Pending intent when user tried to start creating a listing but needs to login
   pendingCreateIntent?: boolean;
   setPendingCreateIntent?: (v: boolean) => void;
-  // Quick-create (phone-only) modal state
-  isQuickCreatePhoneModalOpen?: boolean;
-  setIsQuickCreatePhoneModalOpen?: (isOpen: boolean) => void;
 };
 
 export const useGlobalStore = create<GlobalStore>()(
@@ -39,9 +36,6 @@ export const useGlobalStore = create<GlobalStore>()(
       setIsLoginModalOpen: (isOpen) => set({ isLoginModalOpen: isOpen }),
       pendingCreateIntent: false,
       setPendingCreateIntent: (v) => set({ pendingCreateIntent: v }),
-      isQuickCreatePhoneModalOpen: false,
-      setIsQuickCreatePhoneModalOpen: (isOpen) =>
-        set({ isQuickCreatePhoneModalOpen: isOpen }),
     }),
     {
       name: 'global-storage', // unique name for your storage item

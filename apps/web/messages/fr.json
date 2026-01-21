@@ -180,6 +180,14 @@
     "title": "Choisir le type de bien",
     "description": "Sélectionnez le type de bien que vous souhaitez ajouter",
     "cancel": "Annuler",
+    "resumeDraft": {
+      "title": "Reprendre votre brouillon ?",
+      "description": "Vous avez un brouillon en cours. Que souhaitez-vous faire ?",
+      "resume": "Reprendre le brouillon",
+      "resumeDesc": "Continuer là où vous en étiez",
+      "createNew": "Créer une nouvelle annonce",
+      "createNewDesc": "Le brouillon actuel sera supprimé"
+    },
     "chooseListingTitle": "Quel type d'annonce souhaitez-vous déposer ?",
     "listing": {
       "sale": "Vente",
@@ -203,6 +211,7 @@
       "description": "Terrain constructible ou agricole"
     },
     "creating": "Création en cours...",
+    "continue": "Continuer",
     "successMessage": "Bien créé avec succès !",
     "errorMessage": "Erreur lors de la création du bien"
   },
@@ -309,6 +318,8 @@
     "messages": {
       "loading": "Chargement...",
       "updating": "Mise à jour...",
+      "saving": "Enregistrement en cours...",
+      "validationError": "Veuillez remplir tous les champs requis",
       "selectPropertyType": "Veuillez sélectionner un type de bien",
       "monthlyPriceRequired": "Le prix mensuel est requis pour une location long terme",
       "nightlyPriceRequired": "Le prix par nuit est requis pour une location court terme",
@@ -323,6 +334,7 @@
     "navigation": {
       "questions": "Questions ?",
       "saveAndQuit": "Sauvegarder et quitter",
+      "quit": "Quitter",
       "back": "Retour",
       "next": "Suivant",
       "preview": "Aperçu",
@@ -373,8 +385,17 @@
       "form": "Vérifiez et complétez les informations de votre adresse.",
       "confirm": "Déplacez le marqueur si nécessaire pour positionner précisément votre bien."
     },
+    "modes": {
+      "exactAddress": "Adresse exacte",
+      "approximateZone": "Zone approximative",
+      "exactAddressDescription": "Afficher l'emplacement précis de votre bien",
+      "approximateZoneDescription": "Afficher une zone approximative (500m de rayon)",
+      "zoneInfo": "En mode zone, votre adresse exacte ne sera pas visible. Une zone de {{radius}}m sera affichée."
+    },
     "labels": {
+      "searchAddress": "Rechercher votre adresse",
       "searchPlaceholder": "Saisissez votre adresse",
+      "adjustPosition": "Ajuster la position sur la carte",
       "street": "Rue",
       "buildingInfo": "Appartement, suite, etc.",
       "buildingName": "Nom du bâtiment",
@@ -416,7 +437,8 @@
       "geolocationNotSupported": "La géolocalisation n'est pas supportée par votre navigateur",
       "cannotAccessLocation": "Impossible d'accéder à votre position",
       "cannotGetAddress": "Impossible de récupérer votre adresse",
-      "cannotSearchAddresses": "Impossible de rechercher des adresses pour le moment"
+      "cannotSearchAddresses": "Impossible de rechercher des adresses pour le moment",
+      "loadError": "Erreur lors du chargement de la carte"
     }
   },
   "PhotoUpload": {
@@ -446,6 +468,7 @@
     "updateError": "Erreur lors de la mise à jour",
     "count": "{count}/20",
     "description": "Mettez en valeur votre bien avec des photos de haute qualité",
+    "progress": "Progression",
     "labels": {
       "dragAndDrop": "Glissez-déposez des photos ici, ou cliquez pour sélectionner",
       "dropHere": "Déposez les photos ici...",
@@ -626,6 +649,14 @@
       "LOFT": "Loft"
     }
   },
+  "TokenDialog": {
+    "title": "Utiliser le token d'édition ?",
+    "description": "Vous avez ouvert un lien contenant un token d'édition pour cette annonce.",
+    "acceptDescription": "En acceptant, vous pourrez modifier cette annonce. Le token sera enregistré dans votre session.",
+    "tokenLabel": "Token :",
+    "reject": "Refuser",
+    "accept": "Accepter et continuer"
+  },
   "EditTokenModal": {
     "title": "Token sauvegardé avec succès",
     "description": "Votre token a été sauvegardé. Vous pouvez continuer l'édition.",
@@ -637,5 +668,28 @@
     "warning2": "Toute personne avec ce token peut modifier votre annonce",
     "warning3": "Nous ne pouvons pas récupérer les tokens perdus",
     "understood": "Continuer"
+  },
+  "Confirmation": {
+    "title": "🎉 Annonce publiée avec succès !",
+    "noTitle": "Annonce sans titre",
+    "needAccount": "Ne perdez pas l'accès à votre annonce !",
+    "needAccountDesc": "Créez un compte gratuit pour gérer vos annonces en toute sécurité sans vous soucier des tokens.",
+    "securityTitle": "Sécurité garantie",
+    "securityDesc": "Plus besoin de gérer les tokens, vos annonces sont protégées",
+    "managementTitle": "Gestion simplifiée",
+    "managementDesc": "Accédez à toutes vos annonces depuis n'importe quel appareil",
+    "createAccount": "Créer un compte gratuit",
+    "viewListing": "Voir mon annonce",
+    "backToDashboard": "Retour au tableau de bord",
+    "editLinkTitle": "Lien d'édition (sans compte)",
+    "editLinkDesc": "Ce lien vous permet de modifier votre annonce depuis n'importe quel appareil, sans créer de compte.",
+    "securityTipsTitle": "💡 Conseils de sécurité",
+    "securityTip1": "Enregistrez ce lien dans vos favoris",
+    "securityTip2": "Ne le partagez avec personne (quiconque a ce lien peut modifier votre annonce)",
+    "securityTip3": "Créez un compte pour une sécurité optimale et une gestion simplifiée",
+    "linkCopied": "Lien copié dans le presse-papiers !",
+    "copyError": "Échec de la copie",
+    "propertyNotFound": "Annonce introuvable",
+    "propertyNotFoundDesc": "L'annonce que vous recherchez n'existe pas ou a été supprimée."
   }
 }

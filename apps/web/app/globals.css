@@ -213,21 +213,22 @@ button {
   }
 }
 
-.airbnb-cluster {
+.cluster {
   background: none;
   border: none;
 }
 
 .cluster-inner {
   position: relative;
-  width: 90px;
-  height: 90px;
+  width: fit-content;
+  aspect-ratio: 1/1;
   background: white;
   border-radius: 50%;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 48px;
 }
 
 .cluster-count {
