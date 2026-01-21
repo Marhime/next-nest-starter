@@ -24,12 +24,47 @@
       "fr": "Français"
     }
   },
+  "Account": {
+    "title": "Mi Cuenta",
+    "nav": {
+      "listings": "Mis anuncios",
+      "favorites": "Mis favoritos",
+      "settings": "Configuración",
+      "security": "Seguridad"
+    },
+    "favorites": {
+      "title": "Mis favoritos",
+      "noFavorites": "No tienes favoritos aún",
+      "addFavorites": "Explora propiedades y guarda tus favoritas",
+      "loading": "Cargando favoritos...",
+      "removeSuccess": "Eliminado de favoritos",
+      "addSuccess": "Añadido a favoritos",
+      "removeError": "Error al eliminar de favoritos",
+      "addError": "Error al añadir a favoritos"
+    },
+    "settings": {
+      "title": "Configuración de la cuenta",
+      "personalInfo": "Información personal",
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "phone": "Teléfono",
+      "avatar": "Foto de perfil",
+      "save": "Guardar cambios",
+      "saving": "Guardando...",
+      "saveSuccess": "Cambios guardados",
+      "saveError": "Error al guardar"
+    },
+    "loading": "Cargando...",
+    "redirecting": "Redirigiendo..."
+  },
   "LoginForm": {
     "title": "Bienvenido de nuevo",
     "subtitle": "Inicia sesión con tu cuenta de Apple o Google",
     "apple": "Continuar con Apple",
     "google": "Continuar con Google",
-    "continueWith": "O continúa con",
+    "continueWith": "Continúa con",
+    "continueWithEmail": "Continuar con correo electrónico",
+    "hideEmailForm": "Ocultar formulario",
     "email": "Correo electrónico",
     "password": "Contraseña",
     "confirm-password": "Confirmar Contraseña",
@@ -101,7 +136,10 @@
   },
   "SignupForm": {
     "title": "Crear tu cuenta",
-    "subtitle": "Ingresa tu correo abajo para crear tu cuenta",
+    "subtitle": "Elige cómo quieres registrarte",
+    "continueWithEmail": "Continuar con correo electrónico",
+    "continueWith": "Continúa con",
+    "hideEmailForm": "Ocultar formulario",
     "fullName": "Nombre completo",
     "fullNamePlaceholder": "Juan Pérez",
     "email": "Correo electrónico",

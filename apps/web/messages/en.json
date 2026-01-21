@@ -24,12 +24,47 @@
       "fr": "Français"
     }
   },
+  "Account": {
+    "title": "My Account",
+    "nav": {
+      "listings": "My listings",
+      "favorites": "My favorites",
+      "settings": "Settings",
+      "security": "Security"
+    },
+    "favorites": {
+      "title": "My favorites",
+      "noFavorites": "You don't have any favorites yet",
+      "addFavorites": "Explore properties and save your favorites",
+      "loading": "Loading favorites...",
+      "removeSuccess": "Removed from favorites",
+      "addSuccess": "Added to favorites",
+      "removeError": "Error removing from favorites",
+      "addError": "Error adding to favorites"
+    },
+    "settings": {
+      "title": "Account settings",
+      "personalInfo": "Personal information",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "avatar": "Profile picture",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "saveSuccess": "Changes saved",
+      "saveError": "Error saving"
+    },
+    "loading": "Loading...",
+    "redirecting": "Redirecting..."
+  },
   "LoginForm": {
     "title": "Welcome back",
     "subtitle": "Login with your Apple or Google account",
     "apple": "Continue with Apple",
     "google": "Continue with Google",
-    "continueWith": "Or continue with",
+    "continueWith": "Continue with",
+    "continueWithEmail": "Continue with email",
+    "hideEmailForm": "Hide form",
     "email": "Email",
     "password": "Password",
     "confirm-password": "Confirm Password",
@@ -101,7 +136,10 @@
   },
   "SignupForm": {
     "title": "Create your account",
-    "subtitle": "Enter your email below to create your account",
+    "subtitle": "Choose how you want to sign up",
+    "continueWithEmail": "Continue with email",
+    "continueWith": "Continue with",
+    "hideEmailForm": "Hide form",
     "fullName": "Full Name",
     "fullNamePlaceholder": "John Doe",
     "email": "Email",

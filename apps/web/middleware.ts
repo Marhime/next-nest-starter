@@ -41,13 +41,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Protected routes - match /dashboard/* with or without locale
+  // Protected routes - match /dashboard/* and /account/* with or without locale
   const isDashboardRoute = pathname.match(/^\/([a-z]{2}\/)?dashboard/);
-  const isProfileRoutes = pathname.match(/^\/([a-z]{2}\/)?profile/);
+  const isAccountRoute = pathname.match(/^\/([a-z]{2}\/)?account/);
 
-  console.log('route', isProfileRoutes);
-  if (isDashboardRoute) {
-    console.log('🔒 Protected route detected');
+  if (isDashboardRoute || isAccountRoute) {
+    console.log('🔒 Protected route detected:', pathname);
 
     if (!sessionCookie) {
       console.log('❌ No session cookie found, redirecting to home');
@@ -73,10 +72,13 @@ export async function middleware(request: NextRequest) {
       console.log('✅ Session Data:', sessionData);
 
       // Check role for dashboard - only ADMIN can access
-      if (sessionData.user.role !== 'ADMIN') {
+      if (isDashboardRoute && sessionData.user.role !== 'ADMIN') {
         console.log('❌ User is not ADMIN, redirecting to home');
         return NextResponse.redirect(new URL('/', request.url));
       }
+
+      // Account routes accessible to all authenticated users
+      console.log('✅ User authenticated, allowing access');
     } catch (error) {
       console.error('❌ Error verifying session:', error);
       return NextResponse.redirect(new URL('/', request.url));

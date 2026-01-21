@@ -45,7 +45,7 @@ interface PropertyCardProps {
   onDelete: (id: number) => void;
 }
 
-function PropertyCard({
+export function PropertyCard({
   property,
   onEdit,
   onDuplicate,

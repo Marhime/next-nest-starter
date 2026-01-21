@@ -1,9 +1,9 @@
 'use client';
-import { GalleryVerticalEnd } from 'lucide-react';
 import { LoginForm } from './login-form';
 import { Link, redirect } from '@/i18n/navigation';
 import { authClient } from '@/lib/auth/auth-client';
 import { useLocale } from 'next-intl';
+import Image from 'next/image';
 
 export default function LoginPage({}: {}) {
   const { data: session, isPending: isLoading } = authClient.useSession();
@@ -24,10 +24,13 @@ export default function LoginPage({}: {}) {
           href="/"
           className="flex items-center gap-2 self-center font-medium"
         >
-          <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-            <GalleryVerticalEnd className="size-4" />
-          </div>
-          Acme Inc.
+          <Image
+            src="/logo1.svg"
+            alt="Home image showcase"
+            width={170}
+            height={30}
+            priority
+          />
         </Link>
         <LoginForm />
       </div>

@@ -1,6 +1,6 @@
-import { GalleryVerticalEnd } from 'lucide-react';
 import { SignupForm } from './signup-form';
 import { Link } from '@/i18n/navigation';
+import Image from 'next/image';
 
 export default function SignupPage() {
   return (
@@ -10,10 +10,13 @@ export default function SignupPage() {
           href="/"
           className="flex items-center gap-2 self-center font-medium"
         >
-          <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-            <GalleryVerticalEnd className="size-4" />
-          </div>
-          Acme Inc.
+          <Image
+            src="/logo1.svg"
+            alt="Home image showcase"
+            width={170}
+            height={30}
+            priority
+          />
         </Link>
         <SignupForm />
       </div>

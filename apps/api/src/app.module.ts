@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PropertiesModule } from './properties/properties.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { MailModule } from './mail/mail.module';
+import { FavoritesModule } from './favorites/favorites.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import {
   I18nModule,
@@ -38,6 +39,7 @@ import * as path from 'path';
     PrismaModule,
     MailModule,
     PhotosModule,
+    FavoritesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -24,12 +24,47 @@
       "fr": "Français"
     }
   },
+  "Account": {
+    "title": "Mon Compte",
+    "nav": {
+      "listings": "Mes annonces",
+      "favorites": "Mes favoris",
+      "settings": "Paramètres",
+      "security": "Sécurité"
+    },
+    "favorites": {
+      "title": "Mes favoris",
+      "noFavorites": "Tu n'as pas encore de favoris",
+      "addFavorites": "Explore les propriétés et sauvegarde tes favoris",
+      "loading": "Chargement des favoris...",
+      "removeSuccess": "Retiré des favoris",
+      "addSuccess": "Ajouté aux favoris",
+      "removeError": "Erreur lors du retrait des favoris",
+      "addError": "Erreur lors de l'ajout aux favoris"
+    },
+    "settings": {
+      "title": "Paramètres du compte",
+      "personalInfo": "Informations personnelles",
+      "name": "Nom",
+      "email": "Email",
+      "phone": "Téléphone",
+      "avatar": "Photo de profil",
+      "save": "Sauvegarder les modifications",
+      "saving": "Sauvegarde...",
+      "saveSuccess": "Modifications sauvegardées",
+      "saveError": "Erreur lors de la sauvegarde"
+    },
+    "loading": "Chargement...",
+    "redirecting": "Redirection..."
+  },
   "LoginForm": {
     "title": "Bon retour parmi nous",
     "subtitle": "Connecte-toi avec ton compte Apple ou Google",
     "apple": "Continuer avec Apple",
     "google": "Continuer avec Google",
-    "continueWith": "Ou continue avec",
+    "continueWith": "Continue avec",
+    "continueWithEmail": "Continuer avec email",
+    "hideEmailForm": "Masquer le formulaire",
     "email": "Email",
     "password": "Mot de passe",
     "confirm-password": "Confirmer le mot de passe",
@@ -104,6 +139,9 @@
     "subtitle": "Entrez votre email ci-dessous pour créer votre compte",
     "fullName": "Nom complet",
     "fullNamePlaceholder": "Jean Dupont",
+    "continueWith": "Continue avec",
+    "continueWithEmail": "Continuer avec email",
+    "hideEmailForm": "Masquer le formulaire",
     "email": "Email",
     "emailPlaceholder": "jean@exemple.com",
     "password": "Mot de passe",

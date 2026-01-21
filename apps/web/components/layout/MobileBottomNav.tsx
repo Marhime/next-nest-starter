@@ -38,7 +38,7 @@ const NAV_ITEMS: NavItem[] = [
     exactMatch: false,
   },
   {
-    href: '/profile',
+    href: '/account',
     icon: User,
     label: 'Profil',
     exactMatch: false,
