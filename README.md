@@ -28,7 +28,7 @@ npm -v
 
 ```bash
 git clone <url-du-repo>
-cd starter-next-nest
+cd casa-ahora
 ```
 
 2. Installer les dépendances (à la racine — workspaces npm)

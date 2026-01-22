@@ -94,7 +94,7 @@ export function SignupForm({
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
-      <Card>
+      <Card className={className}>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">{t('title')}</CardTitle>
           <CardDescription>{t('subtitle')}</CardDescription>
@@ -294,32 +294,9 @@ export function SignupForm({
                 </form>
               </CollapsibleContent>
             </Collapsible>
-
-            {/* Login Link */}
-            <FieldDescription className="text-center mt-4">
-              {t('alreadyHaveAccount')}{' '}
-              <Link
-                href="/auth/login"
-                className="text-primary underline-offset-4 hover:underline font-medium"
-              >
-                {t('connectHere')}
-              </Link>
-            </FieldDescription>
           </FieldGroup>
         </CardContent>
       </Card>
-
-      <FieldDescription className="px-6 text-center text-xs text-muted-foreground">
-        {t('agreeTerms')}{' '}
-        <a href="#" className="underline underline-offset-4 hover:text-primary">
-          {t('termsOfService')}
-        </a>{' '}
-        {t('and')}{' '}
-        <a href="#" className="underline underline-offset-4 hover:text-primary">
-          {t('privacyPolicy')}
-        </a>
-        .
-      </FieldDescription>
     </div>
   );
 }

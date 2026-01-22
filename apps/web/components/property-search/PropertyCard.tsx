@@ -15,10 +15,12 @@ import {
   getPropertyTypeLabel,
   getPriceLabel,
 } from '@/lib/property-labels';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { Property } from '@/hooks/use-properties';
 import { useTranslations } from 'next-intl';
+import { useProtectedAction } from '@/hooks/use-protected-action';
+import { useIsFavorited, useToggleFavorite } from '@/hooks/use-favorites';
 
 interface PropertyCardProps {
   property: Property;
@@ -28,18 +30,56 @@ export const PropertyCard = React.memo(function PropertyCard({
   property,
 }: PropertyCardProps) {
   const { hoverProperty } = useSearchStore();
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { isFavorited, isLoading: isCheckingFavorite } = useIsFavorited(
+    property.id,
+  );
+  const { toggleFavorite } = useToggleFavorite();
+  const { requireAuth } = useProtectedAction();
+  const [localFavoriteState, setLocalFavoriteState] = useState(false);
   const t = useTranslations('SearchFilters');
+
+  // Sync local state with server state
+  useEffect(() => {
+    if (!isCheckingFavorite) {
+      setLocalFavoriteState(isFavorited);
+    }
+  }, [isFavorited, isCheckingFavorite]);
+
   const primaryPhoto =
     property.photos.find((p) => p.isPrimary) || property.photos[0];
 
   const priceLabel = getPriceLabel(property.listingType || '', t('perMonth'));
 
-  const handleFavoriteClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    setIsFavorite((prev) => !prev);
-  }, []);
+  const handleFavoriteClick = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      // Use requireAuth to wrap the favorite action
+      await requireAuth(
+        async () => {
+          // Optimistic UI update
+          setLocalFavoriteState((prev) => !prev);
+
+          // Call API
+          try {
+            const newStatus = await toggleFavorite(
+              property.id,
+              localFavoriteState,
+            );
+            setLocalFavoriteState(newStatus);
+          } catch {
+            // Rollback on error
+            setLocalFavoriteState(localFavoriteState);
+          }
+        },
+        localFavoriteState ? 'unfavorite' : 'favorite',
+        { propertyId: property.id },
+        'login', // Prefer login for quick action
+      );
+    },
+    [property.id, localFavoriteState, requireAuth, toggleFavorite],
+  );
 
   return (
     <Link target="_blank" href={`/property/${property.id}`}>
@@ -97,14 +137,15 @@ export const PropertyCard = React.memo(function PropertyCard({
             <button
               className={cn(
                 'group absolute top-3 right-3 transition-all z-10 text-white hover:scale-110 ',
-                isFavorite && 'text-red-500 scale-110',
+                localFavoriteState && 'text-red-500 scale-110',
               )}
               onClick={handleFavoriteClick}
+              disabled={isCheckingFavorite}
             >
               <Heart
                 className={cn(
                   'w-6 h-6 group-hover:fill-current',
-                  isFavorite && 'fill-current',
+                  localFavoriteState && 'fill-current',
                 )}
               />
             </button>

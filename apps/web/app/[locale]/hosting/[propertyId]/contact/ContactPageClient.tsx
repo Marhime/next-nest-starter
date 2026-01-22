@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { PhoneInput } from '@/components/forms/PhoneInput';
 import { useTranslations } from 'next-intl';
 import { authClient } from '@/lib/auth/auth-client';
-import { Phone, User } from 'lucide-react';
+import { Phone, User, LogIn } from 'lucide-react';
 import type { Value as PhoneValue } from 'react-phone-number-input';
 import { usePropertyForm } from '@/hooks/use-property-form';
 import {
@@ -16,6 +16,8 @@ import {
   STEP_CONTACT,
   areAllStepsComplete,
 } from '@/hooks/use-step-validation';
+import { Button } from '@/components/ui/button';
+import { useGlobalStore } from '@/app/[locale]/store';
 
 interface Property {
   id: number;
@@ -32,6 +34,8 @@ export function ContactPageClient({ property }: ContactPageClientProps) {
   const t = useTranslations('PropertyForm.Contact');
   const tGen = useTranslations('Generic');
   const router = useRouter();
+  const setPendingAction = useGlobalStore((s) => s.setPendingAction);
+  const setIsLoginModalOpen = useGlobalStore((s) => s.setIsLoginModalOpen);
 
   const { data: session, isPending: isSessionPending } =
     authClient.useSession();
@@ -49,6 +53,26 @@ export function ContactPageClient({ property }: ContactPageClientProps) {
   useEffect(() => {
     if (isSessionPending) return;
 
+    // Check for prefilled data from sessionStorage (after login)
+    const prefilledData = sessionStorage.getItem('prefill-contact-form');
+
+    if (prefilledData) {
+      try {
+        const parsed = JSON.parse(prefilledData);
+        setFormData({
+          firstName: parsed.firstName || '',
+          lastName: parsed.lastName || '',
+          phone: (parsed.phone || '') as PhoneValue,
+        });
+        // Clear the prefilled data after using it
+        sessionStorage.removeItem('prefill-contact-form');
+        return;
+      } catch (error) {
+        console.error('Failed to parse prefilled data:', error);
+      }
+    }
+
+    // Otherwise use session or property data
     if (session?.user) {
       const user = session.user as {
         firstName?: string;
@@ -122,6 +146,27 @@ export function ContactPageClient({ property }: ContactPageClientProps) {
     onValidation: handleValidation,
     onSuccess: handleSuccess,
   });
+
+  // Handler pour ouvrir modal de connexion avec form data sauvegardé
+  const handleLoginPrompt = useCallback(() => {
+    // Sauvegarder les données du formulaire pour pré-remplissage après connexion
+    setPendingAction?.({
+      type: 'contact',
+      context: {
+        propertyId,
+        formData: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+        },
+        redirectUrl: `/hosting/${propertyId}/contact`,
+      },
+      timestamp: Date.now(),
+      preferredMode: 'register', // Encourager l'inscription pour sauvegarder les infos
+    });
+
+    setIsLoginModalOpen?.(true);
+  }, [formData, propertyId, setPendingAction, setIsLoginModalOpen]);
 
   if (isSessionPending) {
     return <div className="p-6">{tGen('loading')}</div>;
@@ -232,8 +277,25 @@ export function ContactPageClient({ property }: ContactPageClientProps) {
         )}
 
         {!session?.user && (
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
             <p className="text-sm text-blue-800">{t('auth.anonymous')}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLoginPrompt}
+              className="w-full sm:w-auto"
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              {t('auth.loginToSave', {
+                defaultValue: 'Se connecter pour sauvegarder mes informations',
+              })}
+            </Button>
+            <p className="text-xs text-blue-600">
+              {t('auth.loginBenefit', {
+                defaultValue:
+                  'Connectez-vous pour pré-remplir automatiquement vos coordonnées lors de vos prochaines annonces',
+              })}
+            </p>
           </div>
         )}
       </Card>

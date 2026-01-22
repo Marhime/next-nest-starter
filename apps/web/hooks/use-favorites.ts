@@ -6,14 +6,10 @@
 import useSWR from 'swr';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
+import { authClient } from '@/lib/auth/auth-client';
 import type { Property } from '@/stores/search-store';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
-interface FavoritesResponse {
-  data: Property[];
-  count: number;
-}
 
 /**
  * Fetcher function for SWR with credentials
@@ -37,8 +33,12 @@ const fetcher = async (url: string) => {
  * Get all favorited properties for the authenticated user
  */
 export function useFavorites() {
+  const { data: session } = authClient.useSession();
+  const isAuthenticated = !!session?.user;
+
   const { data, error, isLoading, mutate } = useSWR<Property[]>(
-    `${API_URL}/api/favorites`,
+    // ✅ Only fetch if authenticated
+    isAuthenticated ? `${API_URL}/api/favorites` : null,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -58,8 +58,12 @@ export function useFavorites() {
  * Get favorites count for badge display
  */
 export function useFavoritesCount() {
+  const { data: session } = authClient.useSession();
+  const isAuthenticated = !!session?.user;
+
   const { data, error, isLoading } = useSWR<number>(
-    `${API_URL}/api/favorites/count`,
+    // ✅ Only fetch if authenticated
+    isAuthenticated ? `${API_URL}/api/favorites/count` : null,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -75,13 +79,21 @@ export function useFavoritesCount() {
 
 /**
  * Check if a specific property is favorited
+ * Only makes request if user is authenticated to avoid 401 loops
  */
 export function useIsFavorited(propertyId: number | undefined) {
+  const { data: session } = authClient.useSession();
+  const isAuthenticated = !!session?.user;
+
   const { data, error, isLoading } = useSWR<boolean>(
-    propertyId ? `${API_URL}/api/favorites/check/${propertyId}` : null,
+    // Only fetch if authenticated AND propertyId exists
+    isAuthenticated && propertyId
+      ? `${API_URL}/api/favorites/check/${propertyId}`
+      : null,
     fetcher,
     {
       revalidateOnFocus: false,
+      revalidateOnReconnect: false,
     },
   );
 

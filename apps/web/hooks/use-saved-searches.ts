@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchStore } from '@/stores/search-store';
+import { authClient } from '@/lib/auth/auth-client';
 
 interface SearchFilters {
   listingType?: string | null;
@@ -32,6 +33,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 // Fetch all saved searches for current user
 export function useSavedSearches() {
+  const { data: session } = authClient.useSession();
+  const isAuthenticated = !!session?.user;
+
   return useQuery<SavedSearch[]>({
     queryKey: ['saved-searches'],
     queryFn: async () => {
@@ -49,11 +53,15 @@ export function useSavedSearches() {
       return response.json();
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: isAuthenticated, // ✅ Only fetch if authenticated
   });
 }
 
 // Get count of saved searches
 export function useSavedSearchesCount() {
+  const { data: session } = authClient.useSession();
+  const isAuthenticated = !!session?.user;
+
   return useQuery<number>({
     queryKey: ['saved-searches', 'count'],
     queryFn: async () => {
@@ -71,6 +79,7 @@ export function useSavedSearchesCount() {
       return response.json();
     },
     staleTime: 5 * 60 * 1000,
+    enabled: isAuthenticated, // ✅ Only fetch if authenticated
   });
 }
 

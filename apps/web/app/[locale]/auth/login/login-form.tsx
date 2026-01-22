@@ -35,6 +35,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { executePendingAction } from '@/lib/auth/action-executor';
 
 export function LoginForm({
   className,
@@ -111,22 +112,27 @@ export function LoginForm({
     console.log('Social sign-in data:', data);
   };
 
-  const {
-    pendingCreateIntent,
-    setPendingCreateIntent,
-    setIsPropertyTypeModalOpen,
-    setIsLoginModalOpen,
-  } = useGlobalStore();
+  const { pendingAction, clearPendingAction, setIsLoginModalOpen } =
+    useGlobalStore();
 
+  // Execute pending action after successful login
   useEffect(() => {
     if (session?.data?.user) {
-      if (pendingCreateIntent) {
-        setPendingCreateIntent?.(false);
-        setIsLoginModalOpen?.(false);
-        setIsPropertyTypeModalOpen?.(true);
+      // Check if there's a pending action to execute
+      if (pendingAction) {
+        executePendingAction(pendingAction)
+          .then(() => {
+            clearPendingAction?.();
+            setIsLoginModalOpen?.(false);
+          })
+          .catch((error) => {
+            console.error('Failed to execute pending action:', error);
+            clearPendingAction?.();
+          });
         return;
       }
 
+      // Default redirect based on role
       if (session?.data?.user.role === 'ADMIN') {
         redirect({ href: { pathname: '/dashboard' }, locale });
       } else {
@@ -136,15 +142,14 @@ export function LoginForm({
   }, [
     session?.data?.user,
     locale,
-    pendingCreateIntent,
-    setPendingCreateIntent,
-    setIsPropertyTypeModalOpen,
+    pendingAction,
+    clearPendingAction,
     setIsLoginModalOpen,
   ]);
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
-      <Card>
+      <Card className={className}>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">{t('title')}</CardTitle>
           <CardDescription>{t('subtitle')}</CardDescription>
@@ -334,30 +339,9 @@ export function LoginForm({
             </Collapsible>
 
             {/* Sign Up Link */}
-            <FieldDescription className="text-center mt-4">
-              {t('signup')}{' '}
-              <Link
-                href="/auth/register"
-                className="text-primary underline-offset-4 hover:underline font-medium"
-              >
-                {t('signupLinkText')}
-              </Link>
-            </FieldDescription>
           </FieldGroup>
         </CardContent>
       </Card>
-
-      <FieldDescription className="px-6 text-center text-xs text-muted-foreground">
-        By clicking continue, you agree to our{' '}
-        <a href="#" className="underline underline-offset-4 hover:text-primary">
-          Terms of Service
-        </a>{' '}
-        and{' '}
-        <a href="#" className="underline underline-offset-4 hover:text-primary">
-          Privacy Policy
-        </a>
-        .
-      </FieldDescription>
     </div>
   );
 }

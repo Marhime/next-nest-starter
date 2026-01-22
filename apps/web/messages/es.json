@@ -208,6 +208,12 @@
     "submit": "Enviar",
     "cancel": "Cancelar"
   },
+  "LoginModal": {
+    "loginTitle": "Iniciar sesión",
+    "registerTitle": "Crear una cuenta",
+    "haveAccount": "¿Ya tienes una cuenta?",
+    "noAccount": "¿No tienes una cuenta?"
+  },
   "PropertyTypeModal": {
     "title": "Elegir tipo de propiedad",
     "description": "Selecciona el tipo de propiedad que deseas agregar",

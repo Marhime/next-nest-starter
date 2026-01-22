@@ -208,6 +208,12 @@
     "submit": "Submit",
     "cancel": "Cancel"
   },
+  "LoginModal": {
+    "loginTitle": "Log In",
+    "registerTitle": "Create an Account",
+    "haveAccount": "Already have an account?",
+    "noAccount": "Don't have an account?"
+  },
   "PropertyTypeModal": {
     "title": "Choose property type",
     "description": "Select the type of property you want to add",

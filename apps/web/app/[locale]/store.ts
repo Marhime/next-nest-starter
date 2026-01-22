@@ -1,6 +1,37 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+/**
+ * Pending action types that require authentication
+ */
+export type PendingActionType =
+  | 'favorite'
+  | 'unfavorite'
+  | 'contact'
+  | 'save_search'
+  | 'update_profile';
+
+/**
+ * Context data for pending actions
+ */
+export interface PendingActionContext {
+  propertyId?: number;
+  searchId?: number;
+  formData?: Record<string, any>;
+  redirectUrl?: string;
+  [key: string]: any;
+}
+
+/**
+ * Pending action saved when user attempts protected action without auth
+ */
+export interface PendingAction {
+  type: PendingActionType;
+  context: PendingActionContext;
+  timestamp: number;
+  preferredMode?: 'login' | 'register';
+}
+
 type GlobalStore = {
   setTheme?: (theme: 'light' | 'dark') => void;
   theme?: 'light' | 'dark';
@@ -12,17 +43,18 @@ type GlobalStore = {
   // Property type modal state
   isPropertyTypeModalOpen?: boolean;
   setIsPropertyTypeModalOpen?: (isOpen: boolean) => void;
-  // Login modal state (used to prompt user to sign in before creating a listing)
+  // Login modal state
   isLoginModalOpen?: boolean;
   setIsLoginModalOpen?: (isOpen: boolean) => void;
-  // Pending intent when user tried to start creating a listing but needs to login
-  pendingCreateIntent?: boolean;
-  setPendingCreateIntent?: (v: boolean) => void;
+  // Pending action system - replaces pendingCreateIntent
+  pendingAction?: PendingAction | null;
+  setPendingAction?: (action: PendingAction | null) => void;
+  clearPendingAction?: () => void;
 };
 
 export const useGlobalStore = create<GlobalStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       setTheme: (theme) => set({ theme }),
       theme: 'light',
       setIsOpen: (isOpen) => set({ isOpen }),
@@ -34,12 +66,31 @@ export const useGlobalStore = create<GlobalStore>()(
         set({ isPropertyTypeModalOpen: isOpen }),
       isLoginModalOpen: false,
       setIsLoginModalOpen: (isOpen) => set({ isLoginModalOpen: isOpen }),
-      pendingCreateIntent: false,
-      setPendingCreateIntent: (v) => set({ pendingCreateIntent: v }),
+      // Pending action system
+      pendingAction: null,
+      setPendingAction: (action) => {
+        if (action) {
+          set({
+            pendingAction: {
+              ...action,
+              timestamp: Date.now(),
+            },
+          });
+        } else {
+          set({ pendingAction: null });
+        }
+      },
+      clearPendingAction: () => set({ pendingAction: null }),
     }),
     {
-      name: 'global-storage', // unique name for your storage item
-      storage: createJSONStorage(() => localStorage),
+      name: 'global-storage',
+      storage: createJSONStorage(() => sessionStorage), // Use sessionStorage for temporary actions
+      partialize: (state) => ({
+        // Persist theme and pending actions, but not modal states
+        theme: state.theme,
+        pendingAction: state.pendingAction,
+        passwordResetEmail: state.passwordResetEmail,
+      }),
     },
   ),
 );
