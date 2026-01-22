@@ -18,7 +18,7 @@ import { AddPropertyButton } from '../AddPropertyButton';
 import { UserRound } from 'lucide-react';
 import { Button } from '../ui/button';
 
-const ProfileDropdown = () => {
+const ProfileDropdown = ({ className }: { className?: string }) => {
   const { data: session, isPending: isLoading } = authClient.useSession();
 
   if (isLoading) {
@@ -30,7 +30,7 @@ const ProfileDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={'icon'} size={'icon'} className="">
+        <Button variant={'icon'} size={'icon'} className={className}>
           <UserRound color="#000000" />
         </Button>
       </DropdownMenuTrigger>

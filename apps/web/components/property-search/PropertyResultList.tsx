@@ -212,7 +212,7 @@ export function PropertyResultList() {
           isError={isError}
           error={error}
           filteredProperties={properties}
-          className={cn('p-4 xl:p-12 md:py-8 ')}
+          className={cn('p-4 xl:p-12 xl:py-8')}
           currentPage={currentPage}
           totalPages={totalPages}
           totalResults={totalResults}

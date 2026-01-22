@@ -40,7 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   {
     href: '/account',
     icon: User,
-    label: 'Profil',
+    label: 'Account',
     exactMatch: false,
   },
 ];
@@ -65,7 +65,7 @@ export function MobileBottomNav() {
     <>
       {/* Mobile Bottom Navigation - Hidden on desktop */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border">
-        <div className="flex items-center justify-around px-2 py-3">
+        <div className="flex items-center justify-center gap-10 px-2 py-3">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href, item.exactMatch);
@@ -75,7 +75,7 @@ export function MobileBottomNav() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors',
+                  'flex flex-col items-center justify-center h-full gap-1 transition-colors',
                   'hover:bg-muted/50 rounded-lg',
                   active ? 'text-primary font-medium' : 'text-muted-foreground',
                 )}

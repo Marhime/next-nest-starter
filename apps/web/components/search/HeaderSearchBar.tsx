@@ -47,48 +47,33 @@ export function HeaderSearchBar() {
 
   return (
     <>
-      {/* Desktop Version - Location Input + Filters Button */}
-      <div className="hidden lg:flex items-center gap-3 max-w-2xl mx-4">
+      <div className="flex items-center gap-3 flex-1 max-w-md">
         <div className="flex-1">
           <LocationSearchBar
             onLocationSelect={handleLocationSelect}
             placeholder={t('locationPlaceholder') || 'Localisation'}
             defaultValue={location || ''}
-            className="h-10"
+            className="h-9 xl:h-10"
           />
         </div>
+
         <Button
-          variant="secondary"
+          variant="outline"
           onClick={toggleFilters}
-          className="relative h-10 shrink-0"
+          className="relative h-9 xl:h-10"
+          size="sm"
         >
-          <SlidersHorizontal className="w-4 h-4 mr-2" />
-          {t('filters') || 'Filtres'}
+          <SlidersHorizontal className="w-4 h-4" />
           {activeFiltersCount > 0 && (
-            <Badge variant="default" className="ml-2 h-5 px-1.5 min-w-[20px]">
+            <Badge
+              variant="default"
+              className="ml-1.5 h-4 px-1 min-w-[16px] text-xs"
+            >
               {activeFiltersCount}
             </Badge>
           )}
         </Button>
       </div>
-
-      {/* Mobile Version - Just Filters Button */}
-      <Button
-        variant="outline"
-        onClick={toggleFilters}
-        className="lg:hidden relative h-9"
-        size="sm"
-      >
-        <SlidersHorizontal className="w-4 h-4" />
-        {activeFiltersCount > 0 && (
-          <Badge
-            variant="default"
-            className="ml-1.5 h-4 px-1 min-w-[16px] text-xs"
-          >
-            {activeFiltersCount}
-          </Badge>
-        )}
-      </Button>
     </>
   );
 }

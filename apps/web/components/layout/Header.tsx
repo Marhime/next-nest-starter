@@ -29,6 +29,16 @@ const Header = () => {
     if (isFindPage) return 'find';
   }, [pathname, locale]);
 
+  const menuItems = useMemo(() => {
+    return [
+      { label: 'Buy', href: '/find' },
+      { label: 'Rent', href: '/find' },
+      { label: 'How it works', href: '/find' },
+      { label: 'Blog', href: '/find' },
+      { label: 'Contact us', href: '/find' },
+    ];
+  }, []);
+
   return (
     <div
       className={cn(
@@ -42,8 +52,7 @@ const Header = () => {
         )}
       >
         {/* Logo */}
-        <div className="flex gap-2 md:gap-4 items-center">
-          <TextAlignJustify size={28} className="relative text-primary" />
+        <div className="flex gap-2 md:gap-10 items-center">
           <Link
             href={'/'}
             className="text-primary text-2xl font-bold shrink-0 flex items-center"
@@ -65,6 +74,17 @@ const Header = () => {
               className="hidden md:block"
             />
           </Link>
+          {variant == 'home' && (
+            <ul className="hidden lg:flex md:items-center gap-6 h-full mt-1">
+              {menuItems.map((item) => (
+                <li key={item.label}>
+                  <Link className="block" href={item.href}>
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {/* Header Search Bar - Shows only on /find page */}
@@ -73,13 +93,17 @@ const Header = () => {
         {/* Right Actions */}
         <div className="text-white flex gap-2 md:gap-4 justify-end items-center shrink-0">
           <AddPropertyButton
-            className="rounded-full"
+            className="rounded-full hidden lg:inline-flex"
             variant={'default'}
             icon={true}
           />
+          <TextAlignJustify
+            size={28}
+            className="block lg:hidden relative text-primary"
+          />
 
-          <LocaleSwitcher className="hidden md:block" />
-          {/* <ProfileDropdown /> */}
+          <LocaleSwitcher className="hidden lg:block" />
+          <ProfileDropdown className="hidden lg:block" />
         </div>
       </div>
     </div>
