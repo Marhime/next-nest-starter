@@ -49,6 +49,10 @@ export function LocationSearchBar({
   // Handle location selection
   const handleSelectLocation = useCallback(
     (location: GeocodingResult) => {
+      console.log(
+        '🎯 LocationSearchBar - Location selected:',
+        location.display_name,
+      );
       setQuery(location.display_name);
       setIsOpen(false);
       setSelectedIndex(-1);

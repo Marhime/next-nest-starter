@@ -35,10 +35,11 @@ model User {
   banReason  String?
   banExpires DateTime?
 
-  sessions Session[]
-  accounts Account[]
-  Property Property[]
-  Favorite Favorite[]
+  sessions    Session[]
+  accounts    Account[]
+  Property    Property[]
+  Favorite    Favorite[]
+  SavedSearch SavedSearch[]
 
   @@unique([email])
   @@map("user")
@@ -177,6 +178,20 @@ model Favorite {
 
   @@id([userId, propertyId])
   @@map("favorites")
+}
+
+model SavedSearch {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  name      String
+  filters   Json // Store all filter values (listingType, price, location, etc.)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("saved_searches")
 }
 
 enum AccountType {

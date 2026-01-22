@@ -9,14 +9,13 @@ import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Heart, MapPin, Bed, Bath, Square } from 'lucide-react';
 import { useSearchStore } from '@/stores/search-store';
-import { cn, getPhotoUrl } from '@/lib/utils';
+import { cn, formattedMXNPrice, getPhotoUrl } from '@/lib/utils';
 import {
   getListingTypeLabel,
   getPropertyTypeLabel,
   getPriceLabel,
 } from '@/lib/property-labels';
 import React, { useState, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Property } from '@/hooks/use-properties';
 import { useTranslations } from 'next-intl';
@@ -38,6 +37,7 @@ export const PropertyCard = React.memo(function PropertyCard({
 
   const handleFavoriteClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     setIsFavorite((prev) => !prev);
   }, []);
 
@@ -45,7 +45,7 @@ export const PropertyCard = React.memo(function PropertyCard({
     <Link target="_blank" href={`/property/${property.id}`}>
       <div
         className={cn(
-          'group cursor-pointer overflow-hidden w-full max-w-[480px] mx-auto p-0',
+          'cursor-pointer overflow-hidden w-full max-w-[480px] mx-auto p-0',
         )}
         onMouseEnter={() => hoverProperty(property.id)}
         onMouseLeave={() => hoverProperty(null)}
@@ -58,7 +58,7 @@ export const PropertyCard = React.memo(function PropertyCard({
                 src={getPhotoUrl(primaryPhoto.url)}
                 alt={property.title}
                 fill
-                className="object-cover transition-transform duration-300 group-hover:scale-[1.02] h-full"
+                className="object-cover transition-transform duration-300 in-[a:hover]:scale-[1.02] h-full"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             ) : (
@@ -67,7 +67,7 @@ export const PropertyCard = React.memo(function PropertyCard({
                   src={'/placeholder-property.jpg'}
                   alt={property.title}
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-110 h-full"
+                  className="object-cover transition-transform duration-300 in-[a:hover]:scale-110 h-full"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
               </div>
@@ -94,42 +94,57 @@ export const PropertyCard = React.memo(function PropertyCard({
             </div>
 
             {/* Favorite button */}
-            <Button
-              variant="ghost"
-              size="icon"
+            <button
               className={cn(
-                'absolute top-3 right-3 bg-background/90 backdrop-blur-sm hover:bg-background transition-all',
-                isFavorite && 'text-red-500',
+                'group absolute top-3 right-3 transition-all z-10 text-white hover:scale-110 ',
+                isFavorite && 'text-red-500 scale-110',
               )}
               onClick={handleFavoriteClick}
             >
-              <Heart className={cn('w-5 h-5', isFavorite && 'fill-current')} />
-            </Button>
+              <Heart
+                className={cn(
+                  'w-6 h-6 group-hover:fill-current',
+                  isFavorite && 'fill-current',
+                )}
+              />
+            </button>
           </div>
 
           {/* Content Section */}
           <div className="pt-4 grid grid-rows-4 gap-1">
-            {/* Price */}
+            {/* Title */}
+            <div className="flex justify-between items-center">
+              <h3 className="font-semibold text-md line-clamp-1">
+                {property.title}
+              </h3>
+              {/* Property Details */}
+              {property.bedrooms || property.bathrooms || property.area ? (
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  {property.bedrooms && property.bedrooms > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <Bed className="w-4 h-4" />
+                      <span>{property.bedrooms}</span>
+                    </div>
+                  )}
 
-            <div className="flex items-baseline gap-1">
-              <span className="text-md font-bold">
-                {property.price}
-                {property.currency}
-              </span>
-              {priceLabel && (
-                <span className="text-xs text-muted-foreground">
-                  {priceLabel}
-                </span>
-              )}
+                  {property.bathrooms && property.bathrooms > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <Bath className="w-4 h-4" />
+                      <span>{property.bathrooms}</span>
+                    </div>
+                  )}
+
+                  {property.area && property.area > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <Square className="w-4 h-4" />
+                      <span>{property.area}m²</span>
+                    </div>
+                  )}
+                </div>
+              ) : null}
             </div>
 
-            {/* Title */}
-            <h3 className="font-semibold text-md line-clamp-1">
-              {property.title}
-            </h3>
-
             {/* Location */}
-
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <MapPin className="w-4 h-4 shrink-0" />
               <span className="line-clamp-1">
@@ -138,20 +153,17 @@ export const PropertyCard = React.memo(function PropertyCard({
               </span>
             </div>
 
-            {/* Property Details */}
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <Bed className="w-4 h-4" />
-                <span>{property.bedrooms}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Bath className="w-4 h-4" />
-                <span>{property.bathrooms}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Square className="w-4 h-4" />
-                <span>{property.area}m²</span>
-              </div>
+            {/* Price */}
+            <div className="flex items-baseline gap-1">
+              <span className="text-md font-semibold">
+                {formattedMXNPrice(Number(property.price))}
+                {property.currency}
+              </span>
+              {priceLabel && (
+                <span className="text-xs text-muted-foreground">
+                  {priceLabel}
+                </span>
+              )}
             </div>
           </div>
         </div>

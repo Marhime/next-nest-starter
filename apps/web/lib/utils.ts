@@ -15,3 +15,12 @@ export function getPhotoUrl(url: string): string {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   return `${API_URL}${url}`;
 }
+
+export const formattedMXNPrice = (price: number) => {
+  if (!price) return;
+  return new Intl.NumberFormat('es-MX', {
+    style: 'currency',
+    currency: 'MXN',
+    maximumFractionDigits: 0,
+  }).format(Number(price));
+};
